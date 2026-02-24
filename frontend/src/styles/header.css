@@ -1,0 +1,190 @@
+/* =========================
+   SARVA Header + Dropdowns
+   ========================= */
+
+/* Fixed header */
+.sarva-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    z-index: 30;
+    background: var(--nav-bg);
+    border-bottom: 1px solid var(--nav-border);
+    backdrop-filter: blur(8px);
+
+    /* Ensure dropdowns can overflow the header area */
+    overflow: visible;
+
+    /* Optional: subtle separation from hero */
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+.sarva-header__inner {
+    max-width: var(--container);
+    margin: 0 auto;
+    height: 72px;
+
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 0 18px;
+
+    /* Ensure dropdowns can overflow the inner container too */
+    overflow: visible;
+}
+
+/* Brand / Logo */
+.sarva-brand {
+    display: flex;
+    align-items: center;
+}
+
+.sarva-logoLink {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.sarva-logoCircle {
+    width: 64px;
+    height: 64px;
+    border-radius: 999px;
+
+    background: none;
+    border: none;
+
+    display: grid;
+    place-items: center;
+}
+
+.sarva-logoImg {
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+    display: block;
+}
+
+/* Nav */
+.sarva-nav {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex: 1;
+}
+
+/* Links + dropdown buttons share this class */
+.sarva-nav__link {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+
+    color: var(--link);
+    text-decoration: none;
+
+    padding: 10px 6px;
+    border-radius: 8px;
+
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.sarva-nav__link.is-active {
+    color: var(--link-active);
+    font-weight: 600;
+}
+
+/* Dropdown container */
+.sarva-nav__dropdown {
+    position: relative;
+}
+
+/* Open state styling on the button */
+.sarva-nav__button.is-open {
+    background: rgba(31, 75, 216, 0.08);
+}
+
+/* Dropdown menu (hidden by default) */
+.sarva-nav__menu {
+    position: absolute;
+
+    /* Anchor menu neatly below the button */
+    top: calc(100% + 10px);
+    left: 0;
+
+    width: max-content;
+    min-width: 260px;
+    max-width: 340px;
+
+    background: #fff;
+    border: 1px solid var(--nav-border);
+    border-radius: 12px;
+
+    /* ✅ Your biggest issue was padding: 72px (giant blank card) */
+    padding: 8px;
+
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
+
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
+    transition: opacity 120ms ease, transform 120ms ease;
+
+    /* Above hero and other content */
+    z-index: 1000;
+}
+
+/* Dropdown visible when open */
+.sarva-nav__menu.is-open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* Dropdown items */
+.sarva-nav__item {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 10px;
+
+    text-decoration: none;
+    color: var(--text);
+
+    font-size: 14px;
+    line-height: 1.25;
+
+    /* Prevent awkward wrapping in menus */
+    white-space: nowrap;
+}
+
+.sarva-nav__item:hover,
+.sarva-nav__item:focus {
+    background: rgba(31, 75, 216, 0.08);
+    outline: none;
+}
+
+/* Chevron */
+.sarva-nav__chev {
+    display: inline-block;
+    transition: transform 120ms ease;
+}
+
+.sarva-nav__button.is-open .sarva-nav__chev {
+    transform: rotate(180deg);
+}
+
+/* Search button */
+.sarva-search {
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+
+    border: 1px solid var(--nav-border);
+    background: #fff;
+
+    cursor: pointer;
+    font-size: 18px;
+}

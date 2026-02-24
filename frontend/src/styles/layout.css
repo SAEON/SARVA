@@ -1,0 +1,4 @@
+.sarva-page {
+    padding-top: 72px;   /* fixed header height */
+    min-height: 100vh;
+}
