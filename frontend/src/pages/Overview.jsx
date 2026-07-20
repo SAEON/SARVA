@@ -1,14 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useJsonResource } from "../hooks/useJsonResource";
 
 export default function Overview() {
-    const [health, setHealth] = useState(null);
+    const { data: health, error } = useJsonResource("/api/health");
 
     useEffect(() => {
-        fetch("http://localhost:5050/api/health")
-            .then(r => r.json())
-            .then(setHealth)
-            .catch(console.error);
-    }, []);
+        if (error) console.error(error);
+    }, [error]);
 
     return (
         <div>

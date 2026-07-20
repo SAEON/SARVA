@@ -1,0 +1,16 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    volumes:
+      - ./backend/src:/app/src:ro
+      - ./backend/scripts:/app/scripts:ro
+      - ./backend/migrations:/app/migrations:ro
+      - ./backend/public:/app/public:ro
+    command: ["node", "src/server.js"]
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE: .

@@ -1,15 +1,31 @@
 :root {
     --font-sans: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
     "Segoe UI Emoji";
-    --text: #0b1220;
-    --muted: #5b6576;
-    --nav-bg: rgba(255, 255, 255, 0.92);
-    --nav-border: rgba(0, 0, 0, 0.08);
-    --link: #1b2b4a;
-    --link-active: #1f4bd8;
+    --text: #17231e;
+    --muted: #65736d;
+    --page-bg: #f3f0e8;
+    --surface: #fffdf7;
+    --surface-soft: #ebe6da;
+    --border: #d8d1c4;
+    --primary: #385a48;
+    --primary-strong: #203a31;
+    --primary-soft: #dfe8dd;
+    --accent: #c96f4a;
+    --accent-strong: #9f4d32;
+    --accent-soft: #f3dfd5;
+    --ochre: #d7a84d;
+    --water: #357a8a;
+    --success: #4f7c52;
+    --warning: #c9862b;
+    --danger: #b84f48;
+    --shadow: rgba(50, 43, 34, 0.12);
+    --nav-bg: rgba(255, 253, 247, 0.94);
+    --nav-border: rgba(56, 90, 72, 0.18);
+    --link: #2f4d40;
+    --link-active: #c96f4a;
 
-    --hero-overlay: rgba(0, 0, 0, 0.45);
-    --hero-overlay-2: rgba(0, 0, 0, 0.25);
+    --hero-overlay: rgba(32, 58, 49, 0.58);
+    --hero-overlay-2: rgba(56, 90, 72, 0.32);
 
     --container: 1200px;
     --radius: 10px;

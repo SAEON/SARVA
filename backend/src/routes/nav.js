@@ -3,6 +3,13 @@ import { pool } from "../db/pool.js";
 
 export const navRouter = Router();
 
+function normalizeInternalPath(value) {
+  if (!value) return null;
+  const path = String(value).trim();
+  if (!path) return null;
+  return path.startsWith("/") ? path : `/${path.toLowerCase()}`;
+}
+
 navRouter.get("/", async (req, res) => {
   try {
     const nav = await pool.query(`
@@ -24,7 +31,7 @@ navRouter.get("/", async (req, res) => {
       const list = byNav.get(row.nav_id) || [];
       list.push({
         label: row.label,
-        to: row.to_path ? row.to_path.trim() : null,
+        to: normalizeInternalPath(row.to_path),
         href: row.href ? row.href.trim() : null,
         external: row.is_external
       });
@@ -33,8 +40,7 @@ navRouter.get("/", async (req, res) => {
 
     const data = nav.rows.map((n) => ({
       label: n.label,
-      // keep Home as a simple link for now
-      ...(n.label === "Home" ? { to: "/" } : {}),
+      ...(String(n.label).trim().toLowerCase() === "home" ? { to: "/" } : {}),
       items: byNav.get(n.id) || []
     }));
 

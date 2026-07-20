@@ -1,0 +1,37 @@
+listen_addresses: "0.0.0.0:3000"
+base_path: /tiles
+web_ui: enable-for-all
+on_invalid: warn
+
+postgres:
+  connection_string: ${DATABASE_URL}
+  default_srid: 3857
+  auto_publish: false
+  tables:
+    municipal_boundaries:
+      layer_id: municipalities
+      schema: sarva
+      table: municipal_boundaries
+      srid: 3857
+      geometry_column: geom
+      id_column: gid
+      minzoom: 0
+      maxzoom: 14
+      bounds: [16.45, -34.84, 32.95, -22.13]
+      geometry_type: MULTIPOLYGON
+      properties:
+        gid: int4
+        fid_1: int2
+        objectid: int2
+        province: varchar
+        category: varchar
+        cat2: varchar
+        cat_b: varchar
+        municname: varchar
+        namecode: varchar
+        map_title: varchar
+        district: varchar
+        district_n: varchar
+        date: date
+        shape__are: numeric
+        shape__len: numeric

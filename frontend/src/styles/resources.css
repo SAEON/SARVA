@@ -1,0 +1,612 @@
+.sarva-resources {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 56px clamp(24px, 4vw, 64px) 80px;
+}
+
+.sarva-resources__header {
+    margin-bottom: 28px;
+}
+
+.sarva-resources__title {
+    font-family: var(--font-sans);
+    font-size: clamp(44px, 4vw, 60px);
+    font-weight: 600;
+    margin: 0 0 12px 0;
+}
+
+.sarva-resources__intro {
+    font-size: 21px;
+    opacity: 0.85;
+    max-width: 760px;
+    line-height: 1.6;
+}
+
+.sarva-resources__controls {
+    display: grid;
+    grid-template-columns: minmax(320px, 1.4fr) repeat(3, minmax(190px, 1fr)) auto;
+    gap: 16px;
+    align-items: end;
+    margin: 28px 0 18px;
+}
+
+.sarva-resources__field {
+    display: grid;
+    gap: 6px;
+}
+
+.sarva-resources__field span {
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.72);
+}
+
+.sarva-resources__field input,
+.sarva-resources__field select {
+    width: 100%;
+    min-height: 48px;
+    padding: 11px 13px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: white;
+    font-size: 16px;
+}
+
+.sarva-resources__field input:focus,
+.sarva-resources__field select:focus {
+    outline: none;
+    border-color: #1f4bd8;
+    box-shadow: 0 0 0 3px rgba(31, 75, 216, 0.15);
+}
+
+.sarva-resources__clear,
+.sarva-resources__pagination button {
+    min-height: 48px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 750;
+    padding: 0 16px;
+}
+
+.sarva-resources__clear:hover,
+.sarva-resources__pagination button:hover:not(:disabled) {
+    border-color: #1f4bd8;
+    color: #1f4bd8;
+}
+
+.sarva-resources__summary {
+    margin: 14px 0 18px;
+    font-size: 16px;
+    opacity: 0.72;
+}
+
+.sarva-resources__adminBar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 18px;
+    padding: 14px 16px;
+    border: 1px solid #e0d6c6;
+    border-radius: 8px;
+    background: #fbf8ef;
+}
+
+.sarva-resources__adminBar div {
+    display: grid;
+    gap: 2px;
+    min-width: 220px;
+    margin-right: auto;
+}
+
+.sarva-resources__adminBar strong {
+    color: var(--primary-strong);
+    font-size: 16px;
+}
+
+.sarva-resources__adminBar span,
+.sarva-resources__adminBar small {
+    color: rgba(0, 0, 0, 0.64);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.sarva-resources__adminBar button {
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--accent);
+    border-radius: 7px;
+    background: var(--accent);
+    color: var(--surface);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 850;
+    white-space: nowrap;
+}
+
+.sarva-resources__adminBar button:disabled {
+    cursor: wait;
+    opacity: 0.62;
+}
+
+.sarva-resources__state {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 20px;
+    background: white;
+    font-size: 15px;
+}
+
+.sarva-resources__tag {
+    border-radius: 999px;
+    background: rgba(31, 75, 216, 0.1);
+    color: #1f4bd8;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    padding: 5px 10px;
+}
+
+.sarva-resources__tableWrap {
+    overflow-x: auto;
+    border: 1px solid #e6e1d7;
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 12px 28px rgba(50, 43, 34, 0.07);
+}
+
+.sarva-resources__table {
+    width: 100%;
+    min-width: 920px;
+    border-collapse: collapse;
+}
+
+.sarva-resources__table th {
+    padding: 15px 16px;
+    border-bottom: 1px solid #e6e1d7;
+    background: #f8f5ed;
+    color: var(--primary-strong);
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+.sarva-resources__table td {
+    max-width: 420px;
+    padding: 16px;
+    border-bottom: 1px solid #eee9df;
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.45;
+    vertical-align: top;
+}
+
+.sarva-resources__table tbody tr:hover {
+    background: rgba(56, 90, 72, 0.045);
+}
+
+.sarva-resources__table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.sarva-resources__tableTitle {
+    display: block;
+    color: var(--primary-strong);
+    font-size: 17px;
+    line-height: 1.35;
+}
+
+.sarva-resources__abstractLine,
+.sarva-resources__note {
+    display: -webkit-box;
+    margin-top: 5px;
+    overflow-y: auto;
+    color: rgba(0, 0, 0, 0.66);
+    font-size: 14px;
+    line-height: 1.35;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.sarva-resources__note {
+    color: #9a5d2f;
+    font-weight: 700;
+}
+
+.sarva-resources__tagRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.sarva-resources__tag {
+    background: rgba(0, 0, 0, 0.05);
+    color: rgba(0, 0, 0, 0.72);
+    font-size: 12px;
+    padding: 5px 9px;
+}
+
+.sarva-resources__linkCell {
+    display: grid;
+    gap: 7px;
+    justify-items: start;
+}
+
+.sarva-resources__checked {
+    color: rgba(0, 0, 0, 0.58);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.sarva-resources__adminActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.sarva-resources__linkCell a,
+.sarva-resources__edit {
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 12px;
+    border: 1px solid #d7cdbc;
+    border-radius: 6px;
+    background: white;
+    color: var(--primary-strong);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.sarva-resources__linkCell a:hover,
+.sarva-resources__edit:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.sarva-resources__edit:disabled {
+    cursor: wait;
+    opacity: 0.58;
+}
+
+.sarva-resources__edit.is-danger {
+    border-color: rgba(164, 52, 42, 0.3);
+    color: #a4342a;
+}
+
+.sarva-resources__status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: #eee9df;
+    color: #62594d;
+    font-size: 13px;
+    font-weight: 850;
+    white-space: nowrap;
+}
+
+.sarva-resources__status.is-active {
+    background: rgba(69, 137, 96, 0.14);
+    color: #24623f;
+}
+
+.sarva-resources__status.is-redirected {
+    background: rgba(31, 75, 216, 0.12);
+    color: #1f4bd8;
+}
+
+.sarva-resources__status.is-broken {
+    background: rgba(164, 52, 42, 0.13);
+    color: #a4342a;
+}
+
+.sarva-resources__status.is-missing {
+    background: rgba(154, 93, 47, 0.14);
+    color: #7c4d27;
+}
+
+.sarva-libraryEdit {
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgba(22, 38, 32, 0.48);
+    backdrop-filter: blur(5px);
+    font-family: var(--font-sans);
+}
+
+.sarva-libraryEdit__panel {
+    width: 100%;
+    max-width: 900px;
+    max-height: min(820px, calc(100vh - 48px));
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+    border: 1px solid #d7cdbc;
+    border-radius: 8px;
+    background: var(--surface);
+    box-shadow: 0 24px 60px rgba(7, 27, 58, 0.24);
+}
+
+.sarva-libraryEdit__head {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 20px 22px 14px;
+    border-bottom: 1px solid #eee7dc;
+    background:
+        radial-gradient(circle at 100% 0%, rgba(215, 168, 77, 0.12), transparent 28%),
+        var(--surface);
+}
+
+.sarva-libraryEdit__head span {
+    color: var(--accent-strong);
+    font-size: 13px;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.sarva-libraryEdit__head h2 {
+    margin: 3px 0 0;
+    color: var(--primary-strong);
+    font-size: 30px;
+    line-height: 1.1;
+}
+
+.sarva-libraryEdit__head button {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    border: 1px solid #d7cdbc;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--primary-strong);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.sarva-libraryEdit__head button:hover {
+    border-color: var(--accent);
+    color: var(--accent-strong);
+}
+
+.sarva-libraryEdit label {
+    min-width: 0;
+    display: grid;
+    gap: 6px;
+}
+
+.sarva-libraryEdit label span {
+    color: rgba(0, 0, 0, 0.72);
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.sarva-libraryEdit input,
+.sarva-libraryEdit select,
+.sarva-libraryEdit textarea {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    padding: 10px 12px;
+    border: 1px solid #d7cdbc;
+    border-radius: 7px;
+    background: white;
+    color: var(--text);
+    font: inherit;
+    font-size: 15px;
+    line-height: 1.35;
+}
+
+.sarva-libraryEdit textarea {
+    min-height: 94px;
+    resize: vertical;
+}
+
+.sarva-libraryEdit input:focus,
+.sarva-libraryEdit select:focus,
+.sarva-libraryEdit textarea:focus {
+    outline: none;
+    border-color: rgba(201, 111, 74, 0.72);
+    box-shadow: 0 0 0 3px rgba(201, 111, 74, 0.12);
+}
+
+.sarva-libraryEdit__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.sarva-libraryEdit__message {
+    margin: 0 22px;
+    padding: 10px 12px;
+    border: 1px solid rgba(164, 52, 42, 0.18);
+    border-radius: 7px;
+    background: rgba(164, 52, 42, 0.08);
+    color: #a4342a;
+    font-size: 15px;
+}
+
+.sarva-libraryEdit__actions {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 14px 22px 18px;
+    border-top: 1px solid #eee7dc;
+    background: rgba(255, 253, 247, 0.96);
+}
+
+.sarva-libraryEdit__actions button {
+    min-height: 42px;
+    padding: 0 18px;
+    border: 1px solid #d7cdbc;
+    border-radius: 7px;
+    background: white;
+    color: var(--primary-strong);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.sarva-libraryEdit__actions button[type="submit"] {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--surface);
+}
+
+.sarva-libraryEdit__actions button:disabled {
+    cursor: wait;
+    opacity: 0.62;
+}
+
+.sarva-libraryEdit__panel > label,
+.sarva-libraryEdit__panel > .sarva-libraryEdit__grid {
+    margin-inline: 22px;
+    margin-bottom: 13px;
+}
+
+.sarva-libraryEdit__panel > label:first-of-type {
+    margin-top: 16px;
+}
+
+.sarva-resources__pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 28px;
+}
+
+.sarva-resources__pagination span {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.sarva-resources__pagination button:disabled {
+    cursor: not-allowed;
+    opacity: 0.48;
+}
+
+@media (max-width: 980px) {
+    .sarva-resources__controls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sarva-resources__field--search {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 620px) {
+    .sarva-resources {
+        padding: 32px 16px 60px;
+    }
+
+    .sarva-resources__controls {
+        grid-template-columns: 1fr;
+    }
+
+    .sarva-resources__adminBar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .sarva-resources__adminBar div {
+        min-width: 0;
+    }
+
+    .sarva-resources__table {
+        min-width: 0;
+    }
+
+    .sarva-resources__table thead {
+        display: none;
+    }
+
+    .sarva-resources__table,
+    .sarva-resources__table tbody,
+    .sarva-resources__table tr,
+    .sarva-resources__table td {
+        display: block;
+        width: 100%;
+    }
+
+    .sarva-resources__table tr {
+        padding: 10px 0;
+        border-bottom: 1px solid #eee9df;
+    }
+
+    .sarva-resources__table td {
+        max-width: none;
+        display: grid;
+        grid-template-columns: 104px minmax(0, 1fr);
+        gap: 10px;
+        padding: 7px 12px;
+        border-bottom: 0;
+    }
+
+    .sarva-resources__table td::before {
+        content: attr(data-label);
+        color: rgba(0, 0, 0, 0.58);
+        font-size: 11px;
+        font-weight: 850;
+        text-transform: uppercase;
+    }
+
+    .sarva-libraryEdit__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sarva-libraryEdit {
+        padding: 10px;
+    }
+
+    .sarva-libraryEdit__panel {
+        max-height: calc(100vh - 20px);
+    }
+
+    .sarva-libraryEdit__head {
+        padding: 16px 16px 12px;
+    }
+
+    .sarva-libraryEdit__head h2 {
+        font-size: 21px;
+    }
+
+    .sarva-libraryEdit__panel > label,
+    .sarva-libraryEdit__panel > .sarva-libraryEdit__grid {
+        margin-inline: 16px;
+    }
+
+    .sarva-libraryEdit__actions {
+        align-items: stretch;
+        flex-direction: column-reverse;
+        padding: 12px 16px 14px;
+    }
+
+    .sarva-resources__pagination {
+        justify-content: space-between;
+    }
+}

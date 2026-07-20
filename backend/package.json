@@ -6,7 +6,21 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "migrate": "node scripts/migrate.js",
+    "import:resources": "node scripts/import-sarva-resources.js",
+    "import:resources:dry-run": "node scripts/import-sarva-resources.js --dry-run",
+    "import:glossary": "node scripts/import-glossary.js",
+    "import:glossary:dry-run": "node scripts/import-glossary.js --dry-run",
+    "import:policy": "node scripts/import-national-policy-legislation.js",
+    "import:policy:dry-run": "node scripts/import-national-policy-legislation.js --dry-run",
+    "import:municipalities": "sh scripts/import-municipal-boundaries.sh",
+    "import:loggernet-locations": "node scripts/import-loggernet-station-locations.js",
+    "import:sa-risk-indicators": "node scripts/import-sa-risk-indicators.js",
+    "import:municipal-finance-indicators": "node scripts/import-municipal-finance-indicators.js",
+    "sync:catalogue": "node scripts/sync-catalogue.js",
+    "refresh:catalogue-ev": "node scripts/refresh-catalogue-essential-variables.js",
+    "check:links": "node scripts/check-library-links.js"
   },
   "dependencies": {
     "cors": "^2.8.6",

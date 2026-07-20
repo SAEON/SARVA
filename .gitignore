@@ -19,6 +19,9 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Local dev backups
+backups/
+
 # OS files
 .DS_Store
 

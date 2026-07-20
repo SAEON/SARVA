@@ -1,0 +1,179 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: sarva-db
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-sarva}
+      POSTGRES_USER: ${POSTGRES_USER:-sarva}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sarva_dev_password}
+
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+
+    volumes:
+      - sarva_db_data:/var/lib/postgresql/data
+      - ./docker/db/init:/docker-entrypoint-initdb.d:ro
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  backend:
+    build:
+      context: ./backend
+
+    container_name: sarva-backend
+    restart: unless-stopped
+
+    environment:
+      NODE_ENV: production
+      TZ: Africa/Johannesburg
+      PORT: 5050
+
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-sarva}
+      DB_USER: ${POSTGRES_USER:-sarva}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-sarva_dev_password}
+
+      AUTH_SECRET: ${AUTH_SECRET:-local_development_secret_change_me}
+      CATALOGUE_SYNC_ENABLED: ${CATALOGUE_SYNC_ENABLED:-true}
+      CATALOGUE_SYNC_ON_START: ${CATALOGUE_SYNC_ON_START:-false}
+      CATALOGUE_GRAPHQL_ENDPOINT: ${CATALOGUE_GRAPHQL_ENDPOINT:-https://catalogue.saeon.ac.za/graphql}
+      CATALOGUE_SYNC_PAGE_SIZE: ${CATALOGUE_SYNC_PAGE_SIZE:-200}
+      NODE_EXTRA_CA_CERTS: /app/certs/sectigo-public-server-authentication-ca-ov-r36.pem
+      LOGGERNET_RAW_BASE: ${LOGGERNET_RAW_BASE:-https://lognet.saeon.ac.za}
+      LOGGERNET_RAW_ENABLED: ${LOGGERNET_RAW_ENABLED:-true}
+      LOGGERNET_RAW_SERVER_LIMIT: ${LOGGERNET_RAW_SERVER_LIMIT:-60}
+      LOGGERNET_RAW_RECENT_ROWS: ${LOGGERNET_RAW_RECENT_ROWS:-12}
+      LOGGERNET_RAW_CONCURRENCY: ${LOGGERNET_RAW_CONCURRENCY:-4}
+      LOGGERNET_RAW_TABLE_NAMES: ${LOGGERNET_RAW_TABLE_NAMES:-Daily,Public}
+      LOGGERNET_LOCATION_OVERRIDES: ${LOGGERNET_LOCATION_OVERRIDES:-}
+      LOGGERNET_API_BASE: ${LOGGERNET_API_BASE:-}
+      LOGGERNET_RAINFALL_URL: ${LOGGERNET_RAINFALL_URL:-}
+      LOGGERNET_LOCATIONS_URL: ${LOGGERNET_LOCATIONS_URL:-}
+      LOGGERNET_API_TIMEOUT_MS: ${LOGGERNET_API_TIMEOUT_MS:-12000}
+      LOGGERNET_API_USER_AGENT: ${LOGGERNET_API_USER_AGENT:-Mozilla/5.0 SARVA rainfall risk layer}
+      LOGGERNET_API_USERNAME: ${LOGGERNET_API_USERNAME:-}
+      LOGGERNET_API_PASSWORD: ${LOGGERNET_API_PASSWORD:-}
+      LOGGERNET_DATABASE_URL: ${LOGGERNET_DATABASE_URL:-}
+      LOGGERNET_DB_HOST: ${LOGGERNET_DB_HOST:-}
+      LOGGERNET_DB_PORT: ${LOGGERNET_DB_PORT:-5432}
+      LOGGERNET_DB_NAME: ${LOGGERNET_DB_NAME:-}
+      LOGGERNET_DB_USER: ${LOGGERNET_DB_USER:-}
+      LOGGERNET_DB_PASSWORD: ${LOGGERNET_DB_PASSWORD:-}
+
+    ports:
+      - "${BACKEND_PORT:-5050}:5050"
+
+    volumes:
+      - ./data:/data:ro
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://localhost:5050/api/health >/dev/null 2>&1 || exit 1"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  forecast-risk-worker:
+    build:
+      context: ./docker/forecast-risk-worker
+    container_name: sarva-forecast-risk-worker
+    restart: unless-stopped
+    environment:
+      TZ: Africa/Johannesburg
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-sarva}
+      DB_USER: ${POSTGRES_USER:-sarva}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-sarva_dev_password}
+      FORECAST_RISK_DAYS: ${FORECAST_RISK_DAYS:-5}
+      FORECAST_RISK_RUN_ONCE: ${FORECAST_RISK_RUN_ONCE:-false}
+      FORECAST_RISK_SYNC_INTERVAL_HOURS: ${FORECAST_RISK_SYNC_INTERVAL_HOURS:-5}
+      FORECAST_RISK_WEST: ${FORECAST_RISK_WEST:-16.0}
+      FORECAST_RISK_EAST: ${FORECAST_RISK_EAST:-33.0}
+      FORECAST_RISK_SOUTH: ${FORECAST_RISK_SOUTH:--35.0}
+      FORECAST_RISK_NORTH: ${FORECAST_RISK_NORTH:--22.0}
+      FORECAST_RISK_DOWNLOAD_TIMEOUT_SECONDS: ${FORECAST_RISK_DOWNLOAD_TIMEOUT_SECONDS:-1800}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  martin:
+    image: ghcr.io/maplibre/martin:v0.16.0
+    container_name: sarva-martin
+    restart: unless-stopped
+
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-sarva}:${POSTGRES_PASSWORD:-sarva_dev_password}@db:5432/${POSTGRES_DB:-sarva}
+      RUST_LOG: ${MARTIN_LOG_LEVEL:-info}
+
+    command: ["--config", "/config/config.yaml"]
+
+    volumes:
+      - ./docker/martin/config.yaml:/config/config.yaml:ro
+
+    ports:
+      - "${MARTIN_PORT:-3000}:3000"
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+  municipal-importer:
+    build:
+      context: ./docker/municipal-importer
+    profiles: ["tools"]
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:-sarva_dev_password}
+    volumes:
+      - ./data:/data:ro
+    command:
+      [
+        "sh",
+        "-c",
+        "psql -h db -U ${POSTGRES_USER:-sarva} -d ${POSTGRES_DB:-sarva} -v ON_ERROR_STOP=1 -c 'CREATE SCHEMA IF NOT EXISTS sarva; DROP TABLE IF EXISTS sarva.municipal_boundaries CASCADE;' && shp2pgsql -c -I -s 3857 -W UTF-8 -g geom /data/municipal-boundaries/MDB_Local_Municipal_Boundary_2018.shp sarva.municipal_boundaries | psql -h db -U ${POSTGRES_USER:-sarva} -d ${POSTGRES_DB:-sarva} -v ON_ERROR_STOP=1"
+      ]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE: ${VITE_API_BASE:-http://localhost:5050}
+        VITE_MARTIN_BASE: ${VITE_MARTIN_BASE:-http://localhost:3000}
+
+    container_name: sarva-frontend
+    restart: unless-stopped
+
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+
+    depends_on:
+      backend:
+        condition: service_healthy
+      martin:
+        condition: service_started
+
+volumes:
+  sarva_db_data:

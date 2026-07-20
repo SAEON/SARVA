@@ -1,72 +1,149 @@
-import { NavLink, useLocation } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import logo from "../assets/SARVA_final-logo-01a.png";
+import AuthPanel from "./AuthPanel";
+import { apiUrl } from "../config/api";
+import { useJsonResource } from "../hooks/useJsonResource";
 import "../styles/header.css";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5050";
+const fallbackNav = [
+    { label: "Home", to: "/" },
+    { label: "Relevant Documents", to: "/resources" },
+    { label: "National Policy", to: "/national-policy-and-legislation" },
+    { label: "Glossary", to: "/glossary" },
+    { label: "Municipal Risk Profiler", to: "/municipal-risk-profiler" },
+    { label: "API", to: "/overview" },
+    { label: "Help", to: "/overview" },
+    { label: "About", to: "/about" },
+];
 
 export default function Header() {
-    const [openKey, setOpenKey] = useState(null);
-    const [nav, setNav] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    const rootRef = useRef(null);
     const location = useLocation();
+    const navigate = useNavigate();
+    const [openDropdown, setOpenDropdown] = useState({
+        key: null,
+        pathname: location.pathname,
+    });
+    const [searchText, setSearchText] = useState("");
+    const [suggestions, setSuggestions] = useState([]);
+    const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+    const rootRef = useRef(null);
+    const {
+        data: navResponse,
+        error: navError,
+        loading,
+    } = useJsonResource("/api/nav", { cache: true });
 
-    // Fetch nav from API
-    useEffect(() => {
-        let isMounted = true;
-
-        async function loadNav() {
-            try {
-                setLoading(true);
-                const r = await fetch(`${API_BASE}/api/nav`);
-                const j = await r.json();
-                if (!isMounted) return;
-
-                if (j?.status === "ok" && Array.isArray(j.data)) {
-                    setNav(j.data);
-                } else {
-                    console.warn("Unexpected /api/nav response:", j);
-                    setNav([]);
-                }
-            } catch (e) {
-                console.error("Failed to load nav:", e);
-                if (isMounted) setNav([]);
-            } finally {
-                if (isMounted) setLoading(false);
-            }
+    const nav = useMemo(() => {
+        if (navResponse?.status === "ok" && Array.isArray(navResponse.data)) {
+            return navResponse.data;
         }
 
-        loadNav();
-        return () => {
-            isMounted = false;
-        };
-    }, []);
+        return fallbackNav;
+    }, [navResponse]);
+    const openKey = openDropdown.pathname === location.pathname ? openDropdown.key : null;
 
-    // Close dropdown on route change
-    useEffect(() => {
-        setOpenKey(null);
+    const setOpenKey = useCallback((nextKey) => {
+        setOpenDropdown({ key: nextKey, pathname: location.pathname });
     }, [location.pathname]);
+
+    const toggleOpenKey = useCallback((key) => {
+        setOpenDropdown((current) => ({
+            key:
+                current.pathname === location.pathname && current.key === key
+                    ? null
+                    : key,
+            pathname: location.pathname,
+        }));
+    }, [location.pathname]);
+
+    useEffect(() => {
+        if (navError) console.error("Failed to load nav:", navError);
+    }, [navError]);
+
+    useEffect(() => {
+        const query = searchText.trim();
+        if (query.length < 2) {
+            return undefined;
+        }
+
+        const controller = new AbortController();
+        const timer = window.setTimeout(async () => {
+            try {
+                const response = await fetch(apiUrl(`/api/catalogue/suggest?q=${encodeURIComponent(query)}`), {
+                    signal: controller.signal,
+                });
+                const body = await response.json();
+                if (body?.status === "ok" && Array.isArray(body.suggestions)) {
+                    setSuggestions(body.suggestions);
+                    setSuggestionsOpen(true);
+                }
+            } catch (error) {
+                if (error.name !== "AbortError") setSuggestions([]);
+            }
+        }, 180);
+
+        return () => {
+            controller.abort();
+            window.clearTimeout(timer);
+        };
+    }, [searchText]);
+
+    function submitSearch(event) {
+        event.preventDefault();
+        const query = searchText.trim();
+        if (!query) {
+            navigate("/search");
+            return;
+        }
+        setSuggestionsOpen(false);
+        navigate(`/search?q=${encodeURIComponent(query)}`);
+    }
+
+    function openSuggestion(suggestion) {
+        const label = String(suggestion?.label || "").trim();
+        if (!label) return;
+
+        setSearchText(label);
+        setSuggestionsOpen(false);
+
+        const params = new URLSearchParams();
+        if (suggestion.type === "collection") {
+            params.set("collection", label);
+        } else if (suggestion.type === "provider") {
+            params.set("provider", label);
+        } else if (suggestion.type === "framework" && suggestion.id) {
+            params.set("q", String(suggestion.id).toUpperCase());
+        } else {
+            params.set("q", label);
+        }
+        navigate(`/search?${params.toString()}`);
+    }
 
     // Close on outside click
     useEffect(() => {
         function onDocMouseDown(e) {
             if (!rootRef.current) return;
-            if (!rootRef.current.contains(e.target)) setOpenKey(null);
+            if (!rootRef.current.contains(e.target)) {
+                setOpenKey(null);
+                setSuggestionsOpen(false);
+            }
         }
         document.addEventListener("mousedown", onDocMouseDown);
         return () => document.removeEventListener("mousedown", onDocMouseDown);
-    }, []);
+    }, [setOpenKey]);
 
     // Close on ESC
     useEffect(() => {
         function onKeyDown(e) {
-            if (e.key === "Escape") setOpenKey(null);
+            if (e.key === "Escape") {
+                setOpenKey(null);
+                setSuggestionsOpen(false);
+            }
         }
         document.addEventListener("keydown", onKeyDown);
         return () => document.removeEventListener("keydown", onKeyDown);
-    }, []);
+    }, [setOpenKey]);
 
     return (
         <header className="sarva-header" ref={rootRef}>
@@ -76,8 +153,44 @@ export default function Header() {
                         <div className="sarva-logoCircle">
                             <img src={logo} alt="SARVA" className="sarva-logoImg" />
                         </div>
+                        <span className="sarva-wordmark">
+                            <strong>SARVA</strong>
+                            <small>Risk & Vulnerability Atlas</small>
+                        </span>
                     </NavLink>
                 </div>
+
+                <form className="sarva-headerSearch" onSubmit={submitSearch} role="search">
+                    <input
+                        type="search"
+                        value={searchText}
+                        onChange={(event) => {
+                            const value = event.target.value;
+                            setSearchText(value);
+                            if (value.trim().length < 2) setSuggestionsOpen(false);
+                        }}
+                        onFocus={() => setSuggestionsOpen(suggestions.length > 0)}
+                        placeholder="Search catalogue, maps, indicators..."
+                        aria-label="Search SARVA"
+                    />
+                    <button type="submit" aria-label="Search">
+                        ⌕
+                    </button>
+                    {suggestionsOpen && suggestions.length > 0 && (
+                        <div className="sarva-headerSearch__suggestions">
+                            {suggestions.map((suggestion) => (
+                                <button
+                                    key={`${suggestion.type}-${suggestion.label}`}
+                                    type="button"
+                                    onClick={() => openSuggestion(suggestion)}
+                                >
+                                    <strong>{suggestion.label}</strong>
+                                    <span>{suggestion.detail || suggestion.type}</span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </form>
 
                 <nav className="sarva-nav" aria-label="Primary">
                     {loading && nav.length === 0 ? (
@@ -105,7 +218,10 @@ export default function Header() {
 
                             // Dropdown
                             return (
-                                <div key={item.label} className="sarva-nav__dropdown">
+                                <div
+                                    key={item.label}
+                                    className="sarva-nav__dropdown"
+                                >
                                     <button
                                         className={
                                             "sarva-nav__link sarva-nav__button" +
@@ -114,14 +230,12 @@ export default function Header() {
                                         type="button"
                                         aria-haspopup="menu"
                                         aria-expanded={openKey === item.label}
-                                        onClick={() =>
-                                            setOpenKey((cur) => (cur === item.label ? null : item.label))
-                                        }
+                                        onClick={() => toggleOpenKey(item.label)}
                                     >
                                         {item.label}
                                         <span className="sarva-nav__chev" aria-hidden="true">
-                      ▾
-                    </span>
+                                            ▾
+                                        </span>
                                     </button>
 
                                     <div
@@ -129,6 +243,7 @@ export default function Header() {
                                             "sarva-nav__menu" + (openKey === item.label ? " is-open" : "")
                                         }
                                         role="menu"
+                                        onClick={() => setOpenKey(null)}
                                     >
                                         {item.items.map((sub) => {
                                             // Normalise accidental whitespace in DB values
@@ -164,9 +279,7 @@ export default function Header() {
                     )}
                 </nav>
 
-                <button className="sarva-search" type="button" aria-label="Search">
-                    ⌕
-                </button>
+                <AuthPanel />
             </div>
         </header>
     );

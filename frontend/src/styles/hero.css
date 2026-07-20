@@ -10,8 +10,8 @@
     width: 100%;
 
     /* This is the key line */
-    height: calc(100vh - 72px);
-    min-height: calc(100vh - 72px);
+    height: min(720px, calc(100vh - 72px));
+    min-height: 560px;
 
     overflow: hidden;
 
@@ -102,8 +102,9 @@
 @media (max-width: 520px) {
     /* if your header becomes shorter on mobile, adjust both values consistently */
     .sarva-hero {
-        height: calc(100vh - 72px);
-        min-height: calc(100vh - 72px);
+        height: auto;
+        min-height: 540px;
+        padding: 88px 0 72px;
     }
 
     .sarva-hero__cta {

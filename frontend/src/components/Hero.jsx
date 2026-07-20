@@ -1,25 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { apiUrl } from "../config/api";
+import { useJsonResource } from "../hooks/useJsonResource";
 import "../styles/hero.css";
 
 export default function Hero() {
-    const [hero, setHero] = useState(null);
+    const { data: heroResponse, error } = useJsonResource("/api/site/hero", { cache: true });
+    const hero = heroResponse?.status === "ok" ? heroResponse.data : null;
 
     useEffect(() => {
-        fetch("http://localhost:5050/api/site/hero")
-            .then((res) => res.json())
-            .then((data) => {
-                if (data.status === "ok") {
-                    setHero(data.data);
-                }
-            })
-            .catch((err) => {
-                console.error("Hero load error:", err);
-            });
-    }, []);
+        if (error) console.error("Hero load error:", error);
+    }, [error]);
 
     if (!hero) return null;
 
-    const imageUrl = `http://localhost:5050${hero.image_path}`;
+    const imageUrl = apiUrl(hero.image_path);
 
     return (
         <section

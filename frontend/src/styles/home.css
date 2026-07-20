@@ -1,0 +1,3678 @@
+body {
+    margin: 0;
+    background: var(--page-bg);
+}
+
+.sarva-dash {
+    min-height: 100vh;
+    display: block;
+    padding-top: 72px;
+    color: var(--text);
+    font-family: var(--font-sans);
+    background: var(--page-bg);
+}
+
+.sarva-dash__sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    background:
+        radial-gradient(circle at 20% 0%, rgba(215, 168, 77, 0.24), transparent 28%),
+        linear-gradient(180deg, var(--primary-strong) 0%, var(--primary) 48%, #182822 100%);
+    color: var(--surface);
+    border-right: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.sarva-dash__brand {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    min-height: 112px;
+    padding: 20px 24px;
+    background: var(--surface);
+    color: var(--primary-strong);
+    text-decoration: none;
+}
+
+.sarva-dash__brand img {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+}
+
+.sarva-dash__brand strong {
+    display: block;
+    color: var(--primary);
+    font-size: 34px;
+    letter-spacing: 0;
+    line-height: 0.95;
+}
+
+.sarva-dash__brand small {
+    display: block;
+    max-width: 135px;
+    margin-top: 8px;
+    color: var(--primary-strong);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.sarva-dash__nav,
+.sarva-dash__sideTools {
+    padding: 14px 12px;
+}
+
+.sarva-dash__navGroup {
+    margin-bottom: 3px;
+}
+
+.sarva-dash__navItem,
+.sarva-dash__sideTools a {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 7px;
+    color: var(--surface);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.sarva-dash__navItem {
+    border: 1px solid transparent;
+}
+
+.sarva-dash__navItem span,
+.sarva-dash__sideTools span {
+    width: 24px;
+    flex: 0 0 24px;
+    text-align: center;
+    color: var(--surface);
+    font-size: 20px;
+}
+
+.sarva-dash__navItem.is-active {
+    background: linear-gradient(90deg, var(--accent), var(--ochre));
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+}
+
+.sarva-dash__navItem:hover,
+.sarva-dash__sideTools a:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.sarva-dash__subnav {
+    display: grid;
+    gap: 2px;
+    margin: 3px 0 7px 54px;
+}
+
+.sarva-dash__subnav a {
+    padding: 5px 8px;
+    border-radius: 5px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    line-height: 1.25;
+    text-decoration: none;
+}
+
+.sarva-dash__subnav a:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--surface);
+}
+
+.sarva-dash__sideTools {
+    margin-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.sarva-dash__sideTools p {
+    margin: 0 18px 12px;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.sarva-dash__sideTools a {
+    align-items: flex-start;
+    min-height: 42px;
+    color: rgba(255, 255, 255, 0.86);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.25;
+}
+
+.sarva-dash__sideTools span {
+    color: var(--ochre);
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.sarva-dash__main {
+    min-width: 0;
+    padding: 20px 26px 0;
+    background:
+        radial-gradient(circle at 100% 0%, rgba(201, 111, 74, 0.1), transparent 22%),
+        var(--page-bg);
+}
+
+.sarva-dash__topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 22px;
+    margin-bottom: 18px;
+}
+
+.sarva-dash__search {
+    display: flex;
+    align-items: center;
+    flex: 0 1 448px;
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    box-shadow: 0 10px 26px rgba(7, 27, 58, 0.08);
+}
+
+.sarva-dash__search span {
+    order: 2;
+    color: var(--muted);
+    font-size: 18px;
+}
+
+.sarva-dash__search input {
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    color: var(--text);
+    font: inherit;
+}
+
+.sarva-dash__toplinks {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.sarva-dash__toplinks a,
+.sarva-dash__toplinks button {
+    color: var(--text);
+    text-decoration: none;
+    font: inherit;
+    font-size: 14px;
+}
+
+.sarva-dash__toplinks button {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.sarva-auth {
+    position: relative;
+}
+
+.sarva-auth__avatar,
+.sarva-auth__trigger {
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    background: var(--primary-strong) !important;
+    color: var(--surface) !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+}
+
+.sarva-auth__trigger {
+    width: auto;
+    min-width: 74px;
+    padding: 0 14px;
+    border-radius: 8px !important;
+}
+
+.sarva-auth__panel {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    z-index: 1200;
+    width: min(330px, calc(100vw - 32px));
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    box-shadow: 0 18px 42px rgba(7, 27, 58, 0.16);
+}
+
+.sarva-auth__tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.sarva-auth__tabs button {
+    min-height: 34px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--surface-soft);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.sarva-auth__tabs button.is-active {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: var(--surface);
+}
+
+.sarva-auth form,
+.sarva-auth__account {
+    display: grid;
+    gap: 12px;
+}
+
+.sarva-auth label {
+    display: grid;
+    gap: 5px;
+}
+
+.sarva-auth label span,
+.sarva-auth__account small {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.sarva-auth input,
+.sarva-auth select {
+    min-height: 38px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    font: inherit;
+}
+
+.sarva-auth__password {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px;
+}
+
+.sarva-auth__password button {
+    min-height: 38px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--surface-soft);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.sarva-auth input:focus,
+.sarva-auth select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(32, 58, 49, 0.14);
+}
+
+.sarva-auth__submit,
+.sarva-auth__account button {
+    min-height: 38px;
+    border: 0;
+    border-radius: 7px;
+    background: var(--accent);
+    color: var(--surface);
+    cursor: pointer;
+    font-weight: 800;
+}
+
+.sarva-auth__message {
+    margin: 0;
+    color: #a4342a;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.sarva-auth__account strong,
+.sarva-auth__account span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.sarva-dash__hero {
+    position: relative;
+    min-height: 188px;
+    display: flex;
+    align-items: center;
+    padding: 30px 34px;
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: 10px;
+    background:
+        linear-gradient(90deg, rgba(255, 253, 247, 0.96) 0%, rgba(255, 253, 247, 0.78) 48%, rgba(255, 253, 247, 0.18) 100%),
+        radial-gradient(circle at 80% 20%, rgba(215, 168, 77, 0.28), transparent 30%),
+        linear-gradient(160deg, var(--surface-soft) 0%, var(--surface) 45%, #b8c7b7 46%, #e0d7c7 62%, var(--surface) 63%);
+    background-color: var(--surface-soft);
+    background-position: center;
+    background-size: cover;
+    box-shadow: 0 18px 42px rgba(7, 27, 58, 0.12);
+    overflow: hidden;
+}
+
+.sarva-dash__hero.has-image::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(90deg, rgba(255, 253, 247, 0.98) 0%, rgba(255, 253, 247, 0.84) 45%, rgba(255, 253, 247, 0.1) 100%),
+        linear-gradient(0deg, rgba(32, 58, 49, 0.08), rgba(32, 58, 49, 0.08));
+}
+
+.sarva-dash__hero > div {
+    position: relative;
+    z-index: 1;
+}
+
+.sarva-dash__hero h1 {
+    max-width: 710px;
+    margin: 0;
+    color: var(--primary-strong);
+    font-size: 32px;
+    line-height: 1.12;
+}
+
+.sarva-dash__hero p {
+    max-width: 680px;
+    margin: 10px 0 0;
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.45;
+}
+
+.sarva-dash__heroKicker {
+    display: inline-flex;
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    border: 1px solid rgba(201, 111, 74, 0.28);
+    border-radius: 999px;
+    background: rgba(255, 253, 247, 0.78);
+    color: var(--accent-strong);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.sarva-dash__versionBadge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    margin: 0 0 16px;
+    padding: 0 12px;
+    border: 1px solid rgba(255, 253, 247, 0.28);
+    border-radius: 999px;
+    background: rgba(255, 253, 247, 0.12);
+    color: var(--surface);
+    font-size: 11px;
+    font-weight: 950;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.sarva-dash__heroActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.sarva-dash__heroActions a,
+.sarva-dash__heroActions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid var(--accent);
+    border-radius: 5px;
+    background: var(--accent);
+    color: var(--surface);
+    font-size: 13px;
+    font-weight: 750;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.sarva-dash__heroActions a + a,
+.sarva-dash__heroActions a + button,
+.sarva-dash__heroActions button + a,
+.sarva-dash__heroActions button + button {
+    background: rgba(255, 253, 247, 0.78);
+    color: var(--primary);
+}
+
+.sarva-dash__stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin: -18px 18px 14px;
+    position: relative;
+    z-index: 2;
+}
+
+.sarva-dash__stat {
+    display: block;
+    width: 100%;
+    min-height: 86px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(255, 253, 247, 0.94);
+    box-shadow: 0 14px 32px rgba(7, 27, 58, 0.11);
+    text-align: left;
+    cursor: pointer;
+}
+
+.sarva-dash__stat:hover,
+.sarva-dash__stat:focus-visible {
+    border-color: rgba(201, 111, 74, 0.56);
+    outline: none;
+    box-shadow: 0 16px 34px rgba(7, 27, 58, 0.15);
+}
+
+.sarva-dash__stat span,
+.sarva-dash__stat small,
+.sarva-dash__stat em {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.sarva-dash__stat em {
+    margin-top: 8px;
+    color: var(--primary);
+    font-style: normal;
+    font-weight: 750;
+}
+
+.sarva-dash__stat strong {
+    display: block;
+    margin: 5px 0;
+    color: var(--primary-strong);
+    font-size: 24px;
+    line-height: 1;
+}
+
+.sarva-dash__features {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(255, 253, 247, 0.95);
+    box-shadow: 0 12px 28px rgba(7, 27, 58, 0.1);
+    transform: none;
+    overflow: hidden;
+}
+
+.sarva-dash__feature {
+    min-height: 90px;
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: 14px;
+    align-content: center;
+    padding: 14px 18px;
+    color: var(--text);
+    text-decoration: none;
+    border-right: 1px solid var(--border);
+}
+
+.sarva-dash__feature:last-child {
+    border-right: 0;
+}
+
+.sarva-dash__feature span {
+    grid-row: 1 / 3;
+    color: var(--water);
+    font-size: 34px;
+    line-height: 1;
+}
+
+.sarva-dash__feature strong {
+    font-size: 13px;
+    line-height: 1.25;
+}
+
+.sarva-dash__feature small {
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.sarva-dash__content {
+    display: grid;
+    grid-template-columns: minmax(420px, 1.45fr) minmax(340px, 1.15fr) minmax(300px, 0.9fr);
+    gap: 14px;
+    margin-top: 14px;
+}
+
+.sarva-panel {
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 14px 30px rgba(7, 27, 58, 0.08);
+    overflow: hidden;
+}
+
+.sarva-panel__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 15px 18px 10px;
+}
+
+.sarva-panel__head h2,
+.sarva-panel__head h3 {
+    margin: 0;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.3;
+}
+
+.sarva-panel__head h2 span {
+    font-weight: 600;
+}
+
+.sarva-panel__head a {
+    color: var(--accent-strong);
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.sarva-dash__tabs {
+    display: flex;
+    gap: 6px;
+}
+
+.sarva-dash__tabs button,
+.sarva-spotlight button,
+.sarva-about button,
+.sarva-about > a {
+    height: 29px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.sarva-dash__tabs button.is-active {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--surface);
+}
+
+.sarva-map {
+    position: relative;
+    height: 344px;
+    margin: 0 14px 14px;
+    border-radius: 7px;
+    overflow: hidden;
+    background: #d7dee8;
+}
+
+.sarva-map > .sarva-map__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.sarva-map__loading {
+    display: grid;
+    place-items: center;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.sarva-map__toolbar {
+    position: absolute;
+    z-index: 2;
+}
+
+.sarva-map__toolbar {
+    top: 12px;
+    left: 12px;
+    display: flex;
+    gap: 8px;
+}
+
+.sarva-map__toolbar select {
+    height: 31px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 11px;
+}
+
+.sarva-map__zoomHint {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    max-width: min(310px, calc(100% - 360px));
+    padding: 7px 9px;
+    border: 1px solid rgba(210, 199, 181, 0.74);
+    border-radius: 999px;
+    background: rgba(255, 253, 247, 0.82);
+    color: rgba(32, 58, 49, 0.78);
+    box-shadow: 0 8px 18px rgba(7, 27, 58, 0.1);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+    pointer-events: none;
+    transform: translateX(-50%);
+    backdrop-filter: blur(8px);
+}
+
+.sarva-map__zoomHint kbd {
+    min-width: 18px;
+    height: 18px;
+    display: inline-grid;
+    place-items: center;
+    padding: 0 4px;
+    border: 1px solid rgba(56, 90, 72, 0.18);
+    border-bottom-color: rgba(56, 90, 72, 0.32);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.74);
+    color: var(--primary-strong);
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.sarva-map__notice {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    z-index: 3;
+    padding: 10px 12px;
+    border: 1px solid rgba(164, 52, 42, 0.22);
+    border-radius: 6px;
+    background: rgba(255, 253, 247, 0.94);
+    color: #a4342a;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.sarva-map__notice--rainfall {
+    right: auto;
+    max-width: min(430px, calc(100% - 24px));
+    border-color: rgba(194, 111, 74, 0.28);
+    color: var(--primary-strong);
+}
+
+.sarva-map__legend {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 2;
+    display: grid;
+    width: min(230px, calc(100% - 24px));
+    gap: 5px;
+    padding: 11px 12px;
+    border: 1px solid rgba(210, 199, 181, 0.86);
+    background: rgba(255, 253, 247, 0.94);
+    color: var(--text);
+    font-size: 11px;
+    box-shadow: 0 10px 24px rgba(7, 27, 58, 0.14);
+}
+
+.sarva-map__legend strong {
+    font-size: 12px;
+}
+
+.sarva-map__legendHeader {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.sarva-map__legend--sites {
+    top: 12px;
+    bottom: auto;
+    width: min(218px, calc(100% - 24px));
+}
+
+.sarva-map__legend--forecast {
+    right: 70px;
+    width: min(235px, calc(100% - 24px));
+}
+
+.sarva-map__infoButton {
+    width: 19px;
+    height: 19px;
+    border: 1px solid rgba(210, 199, 181, 0.9);
+    border-radius: 999px;
+    background: rgba(255, 253, 247, 0.96);
+    color: var(--primary-strong);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.sarva-map__infoPopover {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 8px);
+    z-index: 4;
+    display: none;
+    width: min(285px, calc(100vw - 44px));
+    gap: 6px;
+    padding: 10px 11px;
+    border: 1px solid rgba(210, 199, 181, 0.9);
+    background: rgba(255, 253, 247, 0.98);
+    box-shadow: 0 12px 26px rgba(7, 27, 58, 0.16);
+}
+
+.sarva-map__infoPopover p {
+    margin: 0;
+}
+
+.sarva-map__infoPopoverHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.sarva-map__infoClose {
+    width: 20px;
+    height: 20px;
+    border: 0;
+    background: transparent;
+    color: var(--primary-strong);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.sarva-map__infoLinks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+}
+
+.sarva-map__infoLinks a {
+    width: fit-content;
+}
+
+.sarva-map__infoPopover.is-open {
+    display: grid;
+}
+
+.sarva-map__legend span,
+.sarva-map__legend small {
+    color: var(--muted);
+}
+
+.sarva-map__legend p {
+    margin: 2px 0 0;
+    color: var(--muted);
+    font-size: 10px;
+    line-height: 1.3;
+}
+
+.sarva-map__legend a {
+    color: var(--primary-strong);
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.25;
+    text-decoration-color: rgba(201, 111, 74, 0.55);
+}
+
+.sarva-map__legendScale {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    height: 9px;
+    overflow: hidden;
+    border-radius: 999px;
+}
+
+.sarva-map__legendScale i:nth-child(1) {
+    background: #5f9f7a;
+}
+
+.sarva-map__legendScale i:nth-child(2) {
+    background: #b3bd66;
+}
+
+.sarva-map__legendScale i:nth-child(3) {
+    background: #d8a648;
+}
+
+.sarva-map__legendScale i:nth-child(4) {
+    background: #c96f4a;
+}
+
+.sarva-map__legendScale i:nth-child(5) {
+    background: #8c2d24;
+}
+
+.sarva-map__siteLegend {
+    display: grid;
+    grid-template-columns: 10px minmax(0, 1fr);
+    gap: 5px 7px;
+    align-items: center;
+}
+
+.sarva-map__siteLegend i {
+    width: 9px;
+    height: 9px;
+    border: 1px solid #fffdf7;
+    border-radius: 999px;
+    box-shadow: 0 0 0 1px rgba(33, 56, 49, 0.18);
+}
+
+.sarva-map__siteLegend .is-weather {
+    background: #c96f4a;
+}
+
+.sarva-map__siteLegend .is-eddy {
+    background: #168f8b;
+}
+
+.sarva-map__siteLegend .is-reference {
+    background: #7aa13c;
+}
+
+.maplibregl-popup-content {
+    display: grid;
+    gap: 2px;
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    background: var(--surface);
+}
+
+.maplibregl-popup-content span {
+    color: var(--muted);
+}
+
+.sarva-map__stationPopup,
+.sarva-map__forecastPopup,
+.sarva-map__highlightPopup {
+    display: grid;
+    gap: 5px;
+    min-width: 220px;
+    max-width: 285px;
+}
+
+.sarva-map__stationPopup strong,
+.sarva-map__forecastPopup strong,
+.sarva-map__highlightPopup strong {
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.2;
+}
+
+.sarva-map__stationPopup p,
+.sarva-map__stationPopup small,
+.sarva-map__forecastPopup p,
+.sarva-map__forecastPopup small {
+    margin: 2px 0 0;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.sarva-map__highlightPopup small,
+.sarva-map__highlightPopup span {
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.sarva-map__highlightPopup b {
+    color: var(--cream);
+    font-size: 18px;
+    line-height: 1.05;
+}
+
+.sarva-map__highlightPopupWrap .maplibregl-popup-content {
+    border: 1px solid rgba(247, 196, 108, 0.36);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
+}
+
+.sarva-map__focusMarker {
+    width: 22px;
+    height: 22px;
+    border: 3px solid rgba(255, 253, 247, 0.96);
+    border-radius: 50%;
+    background: #d8a648;
+    box-shadow:
+        0 0 0 7px rgba(216, 166, 72, 0.24),
+        0 8px 18px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+}
+
+.sarva-map__focusMarker.is-very-high,
+.sarva-map__focusMarker.is-high {
+    background: #c96f4a;
+    box-shadow:
+        0 0 0 7px rgba(201, 111, 74, 0.24),
+        0 8px 18px rgba(0, 0, 0, 0.3);
+}
+
+.sarva-map__focusMarker.is-very-low,
+.sarva-map__focusMarker.is-low {
+    background: #5f9f7a;
+    box-shadow:
+        0 0 0 7px rgba(95, 159, 122, 0.24),
+        0 8px 18px rgba(0, 0, 0, 0.3);
+}
+
+.sarva-map__popupReading {
+    display: grid;
+    gap: 1px;
+    margin-top: 2px;
+}
+
+.sarva-map__popupReading b {
+    color: #8c2d24;
+    font-size: 16px;
+}
+
+.sarva-map__popupActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 3px;
+}
+
+.sarva-map__popupActions a {
+    border-bottom: 1px solid rgba(201, 111, 74, 0.42);
+    color: var(--green);
+    font-size: 11px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.sarva-map__sparkline {
+    display: grid;
+    grid-template-columns: 42px 164px;
+    gap: 2px 6px;
+    align-items: stretch;
+    width: 212px;
+    margin-top: 5px;
+}
+
+.sarva-map__sparklineAxis,
+.sarva-map__sparklineDates {
+    color: var(--muted);
+    font-size: 9px;
+    line-height: 1;
+}
+
+.sarva-map__sparklineAxis {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 2px 0 4px;
+    text-align: right;
+}
+
+.sarva-map__sparkline svg {
+    grid-column: 2;
+    width: 164px;
+    height: 42px;
+    border: 1px solid rgba(210, 199, 181, 0.86);
+    background: rgba(250, 248, 241, 0.9);
+}
+
+.sarva-map__sparkline line {
+    stroke: rgba(103, 118, 108, 0.22);
+    stroke-width: 1;
+}
+
+.sarva-map__sparkline polyline {
+    fill: none;
+    stroke: #c96f4a;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 3;
+}
+
+.sarva-map__sparklineDates {
+    grid-column: 2;
+    display: flex;
+    justify-content: space-between;
+}
+
+.sarva-map__sparkline.is-empty {
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.sarva-indicators {
+    padding: 0 18px 8px;
+}
+
+.sarva-indicator {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr) 56px 86px;
+    gap: 10px;
+    align-items: center;
+    min-height: 61px;
+    border-top: 1px solid var(--border);
+}
+
+.sarva-indicator__icon {
+    font-size: 22px;
+}
+
+.sarva-indicator strong,
+.sarva-services strong,
+.sarva-report strong,
+.sarva-alerts strong,
+.sarva-involved strong,
+.sarva-spotlight strong {
+    display: block;
+    color: var(--text);
+    font-size: 12px;
+    line-height: 1.25;
+}
+
+.sarva-indicator b {
+    display: block;
+    margin-top: 3px;
+    color: var(--text);
+    font-size: 18px;
+}
+
+.sarva-indicator em {
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 700;
+}
+
+.is-blue {
+    color: var(--water);
+}
+
+.is-green {
+    color: var(--success);
+}
+
+.is-orange {
+    color: var(--warning);
+}
+
+.is-red {
+    color: var(--danger);
+}
+
+.sarva-indicator i {
+    height: 28px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, transparent 10%, currentColor 10% 18%, transparent 18% 38%, currentColor 38% 46%, transparent 46% 70%, currentColor 70% 78%, transparent 78%);
+    opacity: 0.85;
+}
+
+.sarva-services {
+    display: grid;
+    gap: 10px;
+    padding: 0 16px 16px;
+}
+
+.sarva-services a {
+    display: grid;
+    grid-template-columns: minmax(82px, 0.42fr) minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    min-height: 76px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--surface) 82%, var(--primary-soft));
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+}
+
+.sarva-services a:hover {
+    border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+    box-shadow: 0 10px 22px var(--shadow);
+    transform: translateY(-1px);
+}
+
+.sarva-services__value {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: 8px;
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--primary-strong);
+    font-size: 18px;
+    font-weight: 850;
+    line-height: 1.05;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.sarva-services__body {
+    min-width: 0;
+}
+
+.sarva-services em {
+    align-self: start;
+    padding: 3px 7px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.sarva-services em.is-green {
+    background: color-mix(in srgb, var(--success) 18%, var(--surface));
+}
+
+.sarva-services em.is-orange {
+    background: color-mix(in srgb, var(--warning) 18%, var(--surface));
+}
+
+.sarva-services small,
+.sarva-report small,
+.sarva-alerts small,
+.sarva-involved small,
+.sarva-spotlight small,
+.sarva-spotlight span,
+.sarva-dash__footer small {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.sarva-dash__lower {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin: 14px 0 16px;
+}
+
+.sarva-spotlight__body {
+    display: grid;
+    grid-template-columns: 94px minmax(0, 1fr);
+    gap: 14px;
+    padding: 0 16px 16px;
+}
+
+.sarva-spotlight__thumb,
+.sarva-about__image,
+.sarva-report span {
+    background:
+        radial-gradient(circle at 42% 35%, rgba(124, 170, 82, 0.95), transparent 32%),
+        radial-gradient(circle at 64% 58%, rgba(26, 100, 82, 0.86), transparent 28%),
+        linear-gradient(135deg, #d6c277, #4f8f62 48%, #083b59);
+}
+
+.sarva-spotlight__thumb {
+    height: 148px;
+    border-radius: 4px;
+}
+
+.sarva-spotlight button,
+.sarva-about button,
+.sarva-about > a {
+    margin-top: 18px;
+    border-color: #08899a;
+    color: var(--accent-strong);
+    background: var(--surface);
+}
+
+.sarva-report {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+}
+
+.sarva-report span {
+    width: 42px;
+    height: 50px;
+    border-radius: 3px;
+}
+
+.sarva-dash__libraryPair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.sarva-panel--reports {
+    overflow: visible;
+}
+
+.sarva-panel--reports .sarva-panel__head {
+    align-items: flex-start;
+}
+
+.sarva-reports__headActions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.sarva-reports__headActions button,
+.sarva-reportCard__actions button {
+    min-height: 32px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--surface);
+    color: var(--accent-strong);
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 850;
+}
+
+.sarva-reports__headActions button {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--surface);
+}
+
+.sarva-reports__filters {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+    gap: 10px;
+    align-items: end;
+    padding: 0 18px 16px;
+}
+
+.sarva-reports__filters label {
+    display: grid;
+    gap: 5px;
+    min-width: 0;
+}
+
+.sarva-reports__filters span {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.sarva-reports__filters select {
+    width: 100%;
+    min-height: 38px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.sarva-reports__filters select:focus {
+    border-color: rgba(201, 111, 74, 0.65);
+    box-shadow: 0 0 0 3px rgba(201, 111, 74, 0.12);
+    outline: none;
+}
+
+.sarva-reports__filters button {
+    min-height: 38px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: rgba(255, 253, 247, 0.8);
+    color: var(--accent-strong);
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.sarva-reports__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    max-height: 620px;
+    overflow: auto;
+    padding: 0 18px 18px;
+    scrollbar-gutter: stable;
+}
+
+.sarva-reportCard {
+    display: grid;
+    grid-template-columns: 58px minmax(0, 1fr);
+    align-items: stretch;
+    gap: 14px;
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(255, 253, 247, 0.72);
+}
+
+.sarva-reportCard > span {
+    display: grid;
+    place-items: center;
+    width: 58px;
+    min-height: 84px;
+    border-radius: 5px;
+    background:
+        radial-gradient(circle at 42% 35%, rgba(124, 170, 82, 0.95), transparent 32%),
+        radial-gradient(circle at 64% 58%, rgba(26, 100, 82, 0.86), transparent 28%),
+        linear-gradient(135deg, #d6c277, #4f8f62 48%, #083b59);
+}
+
+.sarva-reportCard__logoMark {
+    box-sizing: border-box;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 6px;
+    padding: 7px;
+    color: var(--surface);
+    font-size: 11px;
+    font-weight: 950;
+    line-height: 1.05;
+    text-align: center;
+}
+
+.sarva-reportCard__logoMark b {
+    display: block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    padding: 4px 3px;
+    border: 1px solid rgba(255, 253, 247, 0.22);
+    border-radius: 6px;
+    background: rgba(255, 253, 247, 0.1);
+    font-size: 9px;
+    letter-spacing: 0;
+    line-height: 1.05;
+}
+
+.sarva-reportCard__logoMark svg {
+    display: block;
+    width: 28px;
+    height: 28px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
+}
+
+.sarva-reportCard__logoMark img {
+    display: block;
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: rgba(255, 253, 247, 0.92);
+    box-shadow: 0 6px 16px rgba(7, 27, 58, 0.12);
+}
+
+.sarva-reportCard__logoMark.has-image {
+    align-content: center;
+    background:
+        linear-gradient(135deg, rgba(255, 253, 247, 0.94), rgba(238, 244, 236, 0.9));
+}
+
+.sarva-reportCard > div {
+    min-width: 0;
+}
+
+.sarva-reportCard strong {
+    display: block;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.25;
+}
+
+.sarva-reportCard small {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.sarva-reportCard__tags,
+.sarva-reportCard__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 9px;
+}
+
+.sarva-reportCard__health {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.sarva-reportCard__health > span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: rgba(103, 118, 108, 0.12);
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 950;
+    text-transform: uppercase;
+}
+
+.sarva-reportCard__health > span.is-active {
+    background: rgba(88, 138, 92, 0.16);
+    color: #2f6c3b;
+}
+
+.sarva-reportCard__health > span.is-redirected {
+    background: rgba(8, 137, 154, 0.14);
+    color: #087184;
+}
+
+.sarva-reportCard__health > span.is-broken {
+    background: rgba(157, 61, 46, 0.14);
+    color: #9d3d2e;
+}
+
+.sarva-reportCard__health > span.is-missing {
+    background: rgba(157, 61, 46, 0.1);
+    color: #8a4a3b;
+}
+
+.sarva-reportCard__health small {
+    margin: 0;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.sarva-reportCard__tags em {
+    padding: 3px 7px;
+    border: 1px solid rgba(56, 90, 72, 0.16);
+    border-radius: 999px;
+    background: rgba(56, 90, 72, 0.07);
+    color: var(--primary-strong);
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 850;
+}
+
+.sarva-reportCard__actions a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    color: var(--accent-strong);
+    font-size: 12px;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.sarva-reportCard__actions button.is-danger {
+    color: #9d3d2e;
+}
+
+.sarva-reportCard__actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.sarva-reports__state {
+    margin: 0 18px 18px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(255, 253, 247, 0.72);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.sarva-supportingOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: grid;
+    align-items: center;
+    padding: 28px;
+    background: rgba(16, 38, 31, 0.56);
+}
+
+.sarva-supportingModal {
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    max-height: min(86vh, 920px);
+    width: min(1180px, 100%);
+    margin: 0 auto;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    box-shadow: 0 28px 70px rgba(7, 27, 58, 0.28);
+}
+
+.sarva-supportingModal__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 18px 20px 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.sarva-supportingModal__head span {
+    color: var(--accent-strong);
+    font-size: 12px;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.sarva-supportingModal__head h2 {
+    margin: 3px 0 4px;
+    color: var(--primary-strong);
+    font-size: 28px;
+    line-height: 1.05;
+}
+
+.sarva-supportingModal__head p {
+    max-width: 720px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.sarva-supportingModal__head > div:last-child {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.sarva-supportingModal__head button {
+    min-height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--surface);
+    color: var(--accent-strong);
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.sarva-supportingModal__head button:first-child {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--surface);
+}
+
+.sarva-supportingModal__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 12px;
+    min-height: 0;
+    overflow: auto;
+    padding: 0 18px 18px;
+}
+
+.sarva-supportingModal__grid .sarva-reportCard {
+    min-height: 176px;
+}
+
+.sarva-reportCard--supporting {
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 16px;
+    padding: 16px;
+}
+
+.sarva-reportCard--supporting .sarva-reportCard__logoMark {
+    width: 72px;
+    min-height: 132px;
+    align-self: stretch;
+}
+
+.sarva-reportCard--supporting .sarva-reportCard__logoMark img {
+    width: 50px;
+    height: 50px;
+}
+
+.sarva-reportCard--supporting .sarva-reportCard__logoMark svg {
+    width: 32px;
+    height: 32px;
+}
+
+.sarva-reportCard--supporting strong {
+    font-size: 15px;
+}
+
+.sarva-reportCard--supporting small {
+    margin-bottom: 7px;
+}
+
+.sarva-supportingModal__grid .sarva-reportCard__actions {
+    align-items: center;
+    margin-top: 12px;
+}
+
+.sarva-supportingModal__grid .sarva-reportCard__actions a {
+    min-width: 48px;
+}
+
+.sarva-alerts {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0 16px 12px;
+    list-style: none;
+}
+
+.sarva-alerts li {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    column-gap: 8px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+}
+
+.sarva-alerts span {
+    grid-row: 1 / 3;
+    width: 26px;
+    height: 26px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: rgba(56, 90, 72, 0.12);
+    color: var(--primary-strong);
+    font-size: 12px;
+    font-weight: 950;
+    text-transform: uppercase;
+}
+
+.sarva-alerts span.is-high {
+    background: rgba(221, 76, 54, 0.14);
+    color: #a3422a;
+}
+
+.sarva-alerts span.is-moderate {
+    background: rgba(215, 168, 77, 0.22);
+    color: #7b5a18;
+}
+
+.sarva-alerts p {
+    grid-column: 2;
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.sarva-involved {
+    display: grid;
+    padding: 0 16px 14px;
+}
+
+.sarva-involved a {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr);
+    column-gap: 10px;
+    padding: 12px 0;
+    color: inherit;
+    text-decoration: none;
+}
+
+.sarva-involved span {
+    grid-row: 1 / 3;
+    color: var(--water);
+    font-size: 20px;
+}
+
+.sarva-about p {
+    margin: 4px 16px 12px;
+    color: var(--text);
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.sarva-about button,
+.sarva-about > a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 16px;
+}
+
+.sarva-about__image {
+    height: 64px;
+    margin-top: 13px;
+    background-position: center;
+    background-size: cover;
+}
+
+.sarva-about__image.has-image {
+    min-height: 76px;
+}
+
+.sarva-dash__footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 30;
+    display: grid;
+    gap: 12px;
+    max-height: none;
+    overflow: auto;
+    margin: 26px -56px 0;
+    padding: 16px clamp(20px, 4vw, 56px);
+    border-top: 5px solid var(--accent);
+    border-radius: 0;
+    background: #10261f;
+    color: var(--surface);
+    box-shadow: 0 -12px 34px rgba(7, 27, 58, 0.22);
+}
+
+.sarva-dash__footerFeatures {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.sarva-dash__footerFeatures span {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr);
+    column-gap: 10px;
+    align-items: center;
+    min-width: 0;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.sarva-dash__footer b {
+    grid-row: 1 / 3;
+    color: var(--surface);
+    font-size: 20px;
+}
+
+.sarva-dash__footer small {
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.sarva-dash__footerBase {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 18px;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 253, 247, 0.14);
+}
+
+.sarva-dash__footerBase p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 11px;
+    font-weight: 650;
+    line-height: 1.35;
+}
+
+.sarva-dash__footerLogos {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.sarva-dash__footerLogos a {
+    display: inline-grid;
+    place-items: center;
+    width: 132px;
+    height: 46px;
+    padding: 6px 10px;
+    border: 1px solid rgba(255, 253, 247, 0.22);
+    border-radius: 6px;
+    background: rgba(255, 253, 247, 0.92);
+    overflow: hidden;
+    text-decoration: none;
+}
+
+.sarva-dash__footerLogos img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.sarva-dash__workspace {
+    display: grid;
+    grid-template-columns: minmax(560px, 1.55fr) minmax(320px, 0.72fr);
+    gap: 16px;
+    align-items: stretch;
+}
+
+.sarva-dash__context {
+    min-width: 0;
+    display: grid;
+    gap: 14px;
+    align-content: start;
+}
+
+.sarva-dash__workspace .sarva-dash__hero {
+    min-height: auto;
+    padding: 22px;
+    border-color: var(--border);
+    box-shadow: 0 12px 26px rgba(7, 27, 58, 0.08);
+}
+
+.sarva-dash__workspace .sarva-dash__hero h1 {
+    font-size: 24px;
+    line-height: 1.14;
+}
+
+.sarva-dash__workspace .sarva-dash__hero p {
+    font-size: 13px;
+}
+
+.sarva-dash__workspace .sarva-dash__stats {
+    position: static;
+    z-index: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0;
+}
+
+.sarva-dash__workspace .sarva-dash__stat {
+    min-height: 78px;
+    padding: 12px;
+    box-shadow: none;
+}
+
+.sarva-dash__workspace .sarva-dash__stat strong {
+    font-size: 20px;
+}
+
+.sarva-panel--featured {
+    background:
+        linear-gradient(180deg, rgba(255, 253, 247, 0.98), rgba(255, 253, 247, 0.94)),
+        var(--surface);
+    box-shadow: 0 18px 42px rgba(7, 27, 58, 0.12);
+}
+
+.sarva-panel--featured .sarva-panel__head {
+    padding: 18px 20px 12px;
+}
+
+.sarva-panel--featured .sarva-panel__head h2 {
+    font-size: 21px;
+}
+
+.sarva-panel__head p {
+    margin: 5px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.sarva-panel--featured .sarva-map {
+    height: clamp(470px, 56vh, 640px);
+    margin: 0 16px 16px;
+    border: 1px solid color-mix(in srgb, var(--primary) 22%, var(--border));
+}
+
+.sarva-panel--featured .sarva-map__toolbar select {
+    height: 38px;
+    padding: 0 12px;
+    font-size: 13px;
+    box-shadow: 0 8px 18px rgba(7, 27, 58, 0.12);
+}
+
+.sarva-dash__featureGroups {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 14px;
+}
+
+.sarva-dash__referencePanel {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(255, 253, 247, 0.95);
+    box-shadow: 0 10px 24px rgba(7, 27, 58, 0.07);
+}
+
+.sarva-dash__referencePanel h2 {
+    margin: 0;
+    color: var(--primary-strong);
+    font-size: 15px;
+}
+
+.sarva-dash__referencePanel p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.sarva-dash__referencePanel > div:last-child {
+    display: grid;
+    gap: 7px;
+}
+
+.sarva-dash__referencePanel a {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    column-gap: 9px;
+    align-items: center;
+    min-height: 52px;
+    padding: 8px 10px;
+    border: 1px solid color-mix(in srgb, var(--primary) 14%, var(--border));
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--surface) 78%, var(--primary-soft));
+    color: var(--text);
+    text-decoration: none;
+}
+
+.sarva-dash__referencePanel a:hover {
+    border-color: color-mix(in srgb, var(--accent) 46%, var(--border));
+}
+
+.sarva-dash__referencePanel a span {
+    grid-row: 1 / 3;
+    color: var(--accent);
+    font-size: 21px;
+    text-align: center;
+}
+
+.sarva-dash__referencePanel a strong,
+.sarva-dash__referencePanel a small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sarva-dash__referencePanel a strong {
+    color: var(--primary-strong);
+    font-size: 12px;
+}
+
+.sarva-dash__referencePanel a small {
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.sarva-dash__featureGroup {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(128px, 0.44fr) minmax(0, 1fr);
+    gap: 8px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(255, 253, 247, 0.95);
+    box-shadow: 0 10px 24px rgba(7, 27, 58, 0.07);
+}
+
+.sarva-dash__featureGroup h2 {
+    margin: 0;
+    color: var(--primary-strong);
+    font-size: 14px;
+    line-height: 1.25;
+}
+
+.sarva-dash__featureGroup p {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.sarva-dash__featureGroup > div:last-child {
+    display: grid;
+    gap: 6px;
+}
+
+.sarva-dash__featureGroup .sarva-dash__feature {
+    min-height: 54px;
+    grid-template-columns: 28px minmax(0, 1fr);
+    column-gap: 9px;
+    padding: 8px 10px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--surface) 78%, var(--primary-soft));
+}
+
+.sarva-dash__featureGroup .sarva-dash__feature:hover {
+    border-color: color-mix(in srgb, var(--accent) 46%, var(--border));
+}
+
+.sarva-dash__featureGroup .sarva-dash__feature span {
+    width: 28px;
+    font-size: 22px;
+}
+
+.sarva-dash__featureGroup .sarva-dash__feature small {
+    margin-top: 2px;
+}
+
+.sarva-dash__content {
+    grid-template-columns: minmax(420px, 0.9fr) minmax(520px, 1.1fr);
+}
+
+/* Public SARVA site-inspired shell */
+.sarva-dash {
+    display: block;
+    padding-top: 72px;
+    background:
+        linear-gradient(180deg, rgba(255, 253, 247, 0.94), rgba(243, 240, 232, 0.98) 52%, #ffffff 100%),
+        var(--page-bg);
+}
+
+.sarva-dash__sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    height: auto;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 18px;
+    padding: 12px clamp(18px, 4vw, 56px);
+    overflow: visible;
+    background: rgba(255, 253, 247, 0.96);
+    border-right: 0;
+    border-bottom: 1px solid rgba(56, 90, 72, 0.16);
+    box-shadow: 0 12px 26px rgba(50, 43, 34, 0.08);
+    backdrop-filter: blur(12px);
+}
+
+.sarva-dash__brand {
+    min-height: auto;
+    padding: 0;
+    background: transparent;
+}
+
+.sarva-dash__brand img {
+    width: 58px;
+    height: 58px;
+}
+
+.sarva-dash__brand strong {
+    font-size: 30px;
+}
+
+.sarva-dash__brand small {
+    max-width: 178px;
+    color: var(--muted);
+}
+
+.sarva-dash__nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px;
+    padding: 0;
+}
+
+.sarva-dash__navGroup {
+    position: relative;
+    padding-bottom: 10px;
+    margin: 0;
+}
+
+.sarva-dash__navItem {
+    min-height: 42px;
+    padding: 0 13px;
+    color: var(--primary-strong);
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.sarva-dash__navItem span {
+    display: none;
+}
+
+.sarva-dash__navItem.is-active {
+    background: var(--primary);
+    color: var(--surface);
+    box-shadow: none;
+}
+
+.sarva-dash__navItem:hover {
+    background: var(--primary-soft);
+    color: var(--primary-strong);
+}
+
+.sarva-dash__subnav {
+    position: absolute;
+    top: calc(100% - 2px);
+    left: 0;
+    z-index: 220;
+    min-width: 210px;
+    display: none;
+    margin: 0;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    box-shadow: 0 18px 36px rgba(50, 43, 34, 0.14);
+}
+
+.sarva-dash__subnav::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    height: 12px;
+}
+
+.sarva-dash__navGroup:hover .sarva-dash__subnav,
+.sarva-dash__navGroup:focus-within .sarva-dash__subnav {
+    display: grid;
+}
+
+.sarva-dash__subnav a {
+    padding: 8px 10px;
+    color: var(--text);
+}
+
+.sarva-dash__subnav a:hover {
+    background: var(--primary-soft);
+    color: var(--primary-strong);
+}
+
+.sarva-dash__sideTools {
+    display: none;
+}
+
+.sarva-dash__main {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 18px clamp(18px, 4vw, 56px) 0;
+    background:
+        radial-gradient(circle at 96% 2%, rgba(215, 168, 77, 0.18), transparent 24%),
+        radial-gradient(circle at 4% 16%, rgba(56, 90, 72, 0.13), transparent 26%),
+        transparent;
+}
+
+.sarva-dash__topbar {
+    min-height: 48px;
+    margin-bottom: 18px;
+    padding: 0;
+}
+
+.sarva-dash__main {
+    padding-bottom: 0;
+}
+
+.sarva-dash__search {
+    flex-basis: 390px;
+    height: 42px;
+    border-color: rgba(56, 90, 72, 0.16);
+    box-shadow: none;
+}
+
+.sarva-dash__toplinks {
+    gap: 16px;
+}
+
+.sarva-dash__toplinks a {
+    color: var(--primary-strong);
+    font-weight: 650;
+}
+
+.sarva-dash__referenceStrip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+    margin-bottom: 18px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: rgba(255, 253, 247, 0.82);
+}
+
+.sarva-dash__referenceStrip a {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    column-gap: 10px;
+    align-items: center;
+    min-height: 70px;
+    padding: 12px 14px;
+    border-right: 1px solid var(--border);
+    color: var(--text);
+    text-decoration: none;
+}
+
+.sarva-dash__referenceStrip a:last-child {
+    border-right: 0;
+}
+
+.sarva-dash__referenceStrip a:hover {
+    background: var(--primary-soft);
+}
+
+.sarva-dash__referenceStrip span {
+    grid-row: 1 / 3;
+    color: var(--accent);
+    font-size: 22px;
+    text-align: center;
+}
+
+.sarva-dash__referenceStrip strong,
+.sarva-dash__referenceStrip small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sarva-dash__referenceStrip strong {
+    color: var(--primary-strong);
+    font-size: 13px;
+}
+
+.sarva-dash__referenceStrip small {
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.sarva-dash__portalIntro {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.32fr) minmax(0, 1fr);
+    gap: 18px;
+    align-items: stretch;
+    margin-bottom: 18px;
+    padding: 18px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background:
+        linear-gradient(90deg, rgba(255, 253, 247, 0.94), rgba(255, 253, 247, 0.78)),
+        radial-gradient(circle at 96% 18%, rgba(201, 111, 74, 0.12), transparent 32%);
+}
+
+.sarva-dash__portalIntro > div:first-child {
+    display: grid;
+    align-content: center;
+}
+
+.sarva-dash__portalIntro span {
+    color: var(--accent-strong);
+    font-size: 13px;
+    font-weight: 850;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.sarva-dash__portalIntro h2 {
+    max-width: 360px;
+    margin: 8px 0 0;
+    color: var(--primary-strong);
+    font-size: clamp(24px, 2.2vw, 34px);
+    line-height: 1.08;
+}
+
+.sarva-dash__portalGrid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+    align-items: stretch;
+}
+
+.sarva-dash__portalCard {
+    min-width: 0;
+    min-height: 238px;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    gap: 8px;
+    padding: 15px;
+    border: 1px solid color-mix(in srgb, var(--primary) 14%, var(--border));
+    background: rgba(255, 253, 247, 0.9);
+}
+
+.sarva-dash__portalCard.is-data {
+    border-color: color-mix(in srgb, var(--water) 28%, var(--border));
+    background:
+        linear-gradient(135deg, rgba(255, 253, 247, 0.96), rgba(53, 122, 138, 0.08)),
+        var(--surface);
+}
+
+.sarva-dash__portalCard.is-tools {
+    border-color: color-mix(in srgb, var(--ochre) 34%, var(--border));
+    background:
+        linear-gradient(135deg, rgba(255, 253, 247, 0.96), rgba(215, 168, 77, 0.13)),
+        var(--surface);
+}
+
+.sarva-dash__portalCard.is-resources {
+    border-color: color-mix(in srgb, var(--primary) 28%, var(--border));
+    background:
+        linear-gradient(135deg, rgba(255, 253, 247, 0.96), rgba(56, 90, 72, 0.09)),
+        var(--surface);
+}
+
+.sarva-dash__portalCard.is-community {
+    border-color: color-mix(in srgb, #7f6ca8 34%, var(--border));
+    background:
+        linear-gradient(135deg, rgba(255, 253, 247, 0.96), rgba(127, 108, 168, 0.1)),
+        var(--surface);
+}
+
+.sarva-dash__portalCard.is-featured {
+    position: relative;
+    overflow: hidden;
+    border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
+    background:
+        linear-gradient(135deg, rgba(255, 253, 247, 0.96), rgba(243, 223, 213, 0.54)),
+        var(--surface);
+}
+
+.sarva-dash__portalCard.is-featured::after {
+    content: "";
+    position: absolute;
+    right: -34px;
+    top: -42px;
+    width: 112px;
+    height: 112px;
+    border: 1px solid rgba(201, 111, 74, 0.24);
+    border-radius: 999px;
+    background: rgba(201, 111, 74, 0.07);
+}
+
+.sarva-dash__portalCard:hover {
+    border-color: color-mix(in srgb, var(--accent) 54%, var(--border));
+    box-shadow: 0 12px 28px rgba(50, 43, 34, 0.1);
+}
+
+.sarva-dash__portalMain {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 7px;
+    color: var(--text);
+    text-decoration: none;
+}
+
+.sarva-dash__portalMain span {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(201, 111, 74, 0.22);
+    border-radius: 999px;
+    background: rgba(201, 111, 74, 0.1);
+    color: var(--accent);
+    font-size: 20px;
+}
+
+.sarva-dash__portalCard.is-data .sarva-dash__portalMain span {
+    border-color: rgba(53, 122, 138, 0.24);
+    background: rgba(53, 122, 138, 0.1);
+    color: var(--water);
+}
+
+.sarva-dash__portalCard.is-tools .sarva-dash__portalMain span {
+    border-color: rgba(215, 168, 77, 0.28);
+    background: rgba(215, 168, 77, 0.13);
+    color: #a17014;
+}
+
+.sarva-dash__portalCard.is-resources .sarva-dash__portalMain span {
+    border-color: rgba(56, 90, 72, 0.24);
+    background: rgba(56, 90, 72, 0.1);
+    color: var(--primary);
+}
+
+.sarva-dash__portalCard.is-community .sarva-dash__portalMain span {
+    border-color: rgba(127, 108, 168, 0.24);
+    background: rgba(127, 108, 168, 0.1);
+    color: #69578f;
+}
+
+.sarva-dash__portalMain strong {
+    color: var(--primary-strong);
+    font-size: 17px;
+    line-height: 1.2;
+}
+
+.sarva-dash__portalMain small {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.sarva-dash__portalCard.is-featured .sarva-dash__portalMain span {
+    border-color: rgba(201, 111, 74, 0.22);
+    background: rgba(201, 111, 74, 0.1);
+    color: var(--accent);
+}
+
+.sarva-dash__themeChips {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 4px;
+}
+
+.sarva-dash__themeChips span {
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: rgba(56, 90, 72, 0.09);
+    color: var(--primary-strong);
+    font-size: 12px;
+    font-weight: 850;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.sarva-dash__portalCard.is-data .sarva-dash__themeChips span {
+    background: rgba(53, 122, 138, 0.11);
+    color: #245f6d;
+}
+
+.sarva-dash__portalCard.is-tools .sarva-dash__themeChips span {
+    background: rgba(215, 168, 77, 0.14);
+    color: #7d5a16;
+}
+
+.sarva-dash__portalCard.is-community .sarva-dash__themeChips span {
+    background: rgba(127, 108, 168, 0.12);
+    color: #5d4e80;
+}
+
+.sarva-dash__portalCard > div:last-child {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.sarva-dash__portalCard > div:last-child a {
+    padding: 5px 9px;
+    border: 1px solid rgba(56, 90, 72, 0.16);
+    border-radius: 999px;
+    color: var(--primary-strong);
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.sarva-dash__portalCard > div:last-child a:hover {
+    border-color: rgba(201, 111, 74, 0.48);
+    background: rgba(201, 111, 74, 0.08);
+}
+
+.sarva-dash__workspace {
+    grid-template-columns: repeat(2, minmax(520px, 1fr));
+    gap: 22px;
+    align-items: stretch;
+}
+
+.sarva-dash__context {
+    grid-row: 1;
+}
+
+.sarva-dash__workspace .sarva-dash__hero {
+    min-height: 336px;
+    align-items: flex-start;
+    padding: 34px;
+    border: 0;
+    border-radius: 0;
+    background:
+        linear-gradient(135deg, rgba(255, 253, 247, 0.96), rgba(255, 253, 247, 0.72)),
+        var(--surface);
+    background-position: center;
+    background-size: cover;
+    box-shadow: none;
+}
+
+.sarva-dash__workspace .sarva-dash__hero.has-image::before {
+    background:
+        linear-gradient(90deg, rgba(22, 38, 32, 0.88), rgba(32, 58, 49, 0.68) 52%, rgba(32, 58, 49, 0.28)),
+        linear-gradient(0deg, rgba(32, 58, 49, 0.18), rgba(32, 58, 49, 0.18));
+}
+
+.sarva-dash__workspace .sarva-dash__hero h1 {
+    max-width: 640px;
+    color: var(--surface);
+    font-size: clamp(34px, 4.1vw, 58px);
+    line-height: 1.02;
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.22);
+}
+
+.sarva-dash__workspace .sarva-dash__hero p {
+    max-width: 620px;
+    margin-top: 16px;
+    color: rgba(255, 253, 247, 0.92);
+    font-size: 16px;
+    line-height: 1.62;
+}
+
+.sarva-dash__heroKicker {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--ochre);
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.sarva-dash__heroActions {
+    margin-top: 26px;
+}
+
+.sarva-dash__heroActions a,
+.sarva-dash__heroActions button {
+    min-height: 42px;
+    padding: 0 18px;
+    border-radius: 3px;
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.sarva-dash__heroActions a + a,
+.sarva-dash__heroActions a + button,
+.sarva-dash__heroActions button + a,
+.sarva-dash__heroActions button + button {
+    border-color: rgba(255, 253, 247, 0.54);
+    background: rgba(255, 253, 247, 0.9);
+    color: var(--primary-strong);
+}
+
+.sarva-panel--featured {
+    border: 0;
+    border-radius: 0;
+    background: var(--surface);
+    box-shadow: 0 20px 46px rgba(50, 43, 34, 0.13);
+}
+
+.sarva-panel--featured .sarva-panel__head {
+    padding: 24px 24px 14px;
+    border-top: 5px solid var(--accent);
+}
+
+.sarva-panel--featured .sarva-panel__head h2 {
+    color: var(--primary-strong);
+    font-size: 29px;
+    line-height: 1.05;
+}
+
+.sarva-panel--featured .sarva-panel__head p {
+    max-width: 520px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.sarva-dash__tabs button {
+    height: 36px;
+    border-radius: 3px;
+    background: var(--surface);
+    color: var(--primary-strong);
+    font-size: 12px;
+}
+
+.sarva-dash__tabs button.is-active {
+    border-color: var(--accent);
+    background: var(--accent);
+}
+
+.sarva-panel--featured .sarva-map {
+    height: clamp(560px, 62vh, 720px);
+    margin: 0 16px 16px;
+    border-radius: 0;
+}
+
+.sarva-dash__workspace .sarva-dash__stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+}
+
+.sarva-dash__workspace .sarva-dash__stat {
+    min-height: 104px;
+    padding: 18px 14px;
+    border: 0;
+    border-right: 1px solid var(--border);
+    border-radius: 0;
+    background: transparent;
+}
+
+.sarva-dash__workspace .sarva-dash__stat:last-child {
+    border-right: 0;
+}
+
+.sarva-dash__workspace .sarva-dash__stat strong {
+    color: var(--accent);
+    font-size: 32px;
+}
+
+.sarva-dash__featureGroups {
+    margin-top: 30px;
+}
+
+.sarva-dash__featureGroup {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 24px;
+    border-radius: 0;
+    background: var(--surface);
+    box-shadow: none;
+}
+
+.sarva-dash__featureGroup h2 {
+    font-size: 19px;
+}
+
+.sarva-dash__featureGroup p {
+    max-width: 320px;
+    font-size: 13px;
+}
+
+.sarva-dash__featureGroup .sarva-dash__feature {
+    min-height: 66px;
+    background: transparent;
+    border-color: var(--border);
+}
+
+.sarva-dash__content,
+.sarva-dash__lower {
+    margin-top: 22px;
+}
+
+.sarva-panel {
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.sarva-publicDataNotice {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: -12px 0 18px;
+    padding: 8px 14px;
+    border: 1px solid rgba(32, 58, 49, 0.14);
+    border-top: 0;
+    border-radius: 0 0 8px 8px;
+    background: rgba(255, 253, 247, 0.72);
+    color: var(--muted);
+}
+
+.sarva-publicDataNotice strong {
+    flex: 0 0 auto;
+    color: var(--accent-strong);
+    font-size: 12px;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.sarva-publicDataNotice span {
+    min-width: 0;
+    font-size: 12px;
+    font-weight: 750;
+    line-height: 1.35;
+}
+
+.sarva-dash__hero--lead {
+    min-height: clamp(340px, 42vh, 500px);
+    display: grid;
+    grid-template-columns: minmax(340px, 0.62fr) minmax(560px, 1fr);
+    align-items: center;
+    gap: clamp(18px, 2.6vw, 38px);
+    margin-bottom: 0;
+    padding: clamp(28px, 4.4vw, 48px) clamp(24px, 4vw, 54px);
+    border: 0;
+    border-radius: 0;
+    background:
+        linear-gradient(135deg, rgba(255, 253, 247, 0.96), rgba(255, 253, 247, 0.72)),
+        var(--surface);
+    background-position: center;
+    background-size: cover;
+    box-shadow: none;
+}
+
+.sarva-dash__hero--lead > div:first-child {
+    position: relative;
+    z-index: 2;
+}
+
+.sarva-dash__hero--lead.has-image::before {
+    background:
+        linear-gradient(90deg, rgba(22, 38, 32, 0.92), rgba(32, 58, 49, 0.72) 48%, rgba(32, 58, 49, 0.36) 78%, rgba(32, 58, 49, 0.18)),
+        linear-gradient(0deg, rgba(32, 58, 49, 0.18), rgba(32, 58, 49, 0.18));
+}
+
+.sarva-dash__hero--lead h1 {
+    max-width: 660px;
+    color: var(--surface);
+    font-size: clamp(38px, 4.9vw, 70px);
+    line-height: 1.02;
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.24);
+}
+
+.sarva-dash__hero--lead p {
+    max-width: 620px;
+    margin-top: 14px;
+    color: rgba(255, 253, 247, 0.92);
+    font-size: clamp(15px, 1.2vw, 18px);
+    line-height: 1.45;
+}
+
+.sarva-dash__hero--lead .sarva-dash__heroKicker {
+    display: block;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--ochre);
+    font-size: 14px;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+}
+
+.sarva-dash__hero--lead .sarva-dash__versionBadge {
+    display: inline-flex;
+}
+
+.sarva-dash__hero--lead .sarva-dash__heroActions {
+    margin-top: 20px;
+}
+
+.sarva-dash__hero--lead .sarva-dash__heroActions a,
+.sarva-dash__hero--lead .sarva-dash__heroActions button {
+    min-height: 42px;
+    padding: 0 18px;
+    border-radius: 4px;
+    font-size: 15px;
+}
+
+.sarva-dash__heroHighlights {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    gap: 10px;
+    align-self: center;
+    align-content: center;
+    padding-top: 0;
+    color: var(--surface);
+}
+
+.sarva-dash__heroHighlightsHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.sarva-dash__heroHighlightsHead > div:first-child {
+    display: grid;
+    gap: 3px;
+}
+
+.sarva-dash__heroHighlightsHead > div:last-child {
+    display: flex;
+    gap: 7px;
+}
+
+.sarva-dash__heroHighlightsHead span {
+    color: var(--ochre);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.sarva-dash__heroHighlightsHead small {
+    max-width: 620px;
+    color: rgba(255, 253, 247, 0.78);
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.sarva-dash__heroHighlightsHead button {
+    width: auto;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    border: 1px solid rgba(255, 253, 247, 0.34);
+    border-radius: 999px;
+    background: rgba(255, 253, 247, 0.14);
+    color: var(--surface);
+    cursor: pointer;
+    font-size: 16px;
+    font-family: Georgia, serif;
+    font-weight: 900;
+}
+
+.sarva-dash__heroHighlightGrid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.sarva-dash__heroHighlightGrid > button {
+    min-height: 132px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: left;
+    padding: 12px 13px;
+    border: 1px solid rgba(255, 253, 247, 0.26);
+    border-radius: 6px;
+    background: rgba(16, 32, 27, 0.48);
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.18);
+    backdrop-filter: blur(8px);
+}
+
+.sarva-dash__heroHighlightGrid > button:hover,
+.sarva-dash__heroHighlightGrid > button:focus-visible {
+    border-color: rgba(242, 186, 82, 0.82);
+    background: rgba(22, 38, 32, 0.68);
+}
+
+.sarva-dash__heroHighlightGrid > button:first-child {
+    grid-column: span 4;
+    min-height: 98px;
+    background: rgba(201, 111, 74, 0.34);
+}
+
+.sarva-dash__heroHighlightGrid small,
+.sarva-dash__heroHighlightGrid p,
+.sarva-dash__heroHighlightGrid button > span,
+.sarva-dash__heroHighlightGrid em,
+.sarva-dash__heroHighlightGrid i {
+    margin: 0;
+    color: rgba(255, 253, 247, 0.78);
+    font-size: 11px;
+    font-style: normal;
+    line-height: 1.28;
+}
+
+.sarva-dash__heroHighlightGrid small {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    color: rgba(255, 253, 247, 0.86);
+    font-weight: 800;
+}
+
+.sarva-dash__heroHighlightGrid small b {
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: rgba(255, 253, 247, 0.16);
+    color: var(--surface);
+    font-size: 10px;
+    text-transform: uppercase;
+}
+
+.sarva-dash__heroHighlightGrid small b.is-very-low,
+.sarva-dash__heroHighlightGrid small b.is-low {
+    background: rgba(94, 158, 114, 0.82);
+}
+
+.sarva-dash__heroHighlightGrid small b.is-moderate {
+    background: rgba(221, 170, 73, 0.9);
+}
+
+.sarva-dash__heroHighlightGrid small b.is-high,
+.sarva-dash__heroHighlightGrid small b.is-very-high {
+    background: rgba(198, 92, 60, 0.92);
+}
+
+.sarva-dash__heroHighlightGrid button > span {
+    margin-top: 7px;
+    color: rgba(255, 253, 247, 0.66);
+    font-size: 11px;
+}
+
+.sarva-dash__heroHighlightGrid strong {
+    display: block;
+    margin: 4px 0;
+    color: var(--surface);
+    font-size: clamp(23px, 2vw, 32px);
+    line-height: 1;
+}
+
+.sarva-dash__heroHighlightGrid i {
+    color: rgba(255, 253, 247, 0.9);
+    font-weight: 700;
+}
+
+.sarva-dash__heroHighlightGrid em {
+    width: fit-content;
+    margin-top: 7px;
+    padding: 3px 7px;
+    border: 1px solid rgba(255, 253, 247, 0.24);
+    border-radius: 999px;
+    background: rgba(255, 253, 247, 0.1);
+    color: rgba(255, 253, 247, 0.9);
+    font-weight: 800;
+}
+
+.sarva-dash__glanceOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgba(12, 24, 20, 0.58);
+}
+
+.sarva-dash__glanceOverlay > div {
+    position: relative;
+    width: min(920px, 100%);
+    max-height: min(760px, 86vh);
+    overflow: auto;
+    padding: 30px;
+    border: 1px solid rgba(32, 58, 49, 0.2);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--primary-strong);
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.36);
+}
+
+.sarva-dash__glanceOverlay > div > button {
+    position: sticky;
+    top: 0;
+    left: calc(100% - 38px);
+    z-index: 2;
+    width: 38px;
+    height: 38px;
+    float: right;
+    margin: -18px -18px 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--primary-strong);
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: 900;
+    box-shadow: 0 8px 22px rgba(7, 27, 58, 0.14);
+}
+
+.sarva-dash__glanceOverlay span {
+    display: block;
+    color: var(--accent-strong);
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.sarva-dash__glanceOverlay h2 {
+    max-width: 680px;
+    margin: 8px 0 14px;
+    font-size: 30px;
+    line-height: 1.12;
+}
+
+.sarva-dash__glanceIntro {
+    max-width: 760px;
+    margin: 0 0 22px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.sarva-dash__glanceOverlay > div > div {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.sarva-dash__glanceOverlay article {
+    min-height: 138px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: rgba(245, 241, 232, 0.58);
+}
+
+.sarva-dash__glanceOverlay article small,
+.sarva-dash__glanceOverlay article em,
+.sarva-dash__glanceOverlay article a {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    font-style: normal;
+    line-height: 1.35;
+}
+
+.sarva-dash__glanceOverlay article a {
+    color: var(--accent-strong);
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.sarva-dash__glanceOverlay article strong {
+    display: block;
+    margin: 6px 0;
+    color: var(--primary-strong);
+    font-size: 16px;
+}
+
+.sarva-dash__glanceOverlay article p {
+    margin: 0 0 10px;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.35;
+}
+
+.sarva-dash__heroStats {
+    position: relative;
+    z-index: 2;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0;
+    margin: 0 0 16px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+}
+
+.sarva-dash__heroStats .sarva-dash__stat {
+    min-height: 96px;
+    padding: 14px 16px;
+    border: 0;
+    border-right: 1px solid var(--border);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.sarva-dash__heroStats .sarva-dash__stat:last-child {
+    border-right: 0;
+}
+
+.sarva-dash__heroStats .sarva-dash__stat strong {
+    color: var(--accent);
+    font-size: 28px;
+}
+
+.sarva-dash__heroStats .sarva-dash__stat span,
+.sarva-dash__heroStats .sarva-dash__stat small,
+.sarva-dash__heroStats .sarva-dash__stat em {
+    font-size: 12px;
+    line-height: 1.28;
+}
+
+.sarva-newsTicker {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: minmax(150px, 0.18fr) auto minmax(0, 1fr);
+    min-height: 92px;
+    margin: -4px 0 20px;
+    border-top: 1px solid rgba(32, 58, 49, 0.18);
+    border-bottom: 1px solid rgba(32, 58, 49, 0.18);
+    background: #29463d;
+    color: var(--surface);
+}
+
+.sarva-newsTicker__label {
+    display: grid;
+    align-content: center;
+    gap: 2px;
+    min-width: 154px;
+    padding: 10px 18px;
+    background: var(--accent);
+    color: var(--surface);
+    text-transform: uppercase;
+}
+
+.sarva-newsTicker__label strong {
+    font-size: 17px;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+}
+
+.sarva-newsTicker__label span {
+    font-size: 11px;
+    font-weight: 850;
+    opacity: 0.92;
+}
+
+.sarva-newsTicker__controls {
+    display: grid;
+    grid-template-columns: 36px minmax(54px, auto) 36px;
+    align-items: stretch;
+    border-right: 1px solid rgba(255, 253, 247, 0.14);
+}
+
+.sarva-newsTicker__controls button {
+    border: 0;
+    border-left: 1px solid rgba(255, 253, 247, 0.1);
+    background: rgba(255, 253, 247, 0.08);
+    color: var(--surface);
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 950;
+    line-height: 1;
+}
+
+.sarva-newsTicker__controls button:hover,
+.sarva-newsTicker__controls button:focus-visible {
+    background: rgba(255, 253, 247, 0.18);
+    outline: none;
+}
+
+.sarva-newsTicker__controls button:disabled {
+    cursor: default;
+    opacity: 0.28;
+}
+
+.sarva-newsTicker__controls span {
+    display: grid;
+    place-items: center;
+    padding: 0 10px;
+    border-left: 1px solid rgba(255, 253, 247, 0.1);
+    color: rgba(255, 253, 247, 0.78);
+    font-size: 11px;
+    font-weight: 950;
+    white-space: nowrap;
+}
+
+.sarva-newsTicker__item {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto;
+    align-items: start;
+    align-content: center;
+    gap: 6px 10px;
+    min-width: 0;
+    min-height: 92px;
+    margin: 10px;
+    padding: 10px 14px 10px 16px;
+    border: 1px solid rgba(255, 253, 247, 0.12);
+    border-left-width: 5px;
+    border-radius: 6px;
+    background: rgba(255, 253, 247, 0.05);
+    color: var(--surface);
+    text-decoration: none;
+}
+
+.sarva-newsTicker__badge {
+    display: inline-flex;
+    align-items: center;
+    align-self: start;
+    min-height: 24px;
+    padding: 0 9px;
+    border-radius: 999px;
+    background: rgba(255, 253, 247, 0.16);
+    font-size: 11px;
+    font-weight: 950;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    width: max-content;
+    max-width: 100%;
+}
+
+.sarva-newsTicker__item strong,
+.sarva-newsTicker__item em {
+    white-space: normal;
+}
+
+.sarva-newsTicker__item strong {
+    overflow: hidden;
+    display: -webkit-box;
+    min-width: 0;
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 1.22;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+}
+
+.sarva-newsTicker__meta {
+    grid-column: 2;
+    color: rgba(255, 253, 247, 0.72);
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+.sarva-newsTicker__item em {
+    display: -webkit-box;
+    grid-column: 1 / -1;
+    overflow: hidden;
+    color: rgba(255, 253, 247, 0.82);
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.3;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+}
+
+.sarva-newsTicker__tags {
+    grid-column: 1 / -1;
+    overflow: hidden;
+    color: rgba(255, 253, 247, 0.68);
+    font-size: 11px;
+    font-weight: 850;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sarva-newsTicker__item.is-high .sarva-newsTicker__badge {
+    background: rgba(221, 76, 54, 0.9);
+}
+
+.sarva-newsTicker__item.is-high {
+    border-left-color: #dd4c36;
+    background: rgba(221, 76, 54, 0.08);
+}
+
+.sarva-newsTicker__item.is-moderate .sarva-newsTicker__badge {
+    background: rgba(215, 168, 77, 0.95);
+    color: #1c2e29;
+}
+
+.sarva-newsTicker__item.is-moderate {
+    border-left-color: #d7a84d;
+    background: rgba(215, 168, 77, 0.08);
+}
+
+.sarva-newsTicker__item.is-watch {
+    border-left-color: #6aa077;
+}
+
+.sarva-newsTicker__item:hover,
+.sarva-newsTicker__item:focus-visible {
+    background: rgba(255, 253, 247, 0.08);
+    outline: none;
+}
+
+.sarva-newsTicker__item.is-disabled {
+    cursor: default;
+}
+
+.sarva-dash__portalIntro {
+    margin-bottom: 24px;
+}
+
+.sarva-dash__workspace {
+    display: block;
+    margin-top: 0;
+    scroll-margin-top: 96px;
+}
+
+.sarva-panel--map.sarva-panel--featured {
+    max-width: none;
+}
+
+.sarva-panel--featured .sarva-map {
+    height: clamp(560px, 62vh, 760px);
+}
+
+@media (max-width: 1240px) {
+    .sarva-dash__workspace {
+        grid-template-columns: 1fr;
+    }
+
+    .sarva-dash__heroStats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sarva-dash__heroStats .sarva-dash__stat:nth-child(2) {
+        border-right: 0;
+    }
+
+    .sarva-dash__heroStats .sarva-dash__stat:nth-child(-n + 2) {
+        border-bottom: 1px solid var(--border);
+    }
+
+    .sarva-dash__content {
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 0.85fr);
+    }
+
+    .sarva-dash__libraryPair {
+        grid-template-columns: 1fr;
+    }
+
+    .sarva-reports__filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sarva-dash__lower {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .sarva-dash__features,
+    .sarva-dash__referenceStrip,
+    .sarva-dash__stats,
+    .sarva-dash__footerFeatures {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .sarva-dash__portalIntro {
+        grid-template-columns: 1fr;
+    }
+
+    .sarva-dash__portalGrid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .sarva-dash__hero--lead {
+        grid-template-columns: 1fr;
+    }
+
+    .sarva-dash__heroHighlights {
+        align-self: auto;
+        max-width: 760px;
+    }
+
+    .sarva-dash__heroHighlightGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sarva-dash__heroHighlightGrid > button:first-child {
+        grid-column: span 2;
+    }
+
+    .sarva-dash__featureGroups {
+        grid-template-columns: 1fr;
+    }
+
+    .sarva-dash__featureGroup {
+        grid-template-columns: minmax(180px, 0.32fr) minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 880px) {
+    .sarva-dash {
+        display: block;
+    }
+
+    .sarva-dash__sidebar {
+        position: static;
+        height: auto;
+        grid-template-columns: 1fr;
+        align-items: start;
+    }
+
+    .sarva-dash__brand {
+        min-height: auto;
+    }
+
+    .sarva-dash__nav {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+    }
+
+    .sarva-dash__navItem span {
+        display: inline;
+        color: currentColor;
+        font-size: 16px;
+    }
+
+    .sarva-dash__subnav {
+        position: static;
+        display: grid;
+        min-width: 0;
+        margin: 4px 0 10px;
+        box-shadow: none;
+    }
+
+    .sarva-dash__sideTools {
+        display: none;
+    }
+
+    .sarva-dash__topbar,
+    .sarva-dash__toplinks {
+        align-items: stretch;
+        flex-wrap: wrap;
+    }
+
+    .sarva-dash__search {
+        flex-basis: 100%;
+    }
+
+    .sarva-dash__features,
+    .sarva-dash__featureGroups,
+    .sarva-dash__portalIntro,
+    .sarva-dash__portalGrid,
+    .sarva-dash__referenceStrip,
+    .sarva-dash__stats,
+    .sarva-dash__workspace .sarva-dash__stats,
+    .sarva-dash__content,
+    .sarva-dash__lower,
+    .sarva-dash__libraryPair,
+    .sarva-reports__filters,
+    .sarva-supportingModal__grid,
+    .sarva-dash__footerFeatures,
+    .sarva-dash__footerBase {
+        grid-template-columns: 1fr;
+    }
+
+    .sarva-dash__stats {
+        margin: 12px 0 14px;
+    }
+
+    .sarva-dash__hero--lead {
+        min-height: 420px;
+        grid-template-columns: 1fr;
+        padding: 34px 22px;
+    }
+
+    .sarva-publicDataNotice {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .sarva-dash__heroHighlightGrid,
+    .sarva-dash__glanceOverlay > div > div {
+        grid-template-columns: 1fr;
+    }
+
+    .sarva-dash__heroHighlightGrid > button,
+    .sarva-dash__heroHighlightGrid > button:first-child {
+        grid-column: auto;
+        min-height: 108px;
+    }
+
+    .sarva-dash__heroStats {
+        grid-template-columns: 1fr;
+    }
+
+    .sarva-dash__heroStats .sarva-dash__stat {
+        min-height: 88px;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .sarva-dash__heroStats .sarva-dash__stat:last-child {
+        border-bottom: 0;
+    }
+
+    .sarva-newsTicker {
+        grid-template-columns: 1fr;
+    }
+
+    .sarva-newsTicker__label {
+        min-width: 0;
+        grid-template-columns: auto auto;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 14px;
+    }
+
+    .sarva-newsTicker__item {
+        grid-template-columns: auto minmax(220px, 1fr);
+        padding: 8px 16px;
+    }
+
+    .sarva-newsTicker__item em {
+        grid-column: 1 / -1;
+    }
+
+    .sarva-dash__feature {
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .sarva-dash__portalCard.is-featured {
+        grid-column: auto;
+    }
+
+    .sarva-dash__featureGroup {
+        grid-template-columns: 1fr;
+    }
+
+    .sarva-dash__referenceStrip a {
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .sarva-dash__referenceStrip a:last-child {
+        border-bottom: 0;
+    }
+
+    .sarva-panel--featured .sarva-map {
+        height: 430px;
+    }
+}
+
+@media (max-width: 560px) {
+    .sarva-dash__main {
+        padding: 14px 12px 0;
+    }
+
+    .sarva-map__zoomHint {
+        top: 52px;
+        left: 12px;
+        max-width: min(280px, calc(100% - 24px));
+        transform: none;
+    }
+
+    .sarva-dash__nav {
+        grid-template-columns: 1fr;
+    }
+
+    .sarva-dash__hero {
+        padding: 22px 16px;
+    }
+
+    .sarva-dash__hero h1 {
+        font-size: 21px;
+    }
+
+    .sarva-map {
+        height: 290px;
+    }
+
+    .sarva-panel--featured .sarva-map {
+        height: 360px;
+        margin: 0 10px 10px;
+    }
+
+    .sarva-map__legend {
+        left: 12px;
+        right: 12px;
+        width: auto;
+    }
+
+    .sarva-panel--featured .sarva-panel__head {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .sarva-indicator {
+        grid-template-columns: 30px minmax(0, 1fr) 52px;
+    }
+
+    .sarva-indicator i {
+        display: none;
+    }
+
+    .sarva-dash__footer {
+        margin-right: -12px;
+        margin-left: -12px;
+        max-height: none;
+        padding: 12px;
+    }
+
+    .sarva-dash__main {
+        padding-bottom: 0;
+    }
+
+    .sarva-dash__footerLogos {
+        justify-content: flex-start;
+    }
+
+    .sarva-supportingOverlay {
+        padding: 12px;
+    }
+
+    .sarva-supportingModal__head {
+        display: grid;
+    }
+}
