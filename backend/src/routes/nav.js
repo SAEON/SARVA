@@ -10,6 +10,13 @@ function normalizeInternalPath(value) {
   return path.startsWith("/") ? path : `/${path.toLowerCase()}`;
 }
 
+function topLevelPath(label) {
+  const value = String(label || "").trim().toLowerCase();
+  if (value === "home") return "/";
+  if (value === "explore") return "/explore";
+  return null;
+}
+
 navRouter.get("/", async (req, res) => {
   try {
     const nav = await pool.query(`
@@ -40,7 +47,7 @@ navRouter.get("/", async (req, res) => {
 
     const data = nav.rows.map((n) => ({
       label: n.label,
-      ...(String(n.label).trim().toLowerCase() === "home" ? { to: "/" } : {}),
+      ...(topLevelPath(n.label) ? { to: topLevelPath(n.label) } : {}),
       items: byNav.get(n.id) || []
     }));
 

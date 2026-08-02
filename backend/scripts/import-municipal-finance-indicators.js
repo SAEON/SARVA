@@ -22,17 +22,17 @@ const OPERATING_EXPENDITURE_CODES = [
 const CAPITAL_TRANSFER_CODES = ["4600", "4700"];
 
 const FINANCIAL_POSITION_CODES = {
-  current_assets: "0110",
+  current_assets: ["0120", "0130", "0140", "0160", "0170", "0180"],
   cash: "0120",
   short_term_investments: "0125",
-  current_liabilities: "0320",
+  current_liabilities: ["0360", "0370", "0380", "0390", "0400", "0410"],
   bank_overdraft: "0330",
   current_borrowings: "0340",
   current_financial_liabilities: "0360",
   total_current_liabilities: "0430",
   non_current_financial_liabilities: "0450",
   total_non_current_liabilities: "0490",
-  total_liabilities: "0500",
+  total_liabilities: ["0360", "0370", "0380", "0390", "0400", "0410", "0450", "0460", "0480"],
 };
 
 const INFRASTRUCTURE_CODES = [
@@ -268,7 +268,8 @@ async function financeProfile(municipalityCode) {
 
   const position = {};
   for (const [field, code] of Object.entries(FINANCIAL_POSITION_CODES)) {
-    const amount = await aggregatedAmount("financial_position_v2", municipalityCode, selected.year, selected.position, [code]);
+    const itemCodes = Array.isArray(code) ? code : [code];
+    const amount = await aggregatedAmount("financial_position_v2", municipalityCode, selected.year, selected.position, itemCodes);
     position[field] = Number.isFinite(amount) ? Math.abs(amount) : null;
   }
 
@@ -493,6 +494,14 @@ function municipalityCodeCandidates(row) {
   return values;
 }
 
+function treasuryMunicipalityCode(row) {
+  const candidates = municipalityCodeCandidates(row);
+  return candidates.find((code) => /^[A-Z]{2,3}\d{0,3}$/.test(code))
+    || candidates.find((code) => /^[A-Z]{3}$/.test(code))
+    || candidates[0]
+    || "";
+}
+
 async function main() {
   const client = await pool.connect();
   const failures = [];
@@ -506,7 +515,7 @@ async function main() {
 
     const municipalities = await municipalitiesToImport(client);
     for (const municipality of municipalities) {
-      const treasuryCode = municipality.treasuryCode || municipalityCodeCandidates(municipality).at(-1) || municipality.namecode;
+      const treasuryCode = municipality.treasuryCode || treasuryMunicipalityCode(municipality);
       try {
         const profile = await financeProfile(treasuryCode);
         await client.query("BEGIN");

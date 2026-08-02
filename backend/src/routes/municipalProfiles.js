@@ -30,6 +30,39 @@ const CALCULATION_NOTES = [
   },
 ];
 
+const INDEX_PRESENTATION = {
+  imported_composite_risk: {
+    label: "Municipal risk overview",
+    description:
+      "Balanced screening overview combining available people, services, safety and governance indicators. Use it as a starting point, then inspect the category indices and drivers.",
+  },
+  imported_governance_risk: {
+    label: "Governance and finance pressure",
+    description:
+      "Composite of available audit, municipal finance, infrastructure investment and institutional-capacity indicators.",
+  },
+  crime_safety_imported: {
+    label: "Combined safety pressure",
+    description:
+      "Roll-up of available SAPS safety indicators. Use the specific violent contact, property, sexual violence and public-order layers for interpretation.",
+  },
+  stats_sa_vulnerability_imported: {
+    label: "People and vulnerability context",
+  },
+  service_access_imported: {
+    label: "Basic service access pressure",
+  },
+};
+
+function presentIndex(row) {
+  const presentation = INDEX_PRESENTATION[row.key] || {};
+  return {
+    ...row,
+    label: presentation.label || row.label,
+    description: presentation.description || row.description,
+  };
+}
+
 function scoreLabel(score) {
   const value = Number(score);
   if (!Number.isFinite(value)) return "Unknown";
@@ -332,7 +365,7 @@ municipalProfilesRouter.get("/municipalities/metric", async (req, res) => {
       [key]
     );
 
-    const definition = result.rows[0] || null;
+    const definition = result.rows[0] ? presentIndex(result.rows[0]) : null;
     res.json({
       status: "ok",
       data: {
@@ -412,7 +445,7 @@ municipalProfilesRouter.get("/municipalities/metadata", async (req, res) => {
       data: {
         calculationNotes: CALCULATION_NOTES,
         indicators: indicators.rows,
-        indices: indices.rows,
+        indices: indices.rows.map(presentIndex),
         importSchema: {
           requiredColumns: ["municipality_code", "indicator_key", "period", "scenario", "raw_value"],
           recommendedColumns: ["value_0_100", "unit", "source_name", "source_url", "notes"],
@@ -892,6 +925,7 @@ municipalProfilesRouter.get("/municipalities/:gid/profile", async (req, res) => 
               ELSE NULL
             END::double precision AS score,
             count(i.key)::int AS indicator_count,
+            count(ii.indicator_key)::int AS expected_indicator_count,
             COALESCE(
               jsonb_agg(
                 jsonb_build_object(
@@ -915,9 +949,24 @@ municipalProfilesRouter.get("/municipalities/:gid/profile", async (req, res) => 
                 ORDER BY ii.weight DESC, i.label
               ) FILTER (WHERE i.key IS NOT NULL),
               '[]'::jsonb
-            ) AS components
+            ) AS components,
+            COALESCE(
+              jsonb_agg(
+                jsonb_build_object(
+                  'key', d.key,
+                  'label', d.label,
+                  'theme', d.theme,
+                  'description', d.description,
+                  'sourceName', d.source_name,
+                  'sourceUrl', d.source_url
+                )
+                ORDER BY ii.sort_order, d.label
+              ) FILTER (WHERE i.key IS NULL AND d.key IS NOT NULL),
+              '[]'::jsonb
+            ) AS missing_components
           FROM sarva.municipal_index_definition idx
           JOIN sarva.municipal_index_indicator ii ON ii.index_key = idx.key
+          JOIN sarva.municipal_indicator_definition d ON d.key = ii.indicator_key
           LEFT JOIN indicators i ON i.key = ii.indicator_key
           GROUP BY idx.key, idx.label, idx.theme, idx.description, idx.source_name, idx.source_url, idx.is_proxy, idx.sort_order
         ),
@@ -930,11 +979,15 @@ municipalProfilesRouter.get("/municipalities/:gid/profile", async (req, res) => 
             i.description,
             i.direction,
             i.value,
+            i.raw_value,
+            i.raw_unit,
             i.adjusted_value,
             i.period,
             i.scenario,
             i.source_name,
             i.source_url,
+            i.confidence,
+            i.notes,
             ii.weight::double precision AS weight,
             (i.adjusted_value * ii.weight)::double precision AS contribution
           FROM sarva.municipal_index_indicator ii
@@ -973,7 +1026,11 @@ municipalProfilesRouter.get("/municipalities/:gid/profile", async (req, res) => 
     const indicatorRow = indicatorResult.rows[0] || {};
     const indicators = Array.isArray(indicatorRow.indicators) ? indicatorRow.indicators.map(normaliseIndicator) : [];
     const indices = Array.isArray(indicatorRow.indices)
-      ? indicatorRow.indices.map((item) => ({
+      ? indicatorRow.indices.map((rawItem) => {
+        const item = presentIndex(rawItem);
+        const expectedIndicatorCount = Number(item.expected_indicator_count || item.indicator_count || 0);
+        const indicatorCount = Number(item.indicator_count || 0);
+        return {
           key: item.key,
           label: item.label,
           theme: item.theme,
@@ -983,7 +1040,9 @@ municipalProfilesRouter.get("/municipalities/:gid/profile", async (req, res) => 
           isProxy: Boolean(item.is_proxy),
           score: numberOrNull(item.score, 1),
           riskLabel: scoreLabel(item.score),
-          indicatorCount: Number(item.indicator_count || 0),
+          indicatorCount,
+          expectedIndicatorCount,
+          coveragePercent: expectedIndicatorCount > 0 ? numberOrNull((indicatorCount / expectedIndicatorCount) * 100, 0) : null,
           components: Array.isArray(item.components)
             ? item.components.map((component) => ({
                 key: component.key,
@@ -1004,7 +1063,18 @@ municipalProfilesRouter.get("/municipalities/:gid/profile", async (req, res) => 
                 notes: component.notes,
               }))
             : [],
-        }))
+          missingComponents: Array.isArray(item.missing_components)
+            ? item.missing_components.slice(0, 8).map((component) => ({
+                key: component.key,
+                label: component.label,
+                theme: component.theme,
+                description: component.description,
+                sourceName: component.sourceName,
+                sourceUrl: component.sourceUrl,
+              }))
+            : [],
+        };
+      })
       : [];
     const drivers = Array.isArray(indicatorRow.drivers)
       ? indicatorRow.drivers.map((item) => ({
@@ -1014,11 +1084,17 @@ municipalProfilesRouter.get("/municipalities/:gid/profile", async (req, res) => 
           description: item.description,
           direction: item.direction,
           value: numberOrNull(item.value, 1),
+          normalizedValue: numberOrNull(item.value, 1),
+          rawValue: numberOrNull(item.raw_value, 3),
+          displayValue: numberOrNull(item.raw_value, 3) ?? numberOrNull(item.value, 1),
+          displayUnit: item.raw_unit,
           adjustedValue: numberOrNull(item.adjusted_value, 1),
           period: item.period,
           scenario: item.scenario,
           sourceName: item.source_name,
           sourceUrl: item.source_url,
+          confidence: item.confidence,
+          notes: item.notes,
           weight: numberOrNull(item.weight, 3),
           contribution: numberOrNull(item.contribution, 1),
         }))

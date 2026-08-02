@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sarva_dev_password}
 
     ports:
-      - "${POSTGRES_PORT:-5433}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5440}:5432"
 
     volumes:
       - sarva_db_data:/var/lib/postgresql/data
@@ -73,7 +73,7 @@ services:
       LOGGERNET_DB_PASSWORD: ${LOGGERNET_DB_PASSWORD:-}
 
     ports:
-      - "${BACKEND_PORT:-5050}:5050"
+      - "127.0.0.1:${BACKEND_PORT:-5060}:5050"
 
     volumes:
       - ./data:/data:ro
@@ -98,6 +98,7 @@ services:
       context: ./docker/forecast-risk-worker
     container_name: sarva-forecast-risk-worker
     restart: unless-stopped
+
     environment:
       TZ: Africa/Johannesburg
       DB_HOST: db
@@ -113,6 +114,7 @@ services:
       FORECAST_RISK_SOUTH: ${FORECAST_RISK_SOUTH:--35.0}
       FORECAST_RISK_NORTH: ${FORECAST_RISK_NORTH:--22.0}
       FORECAST_RISK_DOWNLOAD_TIMEOUT_SECONDS: ${FORECAST_RISK_DOWNLOAD_TIMEOUT_SECONDS:-1800}
+
     depends_on:
       db:
         condition: service_healthy
@@ -132,7 +134,7 @@ services:
       - ./docker/martin/config.yaml:/config/config.yaml:ro
 
     ports:
-      - "${MARTIN_PORT:-3000}:3000"
+      - "127.0.0.1:${MARTIN_PORT:-3010}:3000"
 
     depends_on:
       db:
@@ -142,16 +144,20 @@ services:
     build:
       context: ./docker/municipal-importer
     profiles: ["tools"]
+
     environment:
       PGPASSWORD: ${POSTGRES_PASSWORD:-sarva_dev_password}
+
     volumes:
       - ./data:/data:ro
+
     command:
       [
         "sh",
         "-c",
         "psql -h db -U ${POSTGRES_USER:-sarva} -d ${POSTGRES_DB:-sarva} -v ON_ERROR_STOP=1 -c 'CREATE SCHEMA IF NOT EXISTS sarva; DROP TABLE IF EXISTS sarva.municipal_boundaries CASCADE;' && shp2pgsql -c -I -s 3857 -W UTF-8 -g geom /data/municipal-boundaries/MDB_Local_Municipal_Boundary_2018.shp sarva.municipal_boundaries | psql -h db -U ${POSTGRES_USER:-sarva} -d ${POSTGRES_DB:-sarva} -v ON_ERROR_STOP=1"
       ]
+
     depends_on:
       db:
         condition: service_healthy
@@ -160,14 +166,14 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_API_BASE: ${VITE_API_BASE:-http://localhost:5050}
-        VITE_MARTIN_BASE: ${VITE_MARTIN_BASE:-http://localhost:3000}
+        VITE_API_BASE: ${VITE_API_BASE:-/api}
+        VITE_MARTIN_BASE: ${VITE_MARTIN_BASE:-/tiles}
 
     container_name: sarva-frontend
     restart: unless-stopped
 
     ports:
-      - "${FRONTEND_PORT:-8080}:80"
+      - "${FRONTEND_PORT:-8090}:80"
 
     depends_on:
       backend:

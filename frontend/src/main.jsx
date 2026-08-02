@@ -8,6 +8,7 @@ import AppLayout from "./layouts/AppLayout.jsx";
 import "./styles/tokens.css";
 
 const Home = lazy(() => import("./pages/Home.jsx"));
+const Explore = lazy(() => import("./pages/Explore.jsx"));
 const Overview = lazy(() => import("./pages/Overview.jsx"));
 const Theme = lazy(() => import("./pages/Theme.jsx"));
 const Glossary = lazy(() => import("./pages/Glossary.jsx"));
@@ -34,6 +35,14 @@ const router = createBrowserRouter([
     {
         element: <AppLayout />,
         children: [
+            {
+                path: "/explore",
+                element: (
+                    <Suspense fallback={null}>
+                        <Explore />
+                    </Suspense>
+                ),
+            },
             {
                 path: "/overview",
                 element: (

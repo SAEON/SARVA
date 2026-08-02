@@ -113,16 +113,16 @@ function sourceForIndicator(row) {
       sourceUrl: SOURCE_URLS.agsaMfma2024,
     };
   }
-  if (/uifw|unauthorised|irregular|fruitless|wasteful|cash|liquid|current ratio|creditor|debtor|collection|operating|surplus|deficit|capital expenditure|capex|infrastructure|borrow|liabilit|municipal money|national treasury|section 71|mfma|mscoa/.test(text)) {
-    return {
-      sourceName: "National Treasury Municipal Money API, 2026 Q2 snapshot of Section 71 and audited municipal finance data",
-      sourceUrl: SOURCE_URLS.municipalMoneyDocs,
-    };
-  }
   if (/crime|murder|assault|robbery|burglary|theft|rape|sexual|drug|firearm/.test(text)) {
     return {
       sourceName: "SAPS crime statistics, official release series",
       sourceUrl: SOURCE_URLS.sapsCrimeStats,
+    };
+  }
+  if (/uifw|unauthorised|irregular|fruitless|wasteful|cash|liquid|current ratio|creditor|debtor|collection|operating|surplus|deficit|capital expenditure|capex|infrastructure|borrow|liabilit|municipal money|national treasury|section 71|mfma|mscoa/.test(text)) {
+    return {
+      sourceName: "National Treasury Municipal Money API, 2026 Q2 snapshot of Section 71 and audited municipal finance data",
+      sourceUrl: SOURCE_URLS.municipalMoneyDocs,
     };
   }
   if (/population|household|age|youth|elder|dependency|income|poverty|employment|unemployment|education|water|sanitation|electricity|refuse|dwelling/.test(text)) {

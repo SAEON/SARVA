@@ -8,13 +8,70 @@ import "../styles/header.css";
 
 const fallbackNav = [
     { label: "Home", to: "/" },
-    { label: "Relevant Documents", to: "/resources" },
-    { label: "National Policy", to: "/national-policy-and-legislation" },
-    { label: "Glossary", to: "/glossary" },
-    { label: "Municipal Risk Profiler", to: "/municipal-risk-profiler" },
-    { label: "API", to: "/overview" },
-    { label: "Help", to: "/overview" },
-    { label: "About", to: "/about" },
+    {
+        label: "Explore",
+        items: [
+            { label: "Explore SARVA", to: "/explore" },
+            { label: "Explore South Africa", to: "/#risk-map" },
+            { label: "Environmental Themes", to: "/explore#themes" },
+            { label: "Risk & Vulnerability Layers", to: "/municipal-risk-profiler?metric=governance&tab=drivers" },
+            { label: "Dashboards & Indicators", to: "/municipal-risk-profiler?tab=indicators" },
+        ],
+    },
+    {
+        label: "Data",
+        items: [
+            { label: "Search SAEON Data", to: "/search" },
+            { label: "Supporting Data", to: "/?supportingData=true" },
+            { label: "Submit Data", href: "https://docs.google.com/forms/d/1bxnefRblVoQ8hpJJx_KL1nzeZHQfEK-QKVCxoPIXnAU/viewform?edit_requested=true", external: true },
+            { label: "Terrestrial Observations Monitor", href: "https://observationsmonitor.saeon.ac.za", external: true },
+        ],
+    },
+    {
+        label: "Maps & Tools",
+        items: [
+            { label: "Municipal Risk Profiler", to: "/municipal-risk-profiler" },
+            { label: "Rainfall Risk Layers", to: "/#risk-map" },
+            { label: "SARVA Atlas Gallery", href: "https://sarva.saeon.ac.za/atlas/", external: true },
+            { label: "2017 Agriculture Census", href: "https://sarvamaps.saeon.ac.za/agri-census/", external: true },
+            { label: "Climate Risk Tool", href: "https://sarvamaps.saeon.ac.za/climate-tool/", external: true },
+            { label: "Environmental Vulnerability", href: "https://sarvamaps.saeon.ac.za/sanbi/", external: true },
+            { label: "Air Quality (PM2.5) Predictions", href: "https://sarvamaps.saeon.ac.za/air-quality/", external: true },
+            { label: "BioEnergy Technology Decision Support Tool", href: "https://nrf-saeon.maps.arcgis.com/apps/dashboards/55aab230007f4712b62100988d182d2c", external: true },
+            { label: "Global Disasters Risk Dashboard", href: "https://sarvamaps.saeon.ac.za/global-disasters/map", external: true },
+            { label: "HST District Health Barometer", href: "https://dhb.hst.org.za/reproductive-maternal-child-health", external: true },
+            { label: "National Climate Change Information System", href: "https://gisportal.saeon.ac.za/portal/apps/webappviewer/index.html?id=2d572dcf9c5f47c484540f8c934e03f4", external: true },
+            { label: "Ocean Data Explorer Tool", href: "https://dash.saeon.ac.za/apps/ocean/PELTER", external: true },
+        ],
+    },
+    {
+        label: "Resources",
+        items: [
+            { label: "Search Glossary", to: "/glossary" },
+            { label: "Relevant Documents", to: "/resources" },
+            { label: "National Policy & Legislation", to: "/national-policy-and-legislation" },
+            { label: "Reports & Stories", to: "/resources?resource_group=reports_stories" },
+        ],
+    },
+    {
+        label: "Community",
+        items: [
+            { label: "Help & Training", to: "/resources?search=training" },
+            { label: "Data Science Lab", to: "/resources?search=data%20science%20lab" },
+            { label: "Contribute Data", href: "https://docs.google.com/forms/d/1bxnefRblVoQ8hpJJx_KL1nzeZHQfEK-QKVCxoPIXnAU/viewform?edit_requested=true", external: true },
+            { label: "Communities of Practice", to: "/about" },
+            { label: "Contact SARVA", to: "/about" },
+        ],
+    },
+    {
+        label: "About",
+        items: [
+            { label: "About SARVA", to: "/about" },
+            { label: "Partners", to: "/about" },
+            { label: "Governance", to: "/about" },
+            { label: "API & Developers", href: "https://github.com/SAEON", external: true },
+        ],
+    },
 ];
 
 export default function Header() {

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import LibraryEditModal from "../components/LibraryEditModal";
 import { apiUrl } from "../config/api";
 import { useCurrentUser } from "../hooks/useCurrentUser";
@@ -25,6 +26,7 @@ function buildPath(filters) {
     if (filters.resourceType) params.set("resource_type", filters.resourceType);
     if (filters.publicationYear) params.set("publication_year", filters.publicationYear);
     if (filters.keyword) params.set("keyword", filters.keyword);
+    if (filters.resourceGroup) params.set("resource_group", filters.resourceGroup);
 
     params.set("page", String(filters.page));
     params.set("limit", String(filters.limit));
@@ -53,11 +55,51 @@ function compactTags(tags) {
     return Array.isArray(tags) ? tags.slice(0, 3) : [];
 }
 
+function resourceContext({ search, resourceGroup }) {
+    const normalisedSearch = String(search || "").trim().toLowerCase();
+    if (resourceGroup === "reports_stories") {
+        return {
+            title: "Reports & Stories",
+            intro: "Evidence products, reports, briefs, case studies and SARVA-linked stories from the resource library.",
+        };
+    }
+    if (resourceGroup === "data_spotlight") {
+        return {
+            title: "Data Spotlight",
+            intro: "Featured datasets, research tools, live services and data links from the SARVA resource library.",
+        };
+    }
+    if (resourceGroup === "supporting_data") {
+        return {
+            title: "Supporting Data",
+            intro: "Reference datasets and external services that support SARVA workflows and interpretation.",
+        };
+    }
+    if (normalisedSearch.includes("data science lab")) {
+        return {
+            title: "Data Science Lab Resources",
+            intro: "Tutorials, prototype apps, learning pathways and practical SARVA data-science workflows.",
+        };
+    }
+    if (normalisedSearch.includes("training")) {
+        return {
+            title: "Help & Training",
+            intro: "Training material, methods notes and learning resources for working with SARVA data.",
+        };
+    }
+    return {
+        title: "Relevant Documents",
+        intro: "A searchable catalogue of SARVA-linked reports, guidelines, tools and reference websites.",
+    };
+}
+
 export default function Resources() {
+    const location = useLocation();
     const [search, setSearch] = useState("");
     const [resourceType, setResourceType] = useState("");
     const [publicationYear, setPublicationYear] = useState("");
     const [keyword, setKeyword] = useState("");
+    const [resourceGroup, setResourceGroup] = useState("");
     const [page, setPage] = useState(1);
     const [overrides, setOverrides] = useState({});
     const [createdRows, setCreatedRows] = useState([]);
@@ -70,6 +112,16 @@ export default function Resources() {
     const debouncedSearch = useDebouncedValue(search);
     const { isAdmin, token } = useCurrentUser();
 
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        setSearch(params.get("search") || params.get("q") || "");
+        setResourceType(params.get("resource_type") || "");
+        setPublicationYear(params.get("publication_year") || "");
+        setKeyword(params.get("keyword") || "");
+        setResourceGroup(params.get("resource_group") || params.get("group") || "");
+        setPage(1);
+    }, [location.search]);
+
     const path = useMemo(
         () =>
             buildPath({
@@ -77,10 +129,11 @@ export default function Resources() {
                 resourceType,
                 publicationYear,
                 keyword,
+                resourceGroup,
                 page,
                 limit,
             }),
-        [debouncedSearch, keyword, page, publicationYear, resourceType]
+        [debouncedSearch, keyword, page, publicationYear, resourceGroup, resourceType]
     );
 
     const { data: response, error, loading } = useJsonResource(path);
@@ -103,13 +156,15 @@ export default function Resources() {
         publicationYears: EMPTY,
         keywords: EMPTY,
     };
-    const hasFilters = search || resourceType || publicationYear || keyword;
+    const hasFilters = search || resourceType || publicationYear || keyword || resourceGroup;
+    const context = resourceContext({ search, resourceGroup });
 
     function clearFilters() {
         setSearch("");
         setResourceType("");
         setPublicationYear("");
         setKeyword("");
+        setResourceGroup("");
         setPage(1);
     }
 
@@ -212,9 +267,9 @@ export default function Resources() {
     return (
         <div className="sarva-resources">
             <div className="sarva-resources__header">
-                <h1 className="sarva-resources__title">Relevant Documents</h1>
+                <h1 className="sarva-resources__title">{context.title}</h1>
                 <p className="sarva-resources__intro">
-                    A searchable catalogue of SARVA-linked reports, guidelines, tools and reference websites.
+                    {context.intro}
                 </p>
             </div>
 

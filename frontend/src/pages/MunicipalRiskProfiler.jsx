@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { apiUrl, martinUrl } from "../config/api";
@@ -17,6 +18,87 @@ const MAP_MAX_BOUNDS = [
 ];
 const EMPTY = [];
 const DEFAULT_METRIC = "index:imported_composite_risk";
+const DEFAULT_METRIC_LABEL = "Municipal risk overview";
+const METRIC_DEEPLINKS = {
+    governance: "index:imported_governance_risk",
+    governance_audit: "index:governance_audit_compliance_imported",
+    governance_finance: "index:governance_financial_resilience_imported",
+    governance_infrastructure: "index:governance_infrastructure_investment_imported",
+    governance_capacity: "index:governance_institutional_capacity_imported",
+    safety: "index:crime_safety_imported",
+    safety_violent: "index:safety_violent_contact_imported",
+    safety_property: "index:safety_property_economic_imported",
+    safety_gender: "index:safety_gender_violence_imported",
+    safety_public_order: "index:safety_public_order_imported",
+    services: "index:service_access_imported",
+    people: "index:stats_sa_vulnerability_imported",
+};
+const LAYER_MODE_OPTIONS = [
+    { key: "guided", label: "Recommended", detail: "Start here" },
+    { key: "indices", label: "Compound indices", detail: "Roll-ups" },
+    { key: "indicators", label: "Single indicators", detail: "Full catalogue" },
+];
+const GUIDED_LAYER_KEYS = [
+    {
+        key: "imported_composite_risk",
+        label: "Municipal risk overview",
+        detail: "Balanced starting point",
+    },
+    {
+        key: "imported_governance_risk",
+        label: "Governance and finance",
+        detail: "Audit, finance and delivery capacity",
+    },
+    {
+        key: "crime_safety_imported",
+        label: "Safety pressure",
+        detail: "Combined SAPS safety context",
+    },
+    {
+        key: "service_access_imported",
+        label: "Basic service pressure",
+        detail: "Water, sanitation, electricity and refuse",
+    },
+    {
+        key: "stats_sa_vulnerability_imported",
+        label: "People and vulnerability",
+        detail: "Demographic and socio-economic context",
+    },
+];
+
+const profilerStartCards = [
+    {
+        title: "1. Choose a layer",
+        detail: "Start with the municipal risk overview, then switch to governance, safety, services or any individual indicator.",
+    },
+    {
+        title: "2. Pick a municipality",
+        detail: "Search by name/code or click the map. The side panel explains scores, raw values, sources and gaps.",
+    },
+    {
+        title: "3. Read drivers first",
+        detail: "Risk drivers show what is pushing the score up, so clients can see the practical story behind the map colour.",
+    },
+];
+
+const plannedProfilerFeatures = [
+    {
+        title: "Client brief mode",
+        detail: "A simplified one-page view for decision-makers with headline risks, confidence and recommended next questions.",
+    },
+    {
+        title: "Scenario comparison",
+        detail: "Compare baseline, forecast, climate-stress and intervention scenarios when scenario datasets are available.",
+    },
+    {
+        title: "Layer gap audit",
+        detail: "A national view showing which municipalities lack finance, governance, service, safety or vulnerability inputs.",
+    },
+    {
+        title: "Lab tutorials",
+        detail: "Data Science Lab walkthroughs explaining how each index is built and how to reproduce the analysis.",
+    },
+];
 
 function formatNumber(value, digits = 1, fallback = "n/a") {
     const number = Number(value);
@@ -87,6 +169,35 @@ function escapeHtml(value) {
 
 function normalise(value) {
     return String(value || "").toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function slugText(value) {
+    return normalise(value)
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+}
+
+function resolveMetricDeepLink(value) {
+    const raw = String(value || "").trim();
+    if (!raw) return "";
+    if (raw.includes(":")) return raw;
+    return METRIC_DEEPLINKS[raw] || METRIC_DEEPLINKS[slugText(raw).replace(/-/g, "_")] || "";
+}
+
+function resolveThemeDeepLink(value, themes) {
+    const raw = String(value || "").trim();
+    if (!raw || raw === "All themes") return "All themes";
+    const target = slugText(raw);
+    return themes.find((theme) => slugText(theme) === target)
+        || themes.find((theme) => slugText(theme).startsWith(target))
+        || themes.find((theme) => slugText(theme).includes(target))
+        || "All themes";
+}
+
+function textMatchesQuery(query, ...values) {
+    const q = normalise(query);
+    if (!q) return true;
+    return values.some((value) => normalise(value).includes(q));
 }
 
 function defaultAdminForm(municipalityCode = "") {
@@ -179,6 +290,18 @@ function sourceExplanation(component) {
     return `${source}.${url}${proxyNote}`;
 }
 
+function rawValueLabel(component) {
+    const raw = formatIndicatorValue(component?.rawValue, component?.displayUnit ?? component?.unit);
+    return raw && raw !== "n/a" ? raw : "";
+}
+
+function metricCoverageLabel(coverage) {
+    if (!coverage || coverage.total === 0) return "Coverage not available";
+    const missing = coverage.total - coverage.available;
+    const percent = coverage.total > 0 ? (coverage.available / coverage.total) * 100 : 0;
+    return `${coverage.available}/${coverage.total} municipalities mapped (${formatNumber(percent, 0)}%)${missing > 0 ? ` | ${missing} missing` : ""}`;
+}
+
 function componentContribution(component) {
     const score = Number(component.adjustedValue);
     const weight = Number(component.weight);
@@ -234,6 +357,24 @@ function forecastSourceLabel(forecast = {}) {
         forecastWindowLabel(forecast),
         forecast.latestRun?.finishedAt ? `updated ${formatDate(forecast.latestRun.finishedAt)}` : "",
     ].filter(Boolean).join(" | ");
+}
+
+function indexCoverageLabel(index = {}) {
+    const available = Number(index.indicatorCount);
+    const expected = Number(index.expectedIndicatorCount);
+    if (!Number.isFinite(expected) || expected <= 0) return "Coverage not listed";
+    const percent = Number.isFinite(Number(index.coveragePercent))
+        ? `${formatNumber(index.coveragePercent, 0)}%`
+        : `${formatNumber((available / expected) * 100, 0)}%`;
+    return `${Number.isFinite(available) ? available : 0}/${expected} inputs available (${percent})`;
+}
+
+function missingInputSummary(index = {}) {
+    const missing = Array.isArray(index.missingComponents) ? index.missingComponents : EMPTY;
+    if (missing.length === 0) return "No missing inputs listed for this index in the current profile.";
+    const shown = missing.slice(0, 4).map((component) => component.label || component.key).join(", ");
+    const more = missing.length > 4 ? `, plus ${missing.length - 4} more` : "";
+    return `${shown}${more}`;
 }
 
 function findIndicator(records = [], patterns = []) {
@@ -491,6 +632,7 @@ function buildPdf(actions) {
 }
 
 export default function MunicipalRiskProfiler() {
+    const location = useLocation();
     const { token, isAdmin } = useCurrentUser();
     const mapContainerRef = useRef(null);
     const mapRef = useRef(null);
@@ -525,6 +667,22 @@ export default function MunicipalRiskProfiler() {
     const [trendLoading, setTrendLoading] = useState(false);
     const [activeTab, setActiveTab] = useState("overview");
     const [indicatorThemeFilter, setIndicatorThemeFilter] = useState("All themes");
+    const [layerMode, setLayerMode] = useState("guided");
+    const [layerThemeFilter, setLayerThemeFilter] = useState("All themes");
+    const [layerSearch, setLayerSearch] = useState("");
+    const [layerBrowserOpen, setLayerBrowserOpen] = useState(false);
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const metric = resolveMetricDeepLink(params.get("metric"));
+        const tab = String(params.get("tab") || "").trim();
+
+        if (metric) {
+            setSelectedMetric(metric);
+            setLayerMode(metric.startsWith("indicator:") ? "indicators" : "indices");
+        }
+        if (tab) setActiveTab(tab);
+    }, [location.search]);
 
     const matchingMunicipalities = useMemo(() => {
         const q = normalise(query);
@@ -669,6 +827,8 @@ export default function MunicipalRiskProfiler() {
                                 "case",
                                 ["boolean", ["feature-state", "hover"], false],
                                 "#f3c66a",
+                                ["!", ["boolean", ["feature-state", "hasMetric"], false]],
+                                "#c7c7bf",
                                 [
                                     "interpolate",
                                     ["linear"],
@@ -732,7 +892,7 @@ export default function MunicipalRiskProfiler() {
             const metric = metricRecordsRef.current.get(Number(feature.properties?.gid ?? feature.id));
             const metricHtml = metric
                 ? `<span>${escapeHtml(metricLabelRef.current)}: ${escapeHtml(formatIndicatorValue(metric.displayValue, metric.displayUnit))}</span>`
-                : "";
+                : `<span>${escapeHtml(metricLabelRef.current)}: No data for this layer</span>`;
             if (!popupRef.current) popupRef.current = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 12 });
             popupRef.current
                 .setLngLat(event.lngLat)
@@ -889,23 +1049,27 @@ export default function MunicipalRiskProfiler() {
     useEffect(() => {
         const map = mapRef.current;
         const records = Array.isArray(metricData?.records) ? metricData.records : EMPTY;
-        if (!map || !mapReady || records.length === 0) return;
+        if (!map || !mapReady) return;
         metricLabelRef.current = metricData?.metric?.label || "Selected layer";
-        metricRecordsRef.current = new Map(records.map((record) => [Number(record.gid), record]));
+        const recordsByGid = new Map(records.map((record) => [Number(record.gid), record]));
+        metricRecordsRef.current = recordsByGid;
         const applyMetricState = () => {
-            records.forEach((record) => {
+            municipalities.forEach((municipality) => {
+                const record = recordsByGid.get(Number(municipality.gid));
+                const hasMetric = Number.isFinite(Number(record?.mapValue));
                 map.setFeatureState(
-                    { source: "municipal_boundaries", sourceLayer: "municipalities", id: Number(record.gid) },
+                    { source: "municipal_boundaries", sourceLayer: "municipalities", id: Number(municipality.gid) },
                     {
-                        metricValue: Number(record.mapValue) || 0,
-                        metricDisplay: formatIndicatorValue(record.displayValue, record.displayUnit),
+                        hasMetric,
+                        metricValue: hasMetric ? Number(record.mapValue) : null,
+                        metricDisplay: hasMetric ? formatIndicatorValue(record.displayValue, record.displayUnit) : "No data",
                     }
                 );
             });
         };
         if (map.isStyleLoaded()) applyMetricState();
         else map.once("load", applyMetricState);
-    }, [metricData, mapReady]);
+    }, [metricData, mapReady, municipalities]);
 
     useEffect(() => {
         const map = mapRef.current;
@@ -1200,6 +1364,14 @@ export default function MunicipalRiskProfiler() {
     const themes = Array.isArray(municipalIndicators.themes) ? municipalIndicators.themes : EMPTY;
     const indicatorRecords = Array.isArray(municipalIndicators.records) ? municipalIndicators.records : EMPTY;
     const indicatorThemes = ["All themes", ...Array.from(new Set(indicatorRecords.map((indicator) => indicator.theme || "Other"))).sort()];
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const theme = params.get("theme");
+        if (!theme) return;
+        setIndicatorThemeFilter(resolveThemeDeepLink(theme, indicatorThemes));
+    }, [indicatorThemes, location.search]);
+
     const filteredThemes = themes
         .map((theme) => ({
             ...theme,
@@ -1216,17 +1388,116 @@ export default function MunicipalRiskProfiler() {
     const mapLayerIndicators = indicatorRecords.length > 0 ? indicatorRecords : globalIndicators;
     const mapLayerIndices = indices.length > 0 ? indices : globalIndices;
     const mapLayerThemes = ["All themes", ...Array.from(new Set(mapLayerIndicators.map((indicator) => indicator.theme || "Other"))).sort()];
-    const metricIndexOptions = mapLayerIndices.map((index) => ({ value: `index:${index.key}`, label: index.label }));
+    const metricIndexOptions = mapLayerIndices.map((index) => ({
+        value: `index:${index.key}`,
+        label: index.key === "imported_composite_risk" ? DEFAULT_METRIC_LABEL : index.label,
+        theme: index.theme || "Indices",
+        description: index.description || "",
+    }));
+    const guidedLayerCards = GUIDED_LAYER_KEYS.map((layer) => {
+        const option = metricIndexOptions.find((item) => item.value === `index:${layer.key}`);
+        if (!option) return null;
+        return {
+            ...layer,
+            value: option.value,
+            label: layer.key === "imported_composite_risk" ? DEFAULT_METRIC_LABEL : layer.label,
+            description: option.description,
+        };
+    }).filter(Boolean);
+    const indexThemeOptions = [
+        "All themes",
+        ...Array.from(new Set(mapLayerIndices.map((index) => index.theme || "Other"))).sort(),
+    ];
+    const filteredMetricIndexOptions = metricIndexOptions.filter((option) => (
+        (layerThemeFilter === "All themes" || option.theme === layerThemeFilter)
+        && textMatchesQuery(layerSearch, option.label, option.theme, option.description)
+    ));
     const metricIndicatorGroups = mapLayerThemes
         .filter((theme) => theme !== "All themes")
         .map((theme) => ({
             theme,
             options: mapLayerIndicators
                 .filter((indicator) => (indicator.theme || "Other") === theme)
-                .map((indicator) => ({ value: `indicator:${indicator.key}`, label: indicator.label })),
+                .map((indicator) => ({
+                    value: `indicator:${indicator.key}`,
+                    label: indicator.label,
+                    theme: indicator.theme || "Other",
+                    description: indicator.description || "",
+                })),
         }))
         .filter((group) => group.options.length > 0);
+    const layerThemeOptions = layerMode === "indices" ? indexThemeOptions : mapLayerThemes;
+    const filteredMetricIndicatorGroups = metricIndicatorGroups
+        .filter((group) => layerThemeFilter === "All themes" || group.theme === layerThemeFilter)
+        .map((group) => ({
+            ...group,
+            options: group.options.filter((option) => textMatchesQuery(layerSearch, option.label, option.theme, option.description)),
+        }))
+        .filter((group) => group.options.length > 0);
+    const visibleLayerOptionCount = layerMode === "guided"
+        ? guidedLayerCards.length
+        : layerMode === "indices"
+            ? filteredMetricIndexOptions.length
+            : filteredMetricIndicatorGroups.reduce((total, group) => total + group.options.length, 0);
+    const selectedMetricIsVisible = (() => {
+        if (layerMode === "guided") return guidedLayerCards.some((option) => option.value === selectedMetric);
+        if (layerMode === "indices") return filteredMetricIndexOptions.some((option) => option.value === selectedMetric);
+        return filteredMetricIndicatorGroups.some((group) => group.options.some((option) => option.value === selectedMetric));
+    })();
     const activeMetric = metricData?.metric || {};
+    const activeMetricLabel = selectedMetric === DEFAULT_METRIC
+        ? (activeMetric.label || DEFAULT_METRIC_LABEL)
+        : (activeMetric.label || "Selected layer");
+    const metricRecords = Array.isArray(metricData?.records) ? metricData.records : EMPTY;
+    const metricCoverage = {
+        total: municipalities.length,
+        available: metricRecords.filter((record) => Number.isFinite(Number(record.mapValue))).length,
+    };
+    const missingProfileInputs = (() => {
+        const byKey = new Map();
+        indices.forEach((index) => {
+            (Array.isArray(index.missingComponents) ? index.missingComponents : EMPTY).forEach((component) => {
+                if (!component?.key || byKey.has(component.key)) return;
+                byKey.set(component.key, component);
+            });
+        });
+        return [...byKey.values()].sort((a, b) => `${a.theme || ""} ${a.label || a.key}`.localeCompare(`${b.theme || ""} ${b.label || b.key}`));
+    })();
+    const [selectedMetricKind, selectedMetricKey] = selectedMetric.includes(":")
+        ? selectedMetric.split(":", 2)
+        : ["index", selectedMetric];
+    const selectedLayerProfileStatus = (() => {
+        if (!profile) return null;
+        if (selectedMetricKind === "indicator") {
+            const indicator = indicatorRecords.find((item) => item.key === selectedMetricKey);
+            if (!indicator) {
+                return {
+                    tone: "missing",
+                    title: "Selected layer missing here",
+                    detail: `${activeMetricLabel} has no loaded value for ${profile.municipality.municipality}. It is excluded from this municipality's local calculations until a source row is imported.`,
+                };
+            }
+            return {
+                tone: indicator.isProxy ? "partial" : "available",
+                title: indicator.isProxy ? "Selected layer is proxy data" : "Selected layer available here",
+                detail: `${rawValueLabel(indicator) ? `Raw value ${rawValueLabel(indicator)}. ` : ""}Comparison score ${formatNumber(indicator.normalizedValue, 1)} / 100. ${sourceLabel(indicator) || "Source metadata not listed."}`,
+            };
+        }
+        const index = indices.find((item) => item.key === selectedMetricKey);
+        if (!index) {
+            return {
+                tone: "missing",
+                title: "Selected index missing here",
+                detail: `${activeMetricLabel} cannot be calculated for this municipality because none of its component inputs are currently loaded.`,
+            };
+        }
+        const missingCount = Array.isArray(index.missingComponents) ? index.missingComponents.length : 0;
+        return {
+            tone: missingCount > 0 ? "partial" : "available",
+            title: missingCount > 0 ? "Selected index has data gaps" : "Selected index fully covered here",
+            detail: `${indexCoverageLabel(index)}. ${missingCount > 0 ? `Missing: ${missingInputSummary(index)}.` : "No missing component inputs are listed for this municipality."}`,
+        };
+    })();
     const primaryIndex = indices.find((index) => index.key === "imported_composite_risk")
         || indices.find((index) => index.key === "composite_risk")
         || indices.find((index) => /overall/i.test(`${index.theme} ${index.label}`))
@@ -1532,44 +1803,126 @@ export default function MunicipalRiskProfiler() {
 
             <section className="sarva-muniProfiler__mapPanel" aria-label="Municipality map">
                 <div ref={mapContainerRef} className="sarva-muniProfiler__map" />
-                <div className="sarva-muniProfiler__mapNote">
+                <div className={`sarva-muniProfiler__mapNote${layerBrowserOpen ? " is-expanded" : ""}`}>
                     <label>
                         <span className="sarva-muniProfiler__inlineHead">
                             <strong>Map layer</strong>
                             {infoButton("Map layer", [
-                                { label: "What the colours mean", value: "The map colours municipalities using a normalized 0-100 comparison score for the selected index or indicator. 0 is lowest relative pressure in the available dataset and 100 is highest relative pressure. Green is lower pressure and red is higher pressure." },
+                                { label: "What the colours mean", value: "The map colours municipalities using a 0-100 comparison score for the selected layer. Green means lower relative pressure among South African municipalities in the available dataset; red means higher relative pressure." },
+                                { label: "Comparison scope", value: "Scores are normalized against other South African municipalities for the same indicator, source period and scenario where available. They are not international standards, legal thresholds or official warning levels." },
+                                { label: "0 and 100", value: "0 is the lowest relative pressure in the available South African municipal dataset for this layer. 100 is the highest relative pressure in that same comparison set. Missing values are shown separately as no data." },
+                                { label: "Layer levels", value: "Recommended layers are client-friendly starting points. Compound indices combine multiple inputs. Single indicators show one source variable at a time." },
                                 { label: "Raw values", value: "Raw counts, percentages and units are kept in the profile panel. The map uses comparable scores so different municipalities can be viewed spatially." },
-                                { label: "Selected layer", value: activeMetric.label || "Imported composite risk" },
+                                { label: "Selected layer", value: activeMetricLabel },
                                 { label: "Source and period", value: [activeMetric.sourceName, activeMetric.period, activeMetric.scenario].filter(Boolean).join(" | ") || "Shown after the layer loads." },
                             ])}
                         </span>
-                        <select value={selectedMetric} onChange={(event) => setSelectedMetric(event.target.value)}>
-                            {metricIndexOptions.length === 0 && metricIndicatorGroups.length === 0 && (
-                                <option value={DEFAULT_METRIC}>Imported composite risk</option>
-                            )}
-                            <optgroup label="Indices">
-                                {metricIndexOptions.map((option) => (
-                                    <option key={option.value} value={option.value}>{option.label}</option>
-                                ))}
-                            </optgroup>
-                            {metricIndicatorGroups.map((group) => (
-                                <optgroup key={group.theme} label={group.theme}>
-                                    {group.options.map((option) => (
-                                        <option key={option.value} value={option.value}>{option.label}</option>
+                        <button
+                            type="button"
+                            className="sarva-muniProfiler__layerToggle"
+                            onClick={() => setLayerBrowserOpen((open) => !open)}
+                            aria-expanded={layerBrowserOpen}
+                        >
+                            <span>{layerBrowserOpen ? "Hide layer browser" : "Change layer"}</span>
+                            <b>{activeMetricLabel}</b>
+                        </button>
+                        {layerBrowserOpen && (
+                            <div className="sarva-muniProfiler__layerBrowser">
+                                <div className="sarva-muniProfiler__layerModes" role="tablist" aria-label="Layer detail level">
+                                    {LAYER_MODE_OPTIONS.map((mode) => (
+                                        <button
+                                            key={mode.key}
+                                            type="button"
+                                            className={layerMode === mode.key ? "is-active" : ""}
+                                            onClick={() => {
+                                                setLayerMode(mode.key);
+                                                setLayerThemeFilter("All themes");
+                                                setLayerSearch("");
+                                            }}
+                                        >
+                                            <strong>{mode.label}</strong>
+                                            <small>{mode.detail}</small>
+                                        </button>
                                     ))}
-                                </optgroup>
-                            ))}
-                        </select>
+                                </div>
+                                {layerMode === "guided" && guidedLayerCards.length > 0 && (
+                                    <div className="sarva-muniProfiler__guidedLayers" aria-label="Recommended map layers">
+                                        {guidedLayerCards.map((layer) => (
+                                            <button
+                                                key={layer.value}
+                                                type="button"
+                                                className={selectedMetric === layer.value ? "is-active" : ""}
+                                                onClick={() => setSelectedMetric(layer.value)}
+                                            >
+                                                <strong>{layer.label}</strong>
+                                                <span>{layer.detail}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                                {layerMode !== "guided" && (
+                                    <div className="sarva-muniProfiler__layerFilters">
+                                        <select
+                                            value={layerThemeFilter}
+                                            onChange={(event) => setLayerThemeFilter(event.target.value)}
+                                            aria-label="Filter map layers by category"
+                                        >
+                                            {layerThemeOptions.map((theme) => (
+                                                <option key={theme} value={theme}>{theme}</option>
+                                            ))}
+                                        </select>
+                                        <input
+                                            type="search"
+                                            value={layerSearch}
+                                            onChange={(event) => setLayerSearch(event.target.value)}
+                                            placeholder={layerMode === "indices" ? "Search roll-ups..." : "Search indicators..."}
+                                            aria-label="Search map layers"
+                                        />
+                                    </div>
+                                )}
+                                <select value={selectedMetric} onChange={(event) => setSelectedMetric(event.target.value)}>
+                                    {metricIndexOptions.length === 0 && metricIndicatorGroups.length === 0 && (
+                                        <option value={DEFAULT_METRIC}>{DEFAULT_METRIC_LABEL}</option>
+                                    )}
+                                    {!selectedMetricIsVisible && (
+                                        <option value={selectedMetric}>{activeMetricLabel} (current selection)</option>
+                                    )}
+                                    {layerMode !== "indicators" && (
+                                        <optgroup label={layerMode === "guided" ? "Recommended layers" : "Compound indices"}>
+                                        {(layerMode === "guided" ? guidedLayerCards : filteredMetricIndexOptions).map((option) => (
+                                            <option key={option.value} value={option.value}>{option.label}</option>
+                                        ))}
+                                    </optgroup>
+                                    )}
+                                    {layerMode === "indicators" && filteredMetricIndicatorGroups.map((group) => (
+                                        <optgroup key={group.theme} label={group.theme}>
+                                            {group.options.map((option) => (
+                                                <option key={option.value} value={option.value}>{option.label}</option>
+                                            ))}
+                                        </optgroup>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
                     </label>
                     <span>
-                        {metricLoading ? "Loading layer..." : activeMetric.label || "Click a municipality or use search."}
+                        {metricLoading ? "Loading layer..." : activeMetricLabel || "Click a municipality or use search."}
                         {activeMetric.unit ? ` | ${activeMetric.unit}` : ""}
                         {activeMetric.period || activeMetric.scenario ? ` | ${[activeMetric.period, activeMetric.scenario].filter(Boolean).join(" | ")}` : ""}
                         {activeMetric.sourceName ? ` | ${activeMetric.sourceName}` : ""}
                     </span>
+                    {layerBrowserOpen && (
+                        <small className="sarva-muniProfiler__mapCoverage">
+                            {visibleLayerOptionCount} layer{visibleLayerOptionCount === 1 ? "" : "s"} in this view | {metricCoverageLabel(metricCoverage)}
+                        </small>
+                    )}
+                    <small className="sarva-muniProfiler__scoreScope">
+                        0-100 is relative to SA municipalities for this layer and period, not an international benchmark.
+                    </small>
                     <div className="sarva-muniProfiler__legend" aria-hidden="true">
                         <i />
-                        <small><b>Low</b><b>High</b></small>
+                        <small><b>Lower relative pressure</b><b>Higher relative pressure</b></small>
+                        <span><em /> No data</span>
                     </div>
                 </div>
             </section>
@@ -1578,8 +1931,17 @@ export default function MunicipalRiskProfiler() {
                 {profileLoading && <div className="sarva-muniProfiler__state">Loading municipal profile...</div>}
                 {profileError && <div className="sarva-muniProfiler__state">{profileError}</div>}
                 {!profileLoading && !profileError && !profile && (
-                    <div className="sarva-muniProfiler__state">
-                        Search for a municipality or click the map to load a profile. The map is already coloured by the selected layer.
+                    <div className="sarva-muniProfiler__state sarva-muniProfiler__state--guide">
+                        <strong>Start with a municipality</strong>
+                        <p>Search by name/code or click the map. The profile will show the score, the largest drivers, raw source values and any missing inputs.</p>
+                        <div className="sarva-muniProfiler__startGrid">
+                            {profilerStartCards.map((card) => (
+                                <article key={card.title}>
+                                    <span>{card.title}</span>
+                                    <p>{card.detail}</p>
+                                </article>
+                            ))}
+                        </div>
                     </div>
                 )}
                 {!profileLoading && !profileError && profile && (
@@ -1602,6 +1964,13 @@ export default function MunicipalRiskProfiler() {
                                 </span>
                             ))}
                         </div>
+
+                        {selectedLayerProfileStatus && (
+                            <div className={`sarva-muniProfiler__dataStatus is-${selectedLayerProfileStatus.tone}`}>
+                                <strong>{selectedLayerProfileStatus.title}</strong>
+                                <p>{selectedLayerProfileStatus.detail}</p>
+                            </div>
+                        )}
 
                         <div className="sarva-muniProfiler__profileNav">
                             <span>Profile sections</span>
@@ -1663,6 +2032,8 @@ export default function MunicipalRiskProfiler() {
                                                     { label: "What it means", value: index.description },
                                                     { label: "Score meaning", value: scoreExplanation(index.score, index.riskLabel) },
                                                     { label: "Calculation", value: indexFormula(index) },
+                                                    { label: "Data coverage", value: indexCoverageLabel(index) },
+                                                    { label: "Missing inputs", value: missingInputSummary(index) },
                                                     { label: "Underlying sources", value: sourceList(index.components) },
                                                     { label: "Main inputs", value: indexInputSummary(index) },
                                                 ])}
@@ -1672,7 +2043,13 @@ export default function MunicipalRiskProfiler() {
                                                 <span>{index.riskLabel}</span>
                                             </div>
                                             <p>{index.description}</p>
-                                            <small>{index.sourceName || "SARVA municipal profiler"} | {index.indicatorCount} indicators</small>
+                                            <div className="sarva-muniProfiler__coverage">
+                                                <span>{indexCoverageLabel(index)}</span>
+                                                {Array.isArray(index.missingComponents) && index.missingComponents.length > 0 && (
+                                                    <small>Gaps: {missingInputSummary(index)}</small>
+                                                )}
+                                            </div>
+                                            <small>{index.sourceName || "SARVA municipal profiler"} | {index.indicatorCount} indicators used</small>
                                         </article>
                                     ))}
                                 </div>
@@ -1723,6 +2100,24 @@ export default function MunicipalRiskProfiler() {
                             </p>
                             <small>{profile.description}</small>
                         </section>}
+
+                        {activeTab === "overview" && (
+                            <section className="sarva-muniProfiler__section sarva-muniProfiler__roadmap">
+                                <div className="sarva-muniProfiler__sectionHead">
+                                    <h3>Coming next</h3>
+                                    <span>planned enhancements</span>
+                                </div>
+                                <div className="sarva-muniProfiler__roadmapGrid">
+                                    {plannedProfilerFeatures.map((item) => (
+                                        <article key={item.title}>
+                                            <small>Coming soon</small>
+                                            <strong>{item.title}</strong>
+                                            <p>{item.detail}</p>
+                                        </article>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
 
                         {activeTab === "trends" && (
                             <section className="sarva-muniProfiler__section">
@@ -1925,36 +2320,42 @@ export default function MunicipalRiskProfiler() {
                             <section className="sarva-muniProfiler__section">
                                 <div className="sarva-muniProfiler__sectionHead">
                                     <h3>Top risk drivers</h3>
-                                    <span>Composite index</span>
+                                    <span>Composite risk pressure</span>
                                 </div>
                                 {drivers.length === 0 ? (
                                     <p>No composite driver rows are available for this municipality yet.</p>
                                 ) : (
-                                    <div className="sarva-muniProfiler__drivers">
-                                        {drivers.slice(0, 6).map((driver) => (
-                                            <article key={driver.key}>
-                                                <div>
-                                                    <span className="sarva-muniProfiler__cardTitle">
-                                                        <strong>{driver.label}</strong>
-                                                        {infoButton(driver.label, [
-                                                            { label: "What this is", value: driver.description || "Risk driver used in the selected municipal composite." },
-                                                            { label: "How to read the score", value: riskInputExplanation(driver) },
-                                                            { label: "Direction logic", value: directionExplanation(driver.direction) },
-                                                            { label: "Weight in the index", value: weightExplanation(driver) },
-                                                            { label: "Source and date", value: sourceExplanation(driver) },
-                                                        ])}
-                                                    </span>
-                                                    <span>{formatNumber(driver.adjustedValue, 1)} / 100</span>
-                                                </div>
-                                                <i aria-hidden="true"><b style={{ width: scoreWidth(driver.adjustedValue) }} /></i>
-                                                <small>
-                                                    {driver.theme} | weight {formatNumber(driver.weight, 2)}
-                                                    {driver.sourceName ? ` | ${driver.sourceName}` : ""}
-                                                    {driver.period || driver.scenario ? ` | ${[driver.period, driver.scenario].filter(Boolean).join(" | ")}` : ""}
-                                                </small>
-                                            </article>
-                                        ))}
-                                    </div>
+                                    <>
+                                        <p className="sarva-muniProfiler__driverNote">
+                                            These are the largest weighted contributors for this municipality in the same composite index. They can differ between municipalities because each place has a different indicator profile.
+                                        </p>
+                                        <div className="sarva-muniProfiler__drivers">
+                                            {drivers.slice(0, 6).map((driver) => (
+                                                <article key={driver.key}>
+                                                    <div>
+                                                        <span className="sarva-muniProfiler__cardTitle">
+                                                            <strong>{driver.label}</strong>
+                                                            {infoButton(driver.label, [
+                                                                { label: "What this is", value: driver.description || "Risk driver used in the selected municipal composite." },
+                                                                { label: "How to read the score", value: riskInputExplanation(driver) },
+                                                                { label: "Direction logic", value: directionExplanation(driver.direction) },
+                                                                { label: "Weight in the index", value: weightExplanation(driver) },
+                                                                { label: "Source and date", value: sourceExplanation(driver) },
+                                                            ])}
+                                                        </span>
+                                                        <span>{formatNumber(driver.adjustedValue, 1)} / 100 risk pressure</span>
+                                                    </div>
+                                                    <i aria-hidden="true"><b style={{ width: scoreWidth(driver.adjustedValue) }} /></i>
+                                                    <small>
+                                                        {rawValueLabel(driver) ? `Raw value ${rawValueLabel(driver)} | ` : ""}
+                                                        {driver.theme} | weight {formatNumber(driver.weight, 2)}
+                                                        {driver.sourceName ? ` | ${driver.sourceName}` : ""}
+                                                        {driver.period || driver.scenario ? ` | ${[driver.period, driver.scenario].filter(Boolean).join(" | ")}` : ""}
+                                                    </small>
+                                                </article>
+                                            ))}
+                                        </div>
+                                    </>
                                 )}
                             </section>
                         )}
@@ -1969,6 +2370,19 @@ export default function MunicipalRiskProfiler() {
                                     <p>No municipal indicator records are available for this municipality yet.</p>
                                 ) : (
                                     <>
+                                        {missingProfileInputs.length > 0 && (
+                                            <div className="sarva-muniProfiler__missingInputs">
+                                                <strong>Missing local inputs</strong>
+                                                <p>
+                                                    {missingProfileInputs.length} expected indicator{missingProfileInputs.length === 1 ? "" : "s"} are not loaded for this municipality and are excluded from affected index calculations.
+                                                </p>
+                                                <div>
+                                                    {missingProfileInputs.slice(0, 8).map((component) => (
+                                                        <span key={component.key}>{component.label || component.key}</span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                         <label className="sarva-muniProfiler__trendSelect">
                                             <span className="sarva-muniProfiler__inlineHead">
                                                 <span>Category</span>

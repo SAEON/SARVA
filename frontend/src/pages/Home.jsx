@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import LibraryEditModal from "../components/LibraryEditModal";
 import dstiLogo from "../assets/logos/DSTI.png";
+import dataScienceLabLogo from "../assets/logos/lab_logo.png";
 import saeonLogo from "../assets/logos/SAEON-NRF-LOGO-alpha.png";
 import sarvaLogo from "../assets/logos/SARVA_final-logo-01b.png";
 import { apiUrl } from "../config/api";
@@ -11,9 +12,11 @@ import "../styles/home.css";
 import "../styles/resources.css";
 
 const SouthAfricaMap = lazy(() => import("../components/SouthAfricaMap"));
+const DATA_SCIENCE_LAB_PATH = "/resources?search=data%20science%20lab";
+const EXPLORE_PATH = "/explore";
 
 const featureTiles = [
-    ["◇", "Interactive Maps", "Explore spatial data and layers", "/overview"],
+    ["◇", "Atlas Tools", "Open SARVA interactive map apps", "/explore#atlas-tools"],
     ["▤", "Dashboards", "View and customise dashboards", "/overview"],
     ["▥", "Indicators", "Track indicators and trends", "/municipal-risk-profiler"],
     ["⌕", "Search Glossary", "Find definitions and terminology", "/glossary"],
@@ -38,6 +41,7 @@ const featureGroups = [
         detail: "Training, contributions and collaboration",
         items: [
             ["◇", "Help & Training", "Grow skills and find guidance", "/resources?search=training"],
+            ["▧", "Data Science Lab", "Tutorials, learning, apps and SARVA lab notes", DATA_SCIENCE_LAB_PATH],
             ["◎", "Contribute Data", "Share datasets and knowledge", "https://docs.google.com/forms/d/1bxnefRblVoQ8hpJJx_KL1nzeZHQfEK-QKVCxoPIXnAU/viewform?edit_requested=true"],
             ["♧", "Communities of Practice", "Connect with SARVA partners", "/about"],
         ],
@@ -103,9 +107,10 @@ const portalCategories = [
         detail: "Contribute knowledge, find training, and connect with SARVA communities of practice.",
         to: "/overview",
         theme: "community",
-        layers: ["Training", "Partners", "Contribute", "Support"],
+        layers: ["Training", "Data Science Lab", "Partners", "Contribute", "Support"],
         links: [
             ["Training", "/resources?search=training"],
+            ["Data Science Lab", DATA_SCIENCE_LAB_PATH],
             ["Contribute data", "https://docs.google.com/forms/d/1bxnefRblVoQ8hpJJx_KL1nzeZHQfEK-QKVCxoPIXnAU/viewform?edit_requested=true"],
             ["Community", "/about"],
         ],
@@ -137,6 +142,11 @@ const resourceEntryPoints = [
         title: "Municipal risk profiles",
         detail: "Municipal screening profiles, trends, drivers, indicators and downloadable PDFs.",
         to: "/municipal-risk-profiler",
+    },
+    {
+        title: "Environmental Data Science Lab",
+        detail: "Tutorials, learning pathways, prototype apps and SARVA data-science notes.",
+        to: DATA_SCIENCE_LAB_PATH,
     },
     {
         title: "Submit data",
@@ -418,6 +428,24 @@ function ResourceIcon({ kind }) {
     );
 }
 
+function SectionIcon({ kind }) {
+    return (
+        <span className="sarva-panel__icon" aria-hidden="true">
+            <ResourceIcon kind={kind} />
+        </span>
+    );
+}
+
+function ExternalLinkIcon() {
+    return (
+        <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+            <path d="M8 8h8v8" />
+            <path d="M16 8l-9 9" />
+            <path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4" />
+        </svg>
+    );
+}
+
 function logoImageUrl(item = {}, preferProvider = false) {
     if (item.logo_url) return item.logo_url;
     if (!preferProvider) return "";
@@ -449,6 +477,73 @@ function ResourceLogoMark({ item, preferProviderLogo = false }) {
     );
 }
 
+function ResourceCard({
+    item,
+    isAdmin,
+    onEdit,
+    onCheck,
+    checking,
+    onDelete,
+    preferProviderLogo = false,
+}) {
+    const status = statusForResource(item);
+    const keywords = Array.isArray(item.keywords) ? item.keywords : [];
+    const shownKeywords = keywords.slice(0, 5);
+
+    return (
+        <article className="sarva-reportCard">
+            <ResourceLogoMark item={item} preferProviderLogo={preferProviderLogo} />
+            <div className="sarva-reportCard__body">
+                <div className="sarva-reportCard__topline">
+                    <span>{item.resource_type || "Resource"}</span>
+                    <span>{formatResourceDate(item)}</span>
+                    {item.author && <span>{item.author}</span>}
+                </div>
+                <strong>{item.title}</strong>
+                <div className="sarva-reportCard__health">
+                    <span className={`is-${status}`}>{statusLabel(status)}</span>
+                    {item.link_checked_at ? (
+                        <small>
+                            Checked {new Date(item.link_checked_at).toLocaleDateString("en-ZA")}
+                            {item.link_status_code ? ` | ${item.link_status_code}` : ""}
+                        </small>
+                    ) : (
+                        <small>Link not checked yet</small>
+                    )}
+                </div>
+                {shownKeywords.length > 0 && (
+                    <div className="sarva-reportCard__tags">
+                        {shownKeywords.map((keyword) => (
+                            <em key={keyword}>{keyword}</em>
+                        ))}
+                        {keywords.length > shownKeywords.length && <em>+{keywords.length - shownKeywords.length}</em>}
+                    </div>
+                )}
+                <div className="sarva-reportCard__actions">
+                    {item.url && (
+                        <a href={item.url} target="_blank" rel="noopener noreferrer">
+                            Open source <ExternalLinkIcon />
+                        </a>
+                    )}
+                    {isAdmin && (
+                        <>
+                            <button type="button" onClick={() => onEdit(item)}>
+                                Edit
+                            </button>
+                            <button type="button" onClick={() => onCheck(item)} disabled={checking}>
+                                {checking ? "Checking" : "Check link"}
+                            </button>
+                            <button type="button" className="is-danger" onClick={() => onDelete(item)}>
+                                Delete
+                            </button>
+                        </>
+                    )}
+                </div>
+            </div>
+        </article>
+    );
+}
+
 function withSarvaSource(url) {
     try {
         const nextUrl = new URL(url);
@@ -475,6 +570,13 @@ function externalAlertUrl(url) {
 function catalogueUrl(stat = {}) {
     const path = String(stat.cataloguePath || "records").trim();
     return withSarvaSource(`https://catalogue.saeon.ac.za/${path}`);
+}
+
+function homeCtaPath(hero) {
+    const label = String(hero?.cta_label || "").trim().toLowerCase();
+    const href = String(hero?.cta_href || "").trim();
+    if (!href || label === "explore now" || href === "/maps/explore") return EXPLORE_PATH;
+    return href;
 }
 
 function citationUrl(item = {}) {
@@ -731,7 +833,7 @@ function buildHighlightItems(items = [], limit = 5) {
 
 export default function Home() {
     const location = useLocation();
-    const [mapMode, setMapMode] = useState("environment");
+    const [mapMode, setMapMode] = useState("forecast-risk");
     const [mapFocusHighlight, setMapFocusHighlight] = useState(null);
     const [showAtAGlance, setShowAtAGlance] = useState(false);
     const [showMetricInfo, setShowMetricInfo] = useState(false);
@@ -1223,12 +1325,22 @@ export default function Home() {
                         </span>
                         <h1>{hero?.title || "South African Risk & Vulnerability Atlas"}</h1>
                         <p>{hero?.description || "An open access platform linking datasets, indicators, and tools."}</p>
+                        <Link to={DATA_SCIENCE_LAB_PATH} className="sarva-dash__labCallout" aria-label="Open Environmental Data Science Lab resources">
+                            <span className="sarva-dash__labLogo">
+                                <img src={dataScienceLabLogo} alt="Environmental Data Science Lab" />
+                            </span>
+                            <span>
+                                <em>Learning hub</em>
+                                <strong>Environmental Data Science Lab</strong>
+                                <small>Tutorials, prototype apps, blog notes and practical SARVA data-science workflows.</small>
+                                <i>Open lab resources</i>
+                            </span>
+                        </Link>
                         <div className="sarva-dash__heroActions">
-                            <Link to={hero?.cta_href || "/overview"}>
+                            <Link to={homeCtaPath(hero)}>
                                 {hero?.cta_label || "Explore Now"}
                             </Link>
                             <Link to="/municipal-risk-profiler">Municipal risk profiles</Link>
-                            <Link to="/search">Browse data</Link>
                             <button type="button" onClick={() => setShowResourceMenu(true)}>
                                 Open resources
                             </button>
@@ -1310,8 +1422,8 @@ export default function Home() {
                     aria-label="SARVA updates and monitoring notices"
                 >
                     <div className="sarva-newsTicker__label">
-                        <strong>News feeds</strong>
-                        <span>Click to open original source</span>
+                        <strong>Risk watch</strong>
+                        <span>Curated public feeds</span>
                     </div>
                     <div className="sarva-newsTicker__controls" aria-label="Move through updates">
                         <button type="button" onClick={() => pageUpdate(-1)} disabled={!canPageUpdates} aria-label="Previous update">
@@ -1341,6 +1453,11 @@ export default function Home() {
                                         {activeUpdate.tags.slice(0, 4).map((tag) => `#${tag}`).join(" ")}
                                     </small>
                                 )}
+                                {activeUpdate.relevanceReason && (
+                                    <small className="sarva-newsTicker__reason">
+                                        Why shown: {activeUpdate.relevanceReason.split(" | ").slice(0, 2).join(" | ")}
+                                    </small>
+                                )}
                             </>
                         );
 
@@ -1364,7 +1481,7 @@ export default function Home() {
                 <aside className="sarva-publicDataNotice" aria-label="Public data notice">
                     <strong>Public data notice</strong>
                     <span>
-                        News feed items are drawn from public source pages, RSS/news feeds and open data endpoints, then filtered for local and international environmental risk, hazard, disaster and emergency relevance. Cards show short feed metadata and link through to the original source; feeds may be delayed, incomplete or unavailable and do not replace official warnings or emergency instructions.
+                        Risk-watch items are drawn from public source pages, RSS/news feeds and open data endpoints, then filtered for SARVA environmental risk, hazard, disaster, public-health, service-delivery, governance and resilience relevance. General conflict or political news is excluded unless it has a clear humanitarian, infrastructure, health, water, food-security or disaster-risk signal. Feeds may be delayed, incomplete or unavailable and do not replace official warnings or emergency instructions.
                     </span>
                 </aside>
                 {showMetricInfo && (
@@ -1617,15 +1734,15 @@ export default function Home() {
                         <div className="sarva-panel__head">
                             <div>
                                 <h2>Explore South Africa</h2>
-                                <p>Municipal boundaries, SAEON live observations and forecast risk layers for national context.</p>
+                                <p>Forecast rainfall risk, environmental risk layers and SAEON live observations for national context.</p>
                             </div>
                             <div className="sarva-dash__tabs">
                                 <button
                                     type="button"
-                                    className={mapMode === "environment" ? "is-active" : ""}
-                                    onClick={() => setMapMode("environment")}
+                                    className={mapMode === "forecast-risk" ? "is-active" : ""}
+                                    onClick={() => setMapMode("forecast-risk")}
                                 >
-                                    Environmental Themes
+                                    Forecast Rainfall Risk
                                 </button>
                                 <button
                                     type="button"
@@ -1636,10 +1753,10 @@ export default function Home() {
                                 </button>
                                 <button
                                     type="button"
-                                    className={mapMode === "forecast-risk" ? "is-active" : ""}
-                                    onClick={() => setMapMode("forecast-risk")}
+                                    className={mapMode === "environmental-risk" ? "is-active" : ""}
+                                    onClick={() => setMapMode("environmental-risk")}
                                 >
-                                    Forecast Risk
+                                    Environmental Risk Index
                                 </button>
                             </div>
                         </div>
@@ -1656,12 +1773,15 @@ export default function Home() {
                 <section className="sarva-dash__libraryPair" aria-label="Featured reports and data spotlight">
                     <article className="sarva-panel sarva-panel--reports">
                         <div className="sarva-panel__head">
-                            <div>
-                                <h2>Latest Reports & Stories</h2>
-                                <p>Featured SARVA evidence products, briefs and stories from the resource library.</p>
+                            <div className="sarva-panel__titleGroup">
+                                <SectionIcon kind="report" />
+                                <div>
+                                    <h2>Latest Reports & Stories</h2>
+                                    <p>Featured SARVA evidence products, briefs and stories from the resource library.</p>
+                                </div>
                             </div>
                             <div className="sarva-reports__headActions">
-                                <Link to="/resources">View all</Link>
+                                <Link to="/resources?resource_group=reports_stories">View all</Link>
                                 {isAdmin && (
                                     <button type="button" onClick={() => setEditingReport({ resource_type: "Report" })}>
                                         Add report or story
@@ -1731,69 +1851,31 @@ export default function Home() {
                         )}
 
                         <div className="sarva-reports__grid">
-                            {reportsAndStories.map((report) => {
-                                const status = statusForResource(report);
-                                return (
-                                    <article className="sarva-reportCard" key={report.id}>
-                                        <ResourceLogoMark item={report} />
-                                        <div>
-                                            <small>{report.resource_type || "Report"} | {formatResourceDate(report)}</small>
-                                            <strong>{report.title}</strong>
-                                            <div className="sarva-reportCard__health">
-                                                <span className={`is-${status}`}>{statusLabel(status)}</span>
-                                                {report.link_checked_at && (
-                                                    <small>
-                                                        Checked {new Date(report.link_checked_at).toLocaleDateString("en-ZA")}
-                                                        {report.link_status_code ? ` | ${report.link_status_code}` : ""}
-                                                    </small>
-                                                )}
-                                            </div>
-                                            {Array.isArray(report.keywords) && report.keywords.length > 0 && (
-                                                <div className="sarva-reportCard__tags">
-                                                    {report.keywords.map((keyword) => (
-                                                        <em key={keyword}>{keyword}</em>
-                                                    ))}
-                                                </div>
-                                            )}
-                                            <div className="sarva-reportCard__actions">
-                                                {report.url && (
-                                                    <a href={report.url} target="_blank" rel="noopener noreferrer">
-                                                        Open
-                                                    </a>
-                                                )}
-                                                {isAdmin && (
-                                                    <>
-                                                        <button type="button" onClick={() => setEditingReport(report)}>
-                                                            Edit
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => checkReportLink(report)}
-                                                            disabled={checkingReportId === report.id}
-                                                        >
-                                                            {checkingReportId === report.id ? "Checking" : "Check link"}
-                                                        </button>
-                                                        <button type="button" className="is-danger" onClick={() => deleteReport(report)}>
-                                                            Delete
-                                                        </button>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </article>
-                                );
-                            })}
+                            {reportsAndStories.map((report) => (
+                                <ResourceCard
+                                    key={report.id}
+                                    item={report}
+                                    isAdmin={isAdmin}
+                                    onEdit={setEditingReport}
+                                    onCheck={checkReportLink}
+                                    checking={checkingReportId === report.id}
+                                    onDelete={deleteReport}
+                                />
+                            ))}
                         </div>
                     </article>
 
                     <article className="sarva-panel sarva-panel--reports">
                         <div className="sarva-panel__head">
-                            <div>
-                                <h2>Data Spotlight</h2>
-                                <p>Featured datasets, tools and live resource links from the library.</p>
+                            <div className="sarva-panel__titleGroup">
+                                <SectionIcon kind="database" />
+                                <div>
+                                    <h2>Data Spotlight</h2>
+                                    <p>Featured datasets, tools and live resource links from the library.</p>
+                                </div>
                             </div>
                             <div className="sarva-reports__headActions">
-                                <Link to="/resources">View all</Link>
+                                <Link to="/resources?resource_group=data_spotlight">View all</Link>
                                 {isAdmin && (
                                     <button type="button" onClick={() => setEditingSpotlight({ resource_type: "Database" })}>
                                         Add spotlight
@@ -1863,58 +1945,17 @@ export default function Home() {
                         )}
 
                         <div className="sarva-reports__grid">
-                            {dataSpotlights.map((item) => {
-                                const status = statusForResource(item);
-                                return (
-                                    <article className="sarva-reportCard" key={item.id}>
-                                        <ResourceLogoMark item={item} />
-                                        <div>
-                                            <small>{item.resource_type || "Database"} | {formatResourceDate(item)}</small>
-                                            <strong>{item.title}</strong>
-                                            <div className="sarva-reportCard__health">
-                                                <span className={`is-${status}`}>{statusLabel(status)}</span>
-                                                {item.link_checked_at && (
-                                                    <small>
-                                                        Checked {new Date(item.link_checked_at).toLocaleDateString("en-ZA")}
-                                                        {item.link_status_code ? ` | ${item.link_status_code}` : ""}
-                                                    </small>
-                                                )}
-                                            </div>
-                                            {Array.isArray(item.keywords) && item.keywords.length > 0 && (
-                                                <div className="sarva-reportCard__tags">
-                                                    {item.keywords.map((keyword) => (
-                                                        <em key={keyword}>{keyword}</em>
-                                                    ))}
-                                                </div>
-                                            )}
-                                            <div className="sarva-reportCard__actions">
-                                                {item.url && (
-                                                    <a href={item.url} target="_blank" rel="noopener noreferrer">
-                                                        Open
-                                                    </a>
-                                                )}
-                                                {isAdmin && (
-                                                    <>
-                                                        <button type="button" onClick={() => setEditingSpotlight(item)}>
-                                                            Edit
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => checkSpotlightLink(item)}
-                                                            disabled={checkingSpotlightId === item.id}
-                                                        >
-                                                            {checkingSpotlightId === item.id ? "Checking" : "Check link"}
-                                                        </button>
-                                                        <button type="button" className="is-danger" onClick={() => deleteSpotlight(item)}>
-                                                            Delete
-                                                        </button>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </article>
-                                );
-                            })}
+                            {dataSpotlights.map((item) => (
+                                <ResourceCard
+                                    key={item.id}
+                                    item={item}
+                                    isAdmin={isAdmin}
+                                    onEdit={setEditingSpotlight}
+                                    onCheck={checkSpotlightLink}
+                                    checking={checkingSpotlightId === item.id}
+                                    onDelete={deleteSpotlight}
+                                />
+                            ))}
                         </div>
                     </article>
                 </section>

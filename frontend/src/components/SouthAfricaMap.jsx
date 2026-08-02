@@ -959,14 +959,12 @@ export default function SouthAfricaMap({ activeMode, onModeChange, focusHighligh
                         onModeChange?.(event.target.value);
                     }}
                 >
-                    <option value="environment">Municipal boundaries</option>
                     <option value="rainfall-risk">SAEON live observations</option>
                     <option value="forecast-risk">Forecast rainfall risk</option>
                     <option value="environmental-risk">Environmental risk index</option>
                     <option value="heat-risk">Forecast heat risk</option>
                     <option value="wind-risk">Forecast wind risk</option>
                     <option value="fire-risk">Forecast fire-weather proxy</option>
-                    <option value="risk">Risk & vulnerability view</option>
                 </select>
             </div>
             {forecastRiskVisible && (

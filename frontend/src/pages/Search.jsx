@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { useJsonResource } from "../hooks/useJsonResource";
 import "../styles/search.css";
 
@@ -173,7 +174,8 @@ function isFrameworkOnlyQuery(value, frameworkId) {
 }
 
 export default function Search() {
-    const urlParams = new URLSearchParams(window.location.search);
+    const location = useLocation();
+    const urlParams = new URLSearchParams(location.search);
     const [text, setText] = useState(urlParams.get("q") || urlParams.get("text") || "");
     const [collection, setCollection] = useState(urlParams.get("collection") || "");
     const [provider, setProvider] = useState(urlParams.get("provider") || "");
@@ -184,6 +186,19 @@ export default function Search() {
     const [singleSitesOnly, setSingleSitesOnly] = useState(urlParams.get("singleSitesOnly") === "true");
     const [page, setPage] = useState(1);
     const debouncedText = useDebouncedValue(text);
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        setText(params.get("q") || params.get("text") || "");
+        setCollection(params.get("collection") || "");
+        setProvider(params.get("provider") || "");
+        setFormat(params.get("format") || "");
+        setLicence(params.get("licence") || "");
+        setTheme(params.get("theme") || "");
+        setEssentialVariable(params.get("ev") || "");
+        setSingleSitesOnly(params.get("singleSitesOnly") === "true");
+        setPage(1);
+    }, [location.search]);
     const effectiveText = useMemo(
         () => (essentialVariable && isFrameworkOnlyQuery(debouncedText, essentialVariable) ? "" : debouncedText.trim()),
         [debouncedText, essentialVariable]
