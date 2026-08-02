@@ -1,16 +1,63 @@
-# React + Vite
+# SARVA Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The SARVA frontend is a React + Vite application. It provides the public portal, Explore page, resource library, catalogue search, municipal risk profiler, national map and supporting content pages.
 
-Currently, two official plugins are available:
+## Key Files
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```text
+frontend/src/main.jsx                       Router setup
+frontend/src/layouts/                       Shared layouts
+frontend/src/components/Header.jsx          Navigation and global search
+frontend/src/components/SouthAfricaMap.jsx  MapLibre national map
+frontend/src/pages/Home.jsx                 Landing page and map workspace
+frontend/src/pages/Explore.jsx              Guided navigation and atlas tool links
+frontend/src/pages/MunicipalRiskProfiler.jsx Municipal profiles and indicators
+frontend/src/pages/Search.jsx               SAEON catalogue mirror search
+frontend/src/pages/Resources.jsx            Resource library
+frontend/src/styles/                        CSS and design tokens
+```
 
-## React Compiler
+## Development
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```sh
+cd frontend
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+The dev server normally starts at http://localhost:5173.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Set API and tile origins with:
+
+```sh
+VITE_API_BASE=http://localhost:5050
+VITE_MARTIN_BASE=http://localhost:3000
+```
+
+## Build and Lint
+
+```sh
+npm run build
+npm run lint
+```
+
+## Design Notes
+
+- Use shared tokens from `src/styles/tokens.css`.
+- Keep map overlays compact and avoid blocking the spatial view.
+- Prefer clear task labels over generic labels such as "overview" or "interactive maps".
+- Keep public-facing data caveats visible when indicators are comparative, provisional or incomplete.
+- Check responsive layouts after changing cards, menus, map panels or profile tabs.
+
+## Routing
+
+Routes are declared in `src/main.jsx`. Main routes include:
+
+- `/`
+- `/explore`
+- `/search`
+- `/resources`
+- `/glossary`
+- `/national-policy-and-legislation`
+- `/municipal-risk-profiler`
+- `/about`
