@@ -20,6 +20,7 @@ This document summarises the most important SARVA environment variables. Use `.e
 | --- | --- | --- |
 | `VITE_API_BASE` | `http://localhost:5050` | API origin for browser requests. Docker builds usually use `.` for same-origin Nginx proxying. |
 | `VITE_MARTIN_BASE` | `http://localhost:3000` | Martin tile server origin for local development. |
+| `VITE_DSLAB_URL` | `/ds-lab/` | Environmental Data Science Lab URL used by SARVA header/home links. Use `http://192.168.115.77/ds-lab/` for local builds that should open the server DS Lab. |
 
 ## Catalogue
 

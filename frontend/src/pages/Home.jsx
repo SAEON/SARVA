@@ -12,7 +12,7 @@ import "../styles/home.css";
 import "../styles/resources.css";
 
 const SouthAfricaMap = lazy(() => import("../components/SouthAfricaMap"));
-const DATA_SCIENCE_LAB_PATH = "/resources?search=data%20science%20lab";
+const DATA_SCIENCE_LAB_PATH = import.meta.env.VITE_DSLAB_URL || "/ds-lab/";
 const EXPLORE_PATH = "/explore";
 
 const featureTiles = [
@@ -1325,7 +1325,7 @@ export default function Home() {
                         </span>
                         <h1>{hero?.title || "South African Risk & Vulnerability Atlas"}</h1>
                         <p>{hero?.description || "An open access platform linking datasets, indicators, and tools."}</p>
-                        <Link to={DATA_SCIENCE_LAB_PATH} className="sarva-dash__labCallout" aria-label="Open Environmental Data Science Lab resources">
+                        <a href={DATA_SCIENCE_LAB_PATH} className="sarva-dash__labCallout" aria-label="Open Environmental Data Science Lab">
                             <span className="sarva-dash__labLogo">
                                 <img src={dataScienceLabLogo} alt="Environmental Data Science Lab" />
                             </span>
@@ -1333,9 +1333,9 @@ export default function Home() {
                                 <em>Learning hub</em>
                                 <strong>Environmental Data Science Lab</strong>
                                 <small>Tutorials, prototype apps, blog notes and practical SARVA data-science workflows.</small>
-                                <i>Open lab resources</i>
+                                <i>Open lab</i>
                             </span>
-                        </Link>
+                        </a>
                         <div className="sarva-dash__heroActions">
                             <Link to={homeCtaPath(hero)}>
                                 {hero?.cta_label || "Explore Now"}

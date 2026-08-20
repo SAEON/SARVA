@@ -6,6 +6,8 @@ import { apiUrl } from "../config/api";
 import { useJsonResource } from "../hooks/useJsonResource";
 import "../styles/header.css";
 
+const DATA_SCIENCE_LAB_URL = import.meta.env.VITE_DSLAB_URL || "/ds-lab/";
+
 const fallbackNav = [
     { label: "Home", to: "/" },
     {
@@ -57,7 +59,7 @@ const fallbackNav = [
         label: "Community",
         items: [
             { label: "Help & Training", to: "/resources?search=training" },
-            { label: "Data Science Lab", to: "/resources?search=data%20science%20lab" },
+            { label: "Data Science Lab", href: DATA_SCIENCE_LAB_URL, external: true },
             { label: "Contribute Data", href: "https://docs.google.com/forms/d/1bxnefRblVoQ8hpJJx_KL1nzeZHQfEK-QKVCxoPIXnAU/viewform?edit_requested=true", external: true },
             { label: "Communities of Practice", to: "/about" },
             { label: "Contact SARVA", to: "/about" },

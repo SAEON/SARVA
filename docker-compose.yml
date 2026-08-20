@@ -168,6 +168,7 @@ services:
       args:
         VITE_API_BASE: ${VITE_API_BASE:-/api}
         VITE_MARTIN_BASE: ${VITE_MARTIN_BASE:-/tiles}
+        VITE_DSLAB_URL: ${VITE_DSLAB_URL:-/ds-lab/}
 
     container_name: sarva-frontend
     restart: unless-stopped
