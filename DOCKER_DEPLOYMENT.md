@@ -209,6 +209,36 @@ docker compose exec db psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"
 docker compose down
 ```
 
+## Git-based server updates
+
+Once `/opt/sarva` is a git checkout, use the guarded update script instead of
+copying folders by hand:
+
+```sh
+cd /opt/sarva
+deploy/server-update.sh --check-only
+deploy/server-update.sh
+```
+
+The script fetches `origin/main`, shows the commits and file summary that would
+be pulled, then uses `git pull --ff-only`, rebuilds the backend and frontend
+images, runs migrations, restarts the stack, and runs smoke checks.
+
+To inspect Docker space before pruning:
+
+```sh
+deploy/docker-prune-preview.sh
+```
+
+To free space after a successful deploy:
+
+```sh
+deploy/docker-prune.sh --yes
+```
+
+The prune script does not remove Docker volumes, because database data may live
+there.
+
 ## Backups
 
 Before risky local development work, create a timestamped database and source snapshot:
