@@ -35,3 +35,72 @@ postgres:
         date: date
         shape__are: numeric
         shape__len: numeric
+    mdb_2026_district_municipalities:
+      layer_id: mdb_2026_district_municipalities
+      schema: sarva
+      table: mdb_2026_district_municipalities
+      srid: 3857
+      geometry_column: geom
+      id_column: gid
+      minzoom: 0
+      maxzoom: 14
+      bounds: [16.45, -34.84, 32.95, -22.13]
+      geometry_type: MULTIPOLYGON
+      properties:
+        gid: int4
+        source_fid: int4
+        province: varchar
+        category: varchar
+        district: varchar
+        district_n: varchar
+        map_label: varchar
+        category_n: varchar
+        effective_date: date
+    mdb_2026_local_municipalities:
+      layer_id: mdb_2026_local_municipalities
+      schema: sarva
+      table: mdb_2026_local_municipalities
+      srid: 3857
+      geometry_column: geom
+      id_column: gid
+      minzoom: 0
+      maxzoom: 14
+      bounds: [16.45, -34.84, 32.95, -22.13]
+      geometry_type: MULTIPOLYGON
+      properties:
+        gid: int4
+        source_fid: int4
+        province: varchar
+        category: varchar
+        cat2: varchar
+        cat_b: varchar
+        municname: varchar
+        namecode: varchar
+        map_title: varchar
+        district: varchar
+        district_n: varchar
+        effective_date: date
+    mdb_2026_wards:
+      layer_id: mdb_2026_wards
+      schema: sarva
+      table: mdb_2026_wards
+      srid: 3857
+      geometry_column: geom
+      id_column: gid
+      minzoom: 5
+      maxzoom: 16
+      bounds: [16.45, -34.84, 32.95, -22.13]
+      geometry_type: MULTIPOLYGON
+      properties:
+        gid: int4
+        source_fid: int4
+        province: varchar
+        municipali: varchar
+        cat_b: varchar
+        wardid: varchar
+        wardlink: varchar
+        municname: varchar
+        district: varchar
+        districtco: varchar
+        wardno: int4
+        effective_date: date

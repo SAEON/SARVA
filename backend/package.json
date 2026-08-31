@@ -18,6 +18,8 @@
     "import:loggernet-locations": "node scripts/import-loggernet-station-locations.js",
     "import:sa-risk-indicators": "node scripts/import-sa-risk-indicators.js",
     "import:municipal-finance-indicators": "node scripts/import-municipal-finance-indicators.js",
+    "download:mdb-2026-boundaries": "node scripts/download-mdb-2026-boundaries.js",
+    "import:mdb-2026-boundaries": "node scripts/import-mdb-2026-boundaries.js",
     "sync:catalogue": "node scripts/sync-catalogue.js",
     "refresh:catalogue-ev": "node scripts/refresh-catalogue-essential-variables.js",
     "check:links": "node scripts/check-library-links.js"

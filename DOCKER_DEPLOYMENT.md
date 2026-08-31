@@ -239,6 +239,20 @@ deploy/docker-prune.sh --yes
 The prune script does not remove Docker volumes, because database data may live
 there.
 
+For releases that add or refresh the MDB 2026 boundary preview layers, run:
+
+```sh
+cd /opt/sarva
+deploy/server-update.sh --with-mdb-2026-boundaries
+```
+
+The boundary option downloads the authoritative MDB GeoJSON files into
+`./data/mdb-2026`, imports district, local municipality and ward tables into
+PostGIS, then recreates Martin and the frontend so the new tile layers and
+preview page are visible. The backend service normally mounts `./data`
+read-only, so the script uses a one-off read-write `/data` override for the
+download step only.
+
 ## Backups
 
 Before risky local development work, create a timestamped database and source snapshot:

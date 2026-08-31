@@ -1,0 +1,36 @@
+{
+  "downloadedAt": "2026-08-31T12:05:33.623Z",
+  "sourcePage": "https://spatialhub-mdb-sa.opendata.arcgis.com/pages/data-download",
+  "publisher": "Municipal Demarcation Board",
+  "note": "MDB metadata says the 2026 Local Municipalities dataset comes into effect on 4 November 2026. MDB licence text permits research, publications and value-added applications with acknowledgement, but prohibits selling the data, commercial appropriation, altering the original dataset and passing it off as MDB product.",
+  "datasets": [
+    {
+      "key": "local_municipalities",
+      "title": "MDB Local Municipalities 2026",
+      "itemId": "82c7a6d178454ddcb4dc1ef6bf2a4303",
+      "url": "https://services7.arcgis.com/oeoyTUJC8HEeYsRB/arcgis/rest/services/MDB_L_ocal_Municipalities_2026/FeatureServer/0",
+      "count": 214,
+      "featuresDownloaded": 214,
+      "file": "data/mdb-2026/mdb_2026_local_municipalities.geojson"
+    },
+    {
+      "key": "wards",
+      "title": "MDB Wards 2026",
+      "itemId": "30b6e281a5074eddbf1a3f82aa00459e",
+      "url": "https://services7.arcgis.com/oeoyTUJC8HEeYsRB/arcgis/rest/services/MDB_Wards_2026/FeatureServer/0",
+      "count": 4488,
+      "featuresDownloaded": 4488,
+      "file": "data/mdb-2026/mdb_2026_wards.geojson"
+    },
+    {
+      "key": "district_municipalities",
+      "title": "MDB District Municipalities 2026",
+      "itemId": "ffd2fc85aec74f5594c670e6def67787",
+      "url": "https://services7.arcgis.com/oeoyTUJC8HEeYsRB/arcgis/rest/services/MDB_District_Municipalities_2026/FeatureServer/0",
+      "count": 52,
+      "featuresDownloaded": 52,
+      "file": "data/mdb-2026/mdb_2026_district_municipalities.geojson"
+    }
+  ],
+  "updatedAt": "2026-08-31T12:09:37.959Z"
+}

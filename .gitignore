@@ -22,6 +22,9 @@ pnpm-debug.log*
 # Local dev backups
 backups/
 
+# Downloaded spatial extracts are too large for normal GitHub storage.
+data/mdb-2026/*.geojson
+
 # OS files
 .DS_Store
 

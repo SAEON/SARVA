@@ -33,6 +33,8 @@ const fallbackNav = [
         label: "Maps & Tools",
         items: [
             { label: "Municipal Risk Profiler", to: "/municipal-risk-profiler" },
+            { label: "Municipal Planning Workspace", to: "/municipal-planning-workspace" },
+            { label: "MDB 2026 Boundary Preview", to: "/mdb-2026-boundaries" },
             { label: "Rainfall Risk Layers", to: "/#risk-map" },
             { label: "SARVA Atlas Gallery", href: "https://sarva.saeon.ac.za/atlas/", external: true },
             { label: "2017 Agriculture Census", href: "https://sarvamaps.saeon.ac.za/agri-census/", external: true },

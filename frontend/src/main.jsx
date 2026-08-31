@@ -17,6 +17,8 @@ const NationalPolicy = lazy(() => import("./pages/NationalPolicy.jsx"));
 const SearchRoute = lazy(() => import("./routes/SearchRoute.jsx"));
 const About = lazy(() => import("./pages/About.jsx"));
 const MunicipalRiskProfiler = lazy(() => import("./pages/MunicipalRiskProfiler.jsx"));
+const MunicipalPlanningWorkspace = lazy(() => import("./pages/MunicipalPlanningWorkspace.jsx"));
+const MdbBoundaryPreview = lazy(() => import("./pages/MdbBoundaryPreview.jsx"));
 
 const router = createBrowserRouter([
     {
@@ -96,6 +98,22 @@ const router = createBrowserRouter([
                 element: (
                     <Suspense fallback={null}>
                         <MunicipalRiskProfiler />
+                    </Suspense>
+                ),
+            },
+            {
+                path: "/municipal-planning-workspace",
+                element: (
+                    <Suspense fallback={null}>
+                        <MunicipalPlanningWorkspace />
+                    </Suspense>
+                ),
+            },
+            {
+                path: "/mdb-2026-boundaries",
+                element: (
+                    <Suspense fallback={null}>
+                        <MdbBoundaryPreview />
                     </Suspense>
                 ),
             },

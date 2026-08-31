@@ -724,6 +724,99 @@
     gap: 10px;
 }
 
+.sarva-muniProfiler__clientBrief {
+    border-color: rgba(201, 111, 74, 0.34);
+    background: linear-gradient(135deg, rgba(255, 253, 247, 0.96), rgba(232, 238, 227, 0.76));
+}
+
+.sarva-muniProfiler__briefSteps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.sarva-muniProfiler__briefSteps span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 8px 10px;
+    border: 1px solid rgba(32, 58, 49, 0.14);
+    border-radius: 7px;
+    background: rgba(255, 253, 247, 0.7);
+    color: var(--primary-strong);
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1.25;
+}
+
+.sarva-muniProfiler__briefSteps b {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--surface);
+    font-size: 12px;
+    font-weight: 950;
+}
+
+.sarva-muniProfiler__briefGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.sarva-muniProfiler__briefGrid article {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-left: 5px solid var(--muted);
+    border-radius: 7px;
+    background: rgba(255, 253, 247, 0.88);
+}
+
+.sarva-muniProfiler__briefGrid article.is-very-low,
+.sarva-muniProfiler__briefGrid article.is-low {
+    border-left-color: var(--success);
+}
+
+.sarva-muniProfiler__briefGrid article.is-moderate {
+    border-left-color: var(--ochre);
+}
+
+.sarva-muniProfiler__briefGrid article.is-high,
+.sarva-muniProfiler__briefGrid article.is-very-high {
+    border-left-color: var(--danger);
+}
+
+.sarva-muniProfiler__briefGrid small {
+    color: var(--accent-strong);
+    font-size: 11px;
+    font-weight: 950;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.sarva-muniProfiler__briefGrid strong {
+    color: var(--primary-strong);
+    font-size: 20px;
+    line-height: 1.08;
+}
+
+.sarva-muniProfiler__briefGrid p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 760;
+    line-height: 1.4;
+}
+
 .sarva-muniProfiler__findingGrid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1419,6 +1512,8 @@
     }
 
     .sarva-muniProfiler__facts,
+    .sarva-muniProfiler__briefSteps,
+    .sarva-muniProfiler__briefGrid,
     .sarva-muniProfiler__findingGrid,
     .sarva-muniProfiler__riskGrid,
     .sarva-muniProfiler__adminBox form {

@@ -34,9 +34,9 @@ const METRIC_DEEPLINKS = {
     people: "index:stats_sa_vulnerability_imported",
 };
 const LAYER_MODE_OPTIONS = [
-    { key: "guided", label: "Recommended", detail: "Start here" },
-    { key: "indices", label: "Compound indices", detail: "Roll-ups" },
-    { key: "indicators", label: "Single indicators", detail: "Full catalogue" },
+    { key: "guided", label: "Start here", detail: "Best first layers" },
+    { key: "indices", label: "Grouped scores", detail: "Combined inputs" },
+    { key: "indicators", label: "Single indicators", detail: "Raw catalogue" },
 ];
 const GUIDED_LAYER_KEYS = [
     {
@@ -252,6 +252,11 @@ function confidenceLabel(value) {
 function scoreExplanation(score, riskLabel = "") {
     const formatted = Number.isFinite(Number(score)) ? `${formatNumber(score, 1)} out of 100` : "Not available";
     return `${formatted}${riskLabel ? `, classified here as ${riskLabel}` : ""}. This is a normalized comparison score for comparing municipalities, not a raw count and not a percentage unless the source indicator unit says percent.`;
+}
+
+function shortScoreMeaning(score, label = "") {
+    if (!Number.isFinite(Number(score))) return "No comparable score is available for this item yet.";
+    return `${formatNumber(score, 1)} / 100, ranked against other South African municipalities for the same layer and period. Higher means more relative pressure.`;
 }
 
 function sourceValueExplanation(component) {
@@ -1697,6 +1702,36 @@ export default function MunicipalRiskProfiler() {
             explanation: "Fire-weather screening combines cached heat, wind and dry-condition signals. It is an exploratory layer, not an official fire warning.",
         },
     ];
+    const clientSummaryCards = [
+        primaryIndex && {
+            label: "Overall municipal picture",
+            value: primaryIndex.riskLabel || "Not available",
+            detail: shortScoreMeaning(primaryIndex.score, primaryIndex.riskLabel),
+            tone: riskTone(primaryIndex.score),
+        },
+        leadingDrivers.length > 0 && {
+            label: "Main pressure drivers",
+            value: leadingDrivers[0].label,
+            detail: leadingDrivers.length > 1
+                ? `Also watch ${leadingDrivers.slice(1, 3).map((driver) => driver.label).join(" and ")}. Open Risk drivers for weights, source values and calculation details.`
+                : "Open Risk drivers for weights, source values and calculation details.",
+            tone: "moderate",
+        },
+        {
+            label: "Forecast context",
+            value: forecast.overallRiskLabel || "Not available",
+            detail: `${formatNumber(forecast.overallRiskScore, 0)} / 100 for ${forecastWindowLabel(forecast)}. This is short-range forecast screening, not an official warning.`,
+            tone: riskTone(forecast.overallRiskScore),
+        },
+        {
+            label: "Data confidence",
+            value: missingProfileInputs.length > 0 ? `${missingProfileInputs.length} gaps` : "Good coverage",
+            detail: missingProfileInputs.length > 0
+                ? `Missing inputs are excluded from affected calculations. First gaps: ${missingProfileInputs.slice(0, 3).map((item) => item.label || item.key).join(", ")}.`
+                : selectedLayerProfileStatus?.detail || "No missing inputs are listed for the selected layer in this municipality.",
+            tone: missingProfileInputs.length > 0 ? "low" : "very-low",
+        },
+    ].filter(Boolean);
 
     useEffect(() => {
         if (trendIndicatorKey || indicatorRecords.length === 0) return;
@@ -1722,7 +1757,7 @@ export default function MunicipalRiskProfiler() {
                     <span>SARVA municipal tool</span>
                     <h1>Municipal Risk Profiler</h1>
                     <p>
-                        Search or click a municipality. Use map layers to compare indicators spatially.
+                        Start with a municipality, then read the summary before opening drivers, trends or the full indicator catalogue.
                     </p>
                 </div>
 
@@ -1811,7 +1846,7 @@ export default function MunicipalRiskProfiler() {
                                 { label: "What the colours mean", value: "The map colours municipalities using a 0-100 comparison score for the selected layer. Green means lower relative pressure among South African municipalities in the available dataset; red means higher relative pressure." },
                                 { label: "Comparison scope", value: "Scores are normalized against other South African municipalities for the same indicator, source period and scenario where available. They are not international standards, legal thresholds or official warning levels." },
                                 { label: "0 and 100", value: "0 is the lowest relative pressure in the available South African municipal dataset for this layer. 100 is the highest relative pressure in that same comparison set. Missing values are shown separately as no data." },
-                                { label: "Layer levels", value: "Recommended layers are client-friendly starting points. Compound indices combine multiple inputs. Single indicators show one source variable at a time." },
+                                { label: "Layer levels", value: "Start here shows the best client-facing layers. Grouped scores combine multiple inputs. Single indicators show one source variable at a time." },
                                 { label: "Raw values", value: "Raw counts, percentages and units are kept in the profile panel. The map uses comparable scores so different municipalities can be viewed spatially." },
                                 { label: "Selected layer", value: activeMetricLabel },
                                 { label: "Source and period", value: [activeMetric.sourceName, activeMetric.period, activeMetric.scenario].filter(Boolean).join(" | ") || "Shown after the layer loads." },
@@ -1823,7 +1858,7 @@ export default function MunicipalRiskProfiler() {
                             onClick={() => setLayerBrowserOpen((open) => !open)}
                             aria-expanded={layerBrowserOpen}
                         >
-                            <span>{layerBrowserOpen ? "Hide layer browser" : "Change layer"}</span>
+                            <span>{layerBrowserOpen ? "Hide layer chooser" : "Change map layer"}</span>
                             <b>{activeMetricLabel}</b>
                         </button>
                         {layerBrowserOpen && (
@@ -1916,8 +1951,8 @@ export default function MunicipalRiskProfiler() {
                             {visibleLayerOptionCount} layer{visibleLayerOptionCount === 1 ? "" : "s"} in this view | {metricCoverageLabel(metricCoverage)}
                         </small>
                     )}
-                    <small className="sarva-muniProfiler__scoreScope">
-                        0-100 is relative to SA municipalities for this layer and period, not an international benchmark.
+                        <small className="sarva-muniProfiler__scoreScope">
+                        0-100 compares SA municipalities for this layer and period. It is not an international benchmark.
                     </small>
                     <div className="sarva-muniProfiler__legend" aria-hidden="true">
                         <i />
@@ -1955,8 +1990,31 @@ export default function MunicipalRiskProfiler() {
                             </button>
                         </div>
 
+                        {indices.length > 0 && (
+                            <section className="sarva-muniProfiler__section sarva-muniProfiler__clientBrief">
+                                <div className="sarva-muniProfiler__sectionHead">
+                                    <h3>Client summary</h3>
+                                    <span>read this first</span>
+                                </div>
+                                <div className="sarva-muniProfiler__briefSteps" aria-label="How to read this profile">
+                                    <span><b>1</b> Relative SA score</span>
+                                    <span><b>2</b> Drivers explain why</span>
+                                    <span><b>3</b> Gaps affect confidence</span>
+                                </div>
+                                <div className="sarva-muniProfiler__briefGrid">
+                                    {clientSummaryCards.map((card) => (
+                                        <article key={card.label} className={`is-${card.tone}`}>
+                                            <small>{card.label}</small>
+                                            <strong>{card.value}</strong>
+                                            <p>{card.detail}</p>
+                                        </article>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
                         <div className="sarva-muniProfiler__facts">
-                            {topStatCards.map((card) => (
+                            {topStatCards.slice(0, 4).map((card) => (
                                 <span key={card.label}>
                                     <b>{card.value}</b>
                                     {card.label}
@@ -1976,11 +2034,11 @@ export default function MunicipalRiskProfiler() {
                             <span>Profile sections</span>
                             <nav className="sarva-muniProfiler__tabs" aria-label="Profile sections">
                                 {[
-                                    ["overview", "Overview"],
-                                    ["trends", "Trend analysis"],
+                                    ["overview", "Summary"],
+                                    ["trends", "Trends"],
                                     ["drivers", "Risk drivers"],
-                                    ["indicators", "Indicator catalogue"],
-                                    ["observations", "Nearby observations"],
+                                    ["indicators", "All indicators"],
+                                    ["observations", "Nearby data"],
                                     ...(isAdmin ? [["admin", "Admin data"]] : []),
                                 ].map(([key, label]) => (
                                     <button
@@ -1998,8 +2056,8 @@ export default function MunicipalRiskProfiler() {
                         {activeTab === "overview" && indices.length > 0 && (
                             <section className="sarva-muniProfiler__section">
                                 <div className="sarva-muniProfiler__sectionHead">
-                                    <h3>Key findings</h3>
-                                    <span>municipal + forecast context</span>
+                                    <h3>Evidence cards</h3>
+                                    <span>municipal + forecast detail</span>
                                 </div>
                                 <div className="sarva-muniProfiler__findingGrid">
                                     {keyFindingCards.slice(0, 8).map((card) => (
