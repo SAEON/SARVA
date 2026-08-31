@@ -101,13 +101,38 @@ echo "== Containers =="
 sudo docker compose -f "$COMPOSE_FILE" ps
 
 echo "== Smoke checks =="
-curl --fail --silent --show-error --head http://127.0.0.1:8090/ >/dev/null
-curl --fail --silent --show-error http://127.0.0.1:8090/api/health >/dev/null
-curl --fail --silent --show-error http://127.0.0.1:8090/api/nav >/dev/null
+retry_curl() {
+  local url="$1"
+  local method="${2:-GET}"
+  local attempts="${3:-20}"
+
+  for attempt in $(seq 1 "$attempts"); do
+    if [ "$method" = "HEAD" ]; then
+      if curl --fail --silent --show-error --head "$url" >/dev/null; then
+        return 0
+      fi
+    else
+      if curl --fail --silent --show-error "$url" >/dev/null; then
+        return 0
+      fi
+    fi
+
+    if [ "$attempt" -lt "$attempts" ]; then
+      sleep 2
+    fi
+  done
+
+  echo "Smoke check failed after ${attempts} attempts: $url" >&2
+  return 1
+}
+
+retry_curl http://127.0.0.1:8090/ HEAD
+retry_curl http://127.0.0.1:8090/api/health GET
+retry_curl http://127.0.0.1:8090/api/nav GET
 
 if [ "$WITH_MDB_2026_BOUNDARIES" -eq 1 ]; then
-  curl --fail --silent --show-error --head http://127.0.0.1:8090/mdb-2026-boundaries >/dev/null
-  curl --fail --silent --show-error --head http://127.0.0.1:8090/tiles/mdb_2026_wards/7/73/75 >/dev/null
+  retry_curl http://127.0.0.1:8090/mdb-2026-boundaries HEAD
+  retry_curl http://127.0.0.1:8090/tiles/mdb_2026_wards/7/73/75 HEAD
 fi
 
 echo "SARVA deploy complete."
