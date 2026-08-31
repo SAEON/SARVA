@@ -39,7 +39,7 @@ If running on the Docker server, recreate the files and import them from the rep
 
 ```bash
 mkdir -p data/mdb-2026
-docker compose run --rm --volume "$(pwd)/data:/data:rw" backend npm run download:mdb-2026-boundaries
+docker run --rm --volume "$(pwd)/backend:/app:ro" --volume "$(pwd)/data:/data:rw" --workdir /app node:22-alpine npm run download:mdb-2026-boundaries
 docker compose run --rm backend npm run import:mdb-2026-boundaries
 docker compose up -d --force-recreate martin frontend
 ```

@@ -92,7 +92,7 @@ sudo docker compose -f "$COMPOSE_FILE" up -d
 if [ "$WITH_MDB_2026_BOUNDARIES" -eq 1 ]; then
   echo "== MDB 2026 boundaries =="
   mkdir -p data/mdb-2026
-  sudo docker compose -f "$COMPOSE_FILE" run --rm --volume "$(pwd)/data:/data:rw" backend npm run download:mdb-2026-boundaries
+  sudo docker run --rm --volume "$(pwd)/backend:/app:ro" --volume "$(pwd)/data:/data:rw" --workdir /app node:22-alpine npm run download:mdb-2026-boundaries
   sudo docker compose -f "$COMPOSE_FILE" run --rm backend npm run import:mdb-2026-boundaries
   sudo docker compose -f "$COMPOSE_FILE" up -d --force-recreate martin frontend
 fi

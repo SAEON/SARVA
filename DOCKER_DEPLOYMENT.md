@@ -250,8 +250,8 @@ The boundary option downloads the authoritative MDB GeoJSON files into
 `./data/mdb-2026`, imports district, local municipality and ward tables into
 PostGIS, then recreates Martin and the frontend so the new tile layers and
 preview page are visible. The backend service normally mounts `./data`
-read-only, so the script uses a one-off read-write `/data` override for the
-download step only.
+read-only, so the script uses a temporary Node container with a read-write
+`/data` mount for the download step only.
 
 ## Backups
 
