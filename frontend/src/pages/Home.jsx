@@ -1349,6 +1349,7 @@ export default function Home() {
                                                 : highlight.freshness}
                                             {highlight.updatedAtLabel ? ` | ${highlight.updatedAtLabel}` : ""}
                                         </em>
+                                        <span className="sarva-highlightAction">View on map <b aria-hidden="true">→</b></span>
                                     </button>
                                 ))}
                             </div>

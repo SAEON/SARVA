@@ -3884,3 +3884,15 @@ body {
         display: grid;
     }
 }
+
+.sarva-dash__heroHighlightGrid button .sarva-highlightAction {
+    display:flex; align-items:center; justify-content:space-between;
+    align-self:stretch; margin-top:14px; padding-top:12px;
+    border-top:1px solid rgba(255,255,255,.25);
+    color:#fff; font-size:14px; font-weight:750;
+}
+.sarva-dash__heroHighlightGrid button .sarva-highlightAction b { font-size:20px; transition:transform .15s ease; }
+.sarva-dash__heroHighlightGrid button:hover { border-color:rgba(255,255,255,.7); box-shadow:0 4px 16px rgba(0,0,0,.16); }
+.sarva-dash__heroHighlightGrid button:hover .sarva-highlightAction b { transform:translateX(4px); }
+.sarva-dash__heroHighlightGrid button:focus-visible { outline:3px solid #f4ce76; outline-offset:4px; }
+@media(prefers-reduced-motion:reduce){.sarva-dash__heroHighlightGrid button .sarva-highlightAction b{transition:none}}
