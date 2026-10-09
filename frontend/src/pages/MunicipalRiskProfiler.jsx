@@ -3,6 +3,8 @@ import { useLocation } from "react-router-dom";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { apiUrl, martinUrl } from "../config/api";
+import { isExpiredForecast } from "../config/forecastFreshness";
+import MunicipalEvidenceSummary from "../components/MunicipalEvidenceSummary";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import "../styles/municipal-risk-profiler.css";
 
@@ -18,7 +20,7 @@ const MAP_MAX_BOUNDS = [
 ];
 const EMPTY = [];
 const DEFAULT_METRIC = "index:imported_composite_risk";
-const DEFAULT_METRIC_LABEL = "Municipal risk overview";
+const DEFAULT_METRIC_LABEL = "Relative indicator pressure";
 const METRIC_DEEPLINKS = {
     governance: "index:imported_governance_risk",
     governance_audit: "index:governance_audit_compliance_imported",
@@ -252,11 +254,6 @@ function confidenceLabel(value) {
 function scoreExplanation(score, riskLabel = "") {
     const formatted = Number.isFinite(Number(score)) ? `${formatNumber(score, 1)} out of 100` : "Not available";
     return `${formatted}${riskLabel ? `, classified here as ${riskLabel}` : ""}. This is a normalized comparison score for comparing municipalities, not a raw count and not a percentage unless the source indicator unit says percent.`;
-}
-
-function shortScoreMeaning(score, label = "") {
-    if (!Number.isFinite(Number(score))) return "No comparable score is available for this item yet.";
-    return `${formatNumber(score, 1)} / 100, ranked against other South African municipalities for the same layer and period. Higher means more relative pressure.`;
 }
 
 function sourceValueExplanation(component) {
@@ -1230,7 +1227,7 @@ export default function MunicipalRiskProfiler() {
         const sortedIndices = [...indices].sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
         const topDrivers = [...drivers].sort((a, b) => (Number(b.contribution) || 0) - (Number(a.contribution) || 0)).slice(0, 8);
         const highestIndicators = [...indicatorRecords]
-            .filter((indicator) => Number.isFinite(Number(indicator.adjustedValue)))
+            .filter((indicator) => !indicator.isProxy && indicator.confidence !== "proxy" && indicator.adjustedValue != null && Number.isFinite(Number(indicator.adjustedValue)))
             .sort((a, b) => Number(b.adjustedValue) - Number(a.adjustedValue))
             .slice(0, 10);
 
@@ -1241,6 +1238,8 @@ export default function MunicipalRiskProfiler() {
             write([municipality.district, municipality.province, municipality.code].filter(Boolean).join(" | "), { size: 11, color: colors.pale, after: 8 });
             write(`Generated ${formatDate(new Date().toISOString())} | Screening profile for planning support`, { size: 9, color: colors.pale });
             write(`Forecast layer: ${forecastWindowLabel(forecast)} | ${forecast.latestRun?.source || "SARVA cached forecast risk layer"}`, { size: 8, color: colors.pale });
+            write("Relative indicator comparisons; not probabilities of harm. Exposure and losses are not assessed.", { size: 8, color: colors.pale });
+            write(isExpiredForecast(String(forecast.forecastEnd || "").slice(0, 10)) ? "Expired forecast: historical context only." : "Check forecast dates and official updates before use.", { size: 8, color: colors.pale });
             gap(22);
 
             const cardTop = 674;
@@ -1702,36 +1701,6 @@ export default function MunicipalRiskProfiler() {
             explanation: "Fire-weather screening combines cached heat, wind and dry-condition signals. It is an exploratory layer, not an official fire warning.",
         },
     ];
-    const clientSummaryCards = [
-        primaryIndex && {
-            label: "Overall municipal picture",
-            value: primaryIndex.riskLabel || "Not available",
-            detail: shortScoreMeaning(primaryIndex.score, primaryIndex.riskLabel),
-            tone: riskTone(primaryIndex.score),
-        },
-        leadingDrivers.length > 0 && {
-            label: "Main pressure drivers",
-            value: leadingDrivers[0].label,
-            detail: leadingDrivers.length > 1
-                ? `Also watch ${leadingDrivers.slice(1, 3).map((driver) => driver.label).join(" and ")}. Open Risk drivers for weights, source values and calculation details.`
-                : "Open Risk drivers for weights, source values and calculation details.",
-            tone: "moderate",
-        },
-        {
-            label: "Forecast context",
-            value: forecast.overallRiskLabel || "Not available",
-            detail: `${formatNumber(forecast.overallRiskScore, 0)} / 100 for ${forecastWindowLabel(forecast)}. This is short-range forecast screening, not an official warning.`,
-            tone: riskTone(forecast.overallRiskScore),
-        },
-        {
-            label: "Data confidence",
-            value: missingProfileInputs.length > 0 ? `${missingProfileInputs.length} gaps` : "Good coverage",
-            detail: missingProfileInputs.length > 0
-                ? `Missing inputs are excluded from affected calculations. First gaps: ${missingProfileInputs.slice(0, 3).map((item) => item.label || item.key).join(", ")}.`
-                : selectedLayerProfileStatus?.detail || "No missing inputs are listed for the selected layer in this municipality.",
-            tone: missingProfileInputs.length > 0 ? "low" : "very-low",
-        },
-    ].filter(Boolean);
 
     useEffect(() => {
         if (trendIndicatorKey || indicatorRecords.length === 0) return;
@@ -1968,7 +1937,7 @@ export default function MunicipalRiskProfiler() {
                 {!profileLoading && !profileError && !profile && (
                     <div className="sarva-muniProfiler__state sarva-muniProfiler__state--guide">
                         <strong>Start with a municipality</strong>
-                        <p>Search by name/code or click the map. The profile will show the score, the largest drivers, raw source values and any missing inputs.</p>
+                        <p>Search by name/code or click the map. Start with municipal pressures, source dates and evidence gaps. Weather screening is shown separately.</p>
                         <div className="sarva-muniProfiler__startGrid">
                             {profilerStartCards.map((card) => (
                                 <article key={card.title}>
@@ -1990,30 +1959,9 @@ export default function MunicipalRiskProfiler() {
                             </button>
                         </div>
 
-                        {indices.length > 0 && (
-                            <section className="sarva-muniProfiler__section sarva-muniProfiler__clientBrief">
-                                <div className="sarva-muniProfiler__sectionHead">
-                                    <h3>Client summary</h3>
-                                    <span>read this first</span>
-                                </div>
-                                <div className="sarva-muniProfiler__briefSteps" aria-label="How to read this profile">
-                                    <span><b>1</b> Relative SA score</span>
-                                    <span><b>2</b> Drivers explain why</span>
-                                    <span><b>3</b> Gaps affect confidence</span>
-                                </div>
-                                <div className="sarva-muniProfiler__briefGrid">
-                                    {clientSummaryCards.map((card) => (
-                                        <article key={card.label} className={`is-${card.tone}`}>
-                                            <small>{card.label}</small>
-                                            <strong>{card.value}</strong>
-                                            <p>{card.detail}</p>
-                                        </article>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
+                        {activeTab === "overview" && <MunicipalEvidenceSummary profile={profile} onSection={setActiveTab} />}
 
-                        <div className="sarva-muniProfiler__facts">
+                        {activeTab !== "overview" && <div className="sarva-muniProfiler__facts">
                             {topStatCards.slice(0, 4).map((card) => (
                                 <span key={card.label}>
                                     <b>{card.value}</b>
@@ -2021,7 +1969,7 @@ export default function MunicipalRiskProfiler() {
                                     {card.note && <small>{card.note}</small>}
                                 </span>
                             ))}
-                        </div>
+                        </div>}
 
                         {selectedLayerProfileStatus && (
                             <div className={`sarva-muniProfiler__dataStatus is-${selectedLayerProfileStatus.tone}`}>
@@ -2036,7 +1984,7 @@ export default function MunicipalRiskProfiler() {
                                 {[
                                     ["overview", "Summary"],
                                     ["trends", "Trends"],
-                                    ["drivers", "Risk drivers"],
+                                    ["drivers", "Index contributors"],
                                     ["indicators", "All indicators"],
                                     ["observations", "Nearby data"],
                                     ...(isAdmin ? [["admin", "Admin data"]] : []),
@@ -2053,6 +2001,7 @@ export default function MunicipalRiskProfiler() {
                             </nav>
                         </div>
 
+                        {activeTab === "overview" && <details className="sarva-muniProfiler__section"><summary>Advanced: legacy indices and forecast scores</summary>
                         {activeTab === "overview" && indices.length > 0 && (
                             <section className="sarva-muniProfiler__section">
                                 <div className="sarva-muniProfiler__sectionHead">
@@ -2176,6 +2125,8 @@ export default function MunicipalRiskProfiler() {
                                 </div>
                             </section>
                         )}
+
+                        </details>}
 
                         {activeTab === "trends" && (
                             <section className="sarva-muniProfiler__section">
