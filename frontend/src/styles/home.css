@@ -3944,3 +3944,8 @@ body {
 .sarva-reportCard .sarva-reportCard__logoMark { background:var(--resource-tint);color:var(--resource-colour);border:1px solid color-mix(in srgb,var(--resource-colour) 30%,transparent); }
 .sarva-reportCard__logoMark svg { stroke:currentColor; }
 .sarva-reportCard__logoMark b { background:white;color:var(--resource-colour);border-color:currentColor; }
+.sarva-dash__stat .sarva-statAction { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;font-weight:750;color:var(--accent-strong); }
+.sarva-statAction b { font-size:18px; }
+.sarva-dash__heroStats .sarva-dash__stat { cursor:pointer;transition:background .15s ease; }
+.sarva-dash__heroStats .sarva-dash__stat:hover { background:#f7eee7; }
+.sarva-dash__heroStats .sarva-dash__stat:focus-visible { outline:3px solid var(--accent);outline-offset:-3px; }

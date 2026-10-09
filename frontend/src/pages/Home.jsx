@@ -1386,6 +1386,7 @@ export default function Home() {
                             <span>{stat.label}</span>
                             <small>{stat.detail}</small>
                             <em>{formatSyncTime(stat.syncedAt)}</em>
+                            <span className="sarva-statAction">View details <b aria-hidden="true">→</b></span>
                         </button>
                     ))}
                 </section>
