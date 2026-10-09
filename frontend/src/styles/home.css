@@ -3900,3 +3900,14 @@ body {
 .sarva-screeningNotice a { color:#f4ce76; text-decoration:underline; font-weight:700; }
 .sarva-map__authorityNotice { font-size:11px; line-height:1.4; margin:0 0 9px; max-width:280px; }
 .sarva-map__authorityNotice a { display:block; color:var(--accent-strong); font-weight:700; text-decoration:underline; margin-top:4px; }
+.sarva-fireLegend { width:290px; max-width:calc(100% - 40px); font-size:12px; }
+.sarva-fireLegend__brand { display:flex; align-items:center;gap:12px; padding-bottom:12px;border-bottom:1px solid var(--border);margin-bottom:12px; }
+.sarva-fireLegend__brand img { width:52px;height:44px;object-fit:contain;flex:none; }
+.sarva-fireLegend__brand strong { display:block;font-size:14px; }
+.sarva-fireLegend__brand small { display:block;margin-top:3px; }
+.sarva-fireLegend label { display:grid;gap:5px; }
+.sarva-fireLegend select { width:100%;padding:7px; }
+.sarva-fireLegend__scale { display:grid;gap:7px;margin:12px 0; }
+.sarva-fireLegend__scale > strong { font-size:12px; }
+.sarva-fireLegend__scale > div { display:flex;align-items:center;gap:9px; }
+.sarva-fireLegend__scale i { width:11px;height:11px;border:2px solid white;box-shadow:0 0 0 1px #cbd5e1;border-radius:50%;flex:none; }
