@@ -1679,26 +1679,31 @@ export default function Home() {
                     </div>
                 </section>
 
+                <div className="sarva-frameworkHeading"><h2>Essential Variable Frameworks</h2><p>International frameworks defining what to measure and monitor across climate, biodiversity, oceans and ecosystem services.</p></div>
                 <section className="sarva-dash__referenceStrip" aria-label="Essential variable framework links">
                     <a href="https://gcos.wmo.int/en/essential-climate-variables" target="_blank" rel="noreferrer">
                         <span>ECV</span>
                         <strong>Essential Climate Variables</strong>
                         <small>GCOS / WMO framework</small>
+                        <em className="sarva-frameworkAction">Explore framework ↗</em>
                     </a>
                     <a href="https://geobon.org/ebvs/what-are-ebvs/" target="_blank" rel="noreferrer">
                         <span>EBV</span>
                         <strong>Essential Biodiversity Variables</strong>
                         <small>GEO BON framework</small>
+                        <em className="sarva-frameworkAction">Explore framework ↗</em>
                     </a>
                     <a href="https://goosocean.org/what-we-do/framework/essential-ocean-variables/" target="_blank" rel="noreferrer">
                         <span>EOV</span>
                         <strong>Essential Ocean Variables</strong>
                         <small>GOOS / UNESCO IOC framework</small>
+                        <em className="sarva-frameworkAction">Explore framework ↗</em>
                     </a>
                     <a href="https://geobon.org/eesvs/what-are-eesvs/" target="_blank" rel="noreferrer">
                         <span>EESV</span>
                         <strong>Essential Ecosystem Service Variables</strong>
                         <small>GEO BON ecosystem-services framework</small>
+                        <em className="sarva-frameworkAction">Explore framework ↗</em>
                     </a>
                 </section>
 

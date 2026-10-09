@@ -3949,3 +3949,9 @@ body {
 .sarva-dash__heroStats .sarva-dash__stat { cursor:pointer;transition:background .15s ease; }
 .sarva-dash__heroStats .sarva-dash__stat:hover { background:#f7eee7; }
 .sarva-dash__heroStats .sarva-dash__stat:focus-visible { outline:3px solid var(--accent);outline-offset:-3px; }
+.sarva-frameworkHeading { margin:8px 0 -12px;padding:0 4px; }
+.sarva-frameworkHeading h2 { margin:0 0 6px;font-size:22px;color:var(--text); }
+.sarva-frameworkHeading p { margin:0;font-size:13px;color:var(--muted);line-height:1.5; }
+.sarva-dash__referenceStrip .sarva-frameworkAction { grid-column:2;font-size:12px;font-style:normal;font-weight:750;color:var(--accent-strong);margin-top:8px; }
+.sarva-dash__referenceStrip a:hover { background:#f7eee7; }
+.sarva-dash__referenceStrip a:focus-visible { outline:3px solid var(--accent);outline-offset:-3px; }
