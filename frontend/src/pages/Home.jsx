@@ -157,49 +157,6 @@ const resourceEntryPoints = [
     },
 ];
 
-const indicators = [
-    ["☼", "Mean Annual Precipitation", "497 mm", "↑ 6%", "blue"],
-    ["♧", "Normalized Difference Vegetation Index", "0.62", "↓ 4%", "green"],
-    ["☀", "Drought Index (SPEI 12m)", "-0.8", "↓ 12%", "orange"],
-    ["▱", "Surface Water Extent", "Stable", "↑ 5%", "blue"],
-    ["◌", "Coastal Erosion Risk", "High", "No change", "red"],
-];
-
-const services = [
-    {
-        name: "Forecast Rainfall Risk",
-        source: "ECMWF Open Data",
-        value: "--",
-        detail: "Cached 0.25 degree rainfall risk layer",
-        status: "fallback",
-        href: "https://www.ecmwf.int/en/forecasts/datasets/open-data",
-    },
-    {
-        name: "Forest Area",
-        source: "World Bank Indicators",
-        value: "--",
-        detail: "South Africa environmental indicator",
-        status: "fallback",
-        href: "https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api-documentation",
-    },
-    {
-        name: "Biodiversity Records",
-        source: "GBIF",
-        value: "--",
-        detail: "Occurrence records indexed for South Africa",
-        status: "fallback",
-        href: "https://techdocs.gbif.org/en/openapi/v1/occurrence",
-    },
-    {
-        name: "Natural Events",
-        source: "NASA EONET",
-        value: "--",
-        detail: "Open global natural events from the last 30 days",
-        status: "fallback",
-        href: "https://eonet.gsfc.nasa.gov/docs/v3",
-    },
-];
-
 const alertSources = {
     saws: "https://www.weathersa.co.za/",
     ndmc: "https://www.cogta.gov.za/index.php/national-disaster-management-centre/",
@@ -912,7 +869,6 @@ export default function Home() {
     }, [supportingCategory, supportingInstitute, supportingKeyword]);
     const { data: heroResponse } = useJsonResource("/api/site/hero", { cache: true });
     const { data: siteStatsResponse } = useJsonResource("/api/site/stats?schema=focus-v1");
-    const { data: externalServicesResponse } = useJsonResource("/api/external-services");
     const { data: alertsResponse } = useJsonResource("/api/alerts/recent?days=5");
     const { data: reportsResponse, loading: reportsLoading, error: reportsError } = useJsonResource(reportsPath);
     const { data: spotlightResponse, loading: spotlightLoading, error: spotlightError } = useJsonResource(spotlightPath);
@@ -931,10 +887,6 @@ export default function Home() {
             ? siteStatsResponse.data.atAGlance
             : [];
     const portalStats = siteStatsResponse?.status === "ok" ? siteStatsResponse.data?.portalStats || {} : {};
-    const liveServices =
-        externalServicesResponse?.status === "ok" && Array.isArray(externalServicesResponse.data)
-            ? externalServicesResponse.data
-            : services;
     const updateItems = buildUpdateItems(alertsResponse);
     const monitoringItems = buildMonitoringItems();
     const alertItems = [...updateItems, ...monitoringItems];
@@ -1668,29 +1620,6 @@ export default function Home() {
                     </div>
                 )}
 
-                <section className="sarva-dash__referenceStrip" aria-label="Essential variable framework links">
-                    <a href="https://gcos.wmo.int/en/essential-climate-variables" target="_blank" rel="noreferrer">
-                        <span>ECV</span>
-                        <strong>Essential Climate Variables</strong>
-                        <small>GCOS / WMO framework</small>
-                    </a>
-                    <a href="https://geobon.org/ebvs/what-are-ebvs/" target="_blank" rel="noreferrer">
-                        <span>EBV</span>
-                        <strong>Essential Biodiversity Variables</strong>
-                        <small>GEO BON framework</small>
-                    </a>
-                    <a href="https://goosocean.org/what-we-do/framework/essential-ocean-variables/" target="_blank" rel="noreferrer">
-                        <span>EOV</span>
-                        <strong>Essential Ocean Variables</strong>
-                        <small>GOOS / UNESCO IOC framework</small>
-                    </a>
-                    <a href="https://geobon.org/eesvs/what-are-eesvs/" target="_blank" rel="noreferrer">
-                        <span>EESV</span>
-                        <strong>Essential Ecosystem Service Variables</strong>
-                        <small>GEO BON ecosystem-services framework</small>
-                    </a>
-                </section>
-
                 <section className="sarva-dash__portalIntro" aria-label="SARVA portal entry points">
                     <div>
                         <span>Start with what you need</span>
@@ -1730,6 +1659,29 @@ export default function Home() {
                             </article>
                         ))}
                     </div>
+                </section>
+
+                <section className="sarva-dash__referenceStrip" aria-label="Essential variable framework links">
+                    <a href="https://gcos.wmo.int/en/essential-climate-variables" target="_blank" rel="noreferrer">
+                        <span>ECV</span>
+                        <strong>Essential Climate Variables</strong>
+                        <small>GCOS / WMO framework</small>
+                    </a>
+                    <a href="https://geobon.org/ebvs/what-are-ebvs/" target="_blank" rel="noreferrer">
+                        <span>EBV</span>
+                        <strong>Essential Biodiversity Variables</strong>
+                        <small>GEO BON framework</small>
+                    </a>
+                    <a href="https://goosocean.org/what-we-do/framework/essential-ocean-variables/" target="_blank" rel="noreferrer">
+                        <span>EOV</span>
+                        <strong>Essential Ocean Variables</strong>
+                        <small>GOOS / UNESCO IOC framework</small>
+                    </a>
+                    <a href="https://geobon.org/eesvs/what-are-eesvs/" target="_blank" rel="noreferrer">
+                        <span>EESV</span>
+                        <strong>Essential Ecosystem Service Variables</strong>
+                        <small>GEO BON ecosystem-services framework</small>
+                    </a>
                 </section>
 
                 <section className="sarva-dash__workspace" id="risk-map" ref={mapSectionRef}>
@@ -1989,55 +1941,6 @@ export default function Home() {
                             </div>
                         </article>
                     ))}
-                </section>
-
-                <section className="sarva-dash__content">
-                    <article className="sarva-panel">
-                        <div className="sarva-panel__head">
-                            <h2>Key Indicators <span>(National Overview)</span></h2>
-                            <Link to="/overview">View all</Link>
-                        </div>
-                        <div className="sarva-indicators">
-                            {indicators.map(([icon, label, value, trend, tone]) => (
-                                <div className="sarva-indicator" key={label}>
-                                    <span className={`sarva-indicator__icon is-${tone}`}>{icon}</span>
-                                    <div>
-                                        <strong>{label}</strong>
-                                        <b>{value}</b>
-                                    </div>
-                                    <em className={`is-${tone}`}>{trend}</em>
-                                    <i aria-hidden="true" />
-                                </div>
-                            ))}
-                        </div>
-                    </article>
-
-                    <article className="sarva-panel" id="tools">
-                        <div className="sarva-panel__head">
-                            <h2>Live External Data</h2>
-                            <a href="#tools">View all</a>
-                        </div>
-                        <div className="sarva-services">
-                            {liveServices.map((service) => (
-                                <a
-                                    href={service.href || "#tools"}
-                                    key={service.name}
-                                    rel="noopener noreferrer"
-                                    target="_blank"
-                                >
-                                    <span className="sarva-services__value">{service.value}</span>
-                                    <span className="sarva-services__body">
-                                        <strong>{service.name}</strong>
-                                        <small>{service.source}</small>
-                                        <small>{service.detail}</small>
-                                    </span>
-                                    <em className={`is-${service.status === "live" ? "green" : "orange"}`}>
-                                        {service.status}
-                                    </em>
-                                </a>
-                            ))}
-                        </div>
-                    </article>
                 </section>
 
                 <section className="sarva-dash__lower">
