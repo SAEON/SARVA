@@ -1303,7 +1303,7 @@ export default function Home() {
                         <aside className="sarva-dash__heroHighlights" aria-label="SARVA live highlights">
                             <div className="sarva-dash__heroHighlightsHead">
                                 <div>
-                                    <span>{siteStatsResponse?.data?.title || "Risk and hazard highlights"}</span>
+                                    <span>{siteStatsResponse?.data?.title || "Environmental screening highlights"}</span>
                                     <small>Click a highlight to open its map layer. Click i for interesting facts about South Africa.</small>
                                 </div>
                                 <div>
@@ -1327,6 +1327,7 @@ export default function Home() {
                                     </button>
                                 </div>
                             </div>
+                            <p className="sarva-screeningNotice">ECMWF model data interpreted by SARVA for environmental screening. These are not official forecasts or early warnings. <a href="https://www.weathersa.co.za/warnings" target="_blank" rel="noreferrer">Official forecasts and warnings: SAWS ↗</a></p>
                             <div className="sarva-dash__heroHighlightGrid">
                                 {heroHighlights.slice(0, 5).map((highlight) => (
                                     <button
@@ -1690,7 +1691,7 @@ export default function Home() {
                         <div className="sarva-panel__head">
                             <div>
                                 <h2>Explore South Africa</h2>
-                                <p>Forecast rainfall risk, environmental risk layers and SAEON live observations for national context.</p>
+                                <p>ECMWF rainfall screening, environmental risk layers and SAEON live observations for national context.</p>
                             </div>
                             <div className="sarva-dash__tabs">
                                 <button

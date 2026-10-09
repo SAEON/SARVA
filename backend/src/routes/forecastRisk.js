@@ -15,29 +15,29 @@ const LEGACY_FORECAST_ATTRIBUTION =
 
 const RISK_LAYERS = {
   rainfall: {
-    label: "Forecast rainfall risk",
+    label: "ECMWF rainfall screening",
     description:
       "Highest daily forecast rainfall risk on a 0.25 degree grid for the cached forecast window.",
     units: "mm/day",
   },
   overall: {
-    label: "Environmental risk index",
+    label: "SARVA combined screening index",
     description:
       "Highest SARVA development environmental risk index from rainfall, heat, wind and fire-weather proxy components.",
     units: "0-100",
   },
   heat: {
-    label: "Forecast heat risk",
+    label: "ECMWF temperature screening",
     description: "SARVA development heat index derived from daily maximum ECMWF 2 m temperature.",
     units: "°C max",
   },
   wind: {
-    label: "Forecast wind risk",
+    label: "ECMWF wind screening",
     description: "SARVA development wind index derived from daily maximum ECMWF 10 m wind speed.",
     units: "km/h max",
   },
   fire: {
-    label: "Forecast fire-weather proxy",
+    label: "SARVA fire-weather screening",
     description:
       "SARVA development fire-weather proxy derived from heat, wind and forecast dryness. This is not a formal fire danger index.",
     units: "0-100",
@@ -184,7 +184,7 @@ forecastRiskRouter.get("/forecast-risk/layer", async (req, res) => {
           count: 0,
           records: [],
           geojson: { type: "FeatureCollection", features: [] },
-          message: "Forecast rainfall risk has not synced yet.",
+          message: "ECMWF rainfall screening has not synced yet.",
         },
       });
       return;

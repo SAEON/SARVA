@@ -3896,3 +3896,7 @@ body {
 .sarva-dash__heroHighlightGrid button:hover .sarva-highlightAction b { transform:translateX(4px); }
 .sarva-dash__heroHighlightGrid button:focus-visible { outline:3px solid #f4ce76; outline-offset:4px; }
 @media(prefers-reduced-motion:reduce){.sarva-dash__heroHighlightGrid button .sarva-highlightAction b{transition:none}}
+.sarva-screeningNotice { font-size:13px; line-height:1.5; margin:10px 0 14px; color:#f6f3e9; }
+.sarva-screeningNotice a { color:#f4ce76; text-decoration:underline; font-weight:700; }
+.sarva-map__authorityNotice { font-size:11px; line-height:1.4; margin:0 0 9px; max-width:280px; }
+.sarva-map__authorityNotice a { display:block; color:var(--accent-strong); font-weight:700; text-decoration:underline; margin-top:4px; }

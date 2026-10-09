@@ -193,7 +193,7 @@ function renderForecastRiskPopup(properties, { expanded = false } = {}) {
     const riskIndex = Number(properties?.riskIndex);
     const riskScore = Number(properties?.riskScore);
     const layer = properties?.layer || "rainfall";
-    const layerLabel = properties?.layerLabel || "Forecast rainfall risk";
+    const layerLabel = properties?.layerLabel || "ECMWF rainfall screening";
     const layerUnits = properties?.layerUnits || (layer === "rainfall" ? "mm/day" : "0-100");
     const temperature = Number(properties?.temperatureMaxC);
     const wind = Number(properties?.windMaxKmh);
@@ -919,7 +919,7 @@ export default function SouthAfricaMap({ activeMode, onModeChange, focusHighligh
     const observationsVisible = activeMode === "rainfall-risk";
     const forecastRiskVisible = Boolean(FORECAST_LAYER_BY_MODE[activeMode]);
     const forecastLayerMeta = forecastRiskLayer?.layerMeta || {
-        label: forecastLayer === "rainfall" ? "Forecast rainfall risk" : "Environmental risk index",
+        label: forecastLayer === "rainfall" ? "ECMWF rainfall screening" : "SARVA combined screening index",
         description:
             forecastLayer === "rainfall"
                 ? "Highest daily forecast rainfall risk on a 0.25 degree grid for the cached forecast window."
@@ -931,9 +931,9 @@ export default function SouthAfricaMap({ activeMode, onModeChange, focusHighligh
     const locatedSiteCount = siteFeatures.features.length;
     const forecastRiskNotice =
         forecastRiskVisible && forecastRiskStatus.source === "error"
-            ? "Forecast rainfall risk could not be loaded."
+            ? "ECMWF rainfall screening could not be loaded."
             : forecastRiskVisible && forecastRiskStatus.source !== "loading" && forecastRiskCount === 0
-              ? forecastRiskStatus.message || "Forecast rainfall risk has not synced yet."
+              ? forecastRiskStatus.message || "ECMWF rainfall screening has not synced yet."
               : null;
     const siteNotice =
         sitesVisible && siteStatus.source === "error"
@@ -960,15 +960,16 @@ export default function SouthAfricaMap({ activeMode, onModeChange, focusHighligh
                     }}
                 >
                     <option value="rainfall-risk">SAEON live observations</option>
-                    <option value="forecast-risk">Forecast rainfall risk</option>
-                    <option value="environmental-risk">Environmental risk index</option>
-                    <option value="heat-risk">Forecast heat risk</option>
-                    <option value="wind-risk">Forecast wind risk</option>
-                    <option value="fire-risk">Forecast fire-weather proxy</option>
+                    <option value="forecast-risk">ECMWF rainfall screening</option>
+                    <option value="environmental-risk">SARVA combined screening index</option>
+                    <option value="heat-risk">ECMWF temperature screening</option>
+                    <option value="wind-risk">ECMWF wind screening</option>
+                    <option value="fire-risk">SARVA fire-weather screening</option>
                 </select>
             </div>
             {forecastRiskVisible && (
                 <div className="sarva-map__legend sarva-map__legend--forecast" aria-label={`${forecastLayerMeta.label} legend`}>
+                    <p className="sarva-map__authorityNotice">SARVA screening of ECMWF model data. Not an official forecast or warning. <a href="https://www.weathersa.co.za/warnings" target="_blank" rel="noreferrer">Official forecasts &amp; warnings: SAWS ↗</a></p>
                     <div className="sarva-map__legendHeader">
                         <strong>{forecastLayerMeta.label}</strong>
                         <button

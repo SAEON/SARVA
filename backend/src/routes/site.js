@@ -207,23 +207,23 @@ async function buildHomeHighlights() {
 
   return {
     generatedAt: new Date().toISOString(),
-    title: "Risk and hazard highlights",
+    title: "Environmental screening highlights",
     summary: `Public-facing screening highlights from the cached ${forecastRange} forecast window.`,
     highlights: [
       hazardHighlight({
-        label: "Overall forecast outlook",
+        label: "Combined SARVA screening indicator",
         value: overall.overallRiskScore === null || overall.overallRiskScore === undefined
           ? "--"
           : scoreBand(overall.overallRiskScore),
         detail: `${overall.dominantHazard || "Environmental"} signal, ${formatNumber(overall.overallRiskScore)}/100`,
         row: overall,
         mapMode: "environmental-risk",
-        tag: "5-day outlook",
+        tag: "5-day model window",
         severityScore: overall.overallRiskScore,
         explainer: "Highest SARVA screening signal across rain, heat, wind and fire-weather layers.",
       }),
       hazardHighlight({
-        label: "Rainfall watch",
+        label: "ECMWF rainfall estimate",
         value: rainfall.rainfallMm === null || rainfall.rainfallMm === undefined
           ? "--"
           : `${formatNumber(rainfall.rainfallMm)} mm/day`,
@@ -235,7 +235,7 @@ async function buildHomeHighlights() {
         explainer: "Highest forecast daily rainfall total in the current ECMWF cache.",
       }),
       hazardHighlight({
-        label: "Hottest forecast area",
+        label: "ECMWF maximum temperature",
         value: heat.temperatureMaxC === null || heat.temperatureMaxC === undefined
           ? "--"
           : `${formatNumber(heat.temperatureMaxC)} °C`,
@@ -247,7 +247,7 @@ async function buildHomeHighlights() {
         explainer: "Highest forecast maximum temperature over the cached forecast window.",
       }),
       hazardHighlight({
-        label: "Strongest forecast wind",
+        label: "ECMWF maximum wind speed",
         value: wind.windMaxKmh === null || wind.windMaxKmh === undefined
           ? "--"
           : `${formatNumber(wind.windMaxKmh)} km/h`,
@@ -259,7 +259,7 @@ async function buildHomeHighlights() {
         explainer: "Strongest forecast 10 m wind speed in the current ECMWF cache.",
       }),
       hazardHighlight({
-        label: "Fire-weather watch",
+        label: "SARVA fire-weather indicator",
         value: fire.fireRiskScore === null || fire.fireRiskScore === undefined
           ? "--"
           : scoreBand(fire.fireRiskScore),
@@ -381,6 +381,7 @@ async function getHomeHighlights() {
           WHERE run.status = 'success'
             AND COALESCE(run.finished_at, run.started_at) > generated_at
         )
+        AND payload->>'title' = 'Environmental screening highlights'
         AND jsonb_typeof(payload #> '{highlights,0,latitude}') = 'number'
         AND jsonb_typeof(payload #> '{highlights,0,longitude}') = 'number'
       ORDER BY generated_at DESC
