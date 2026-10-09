@@ -16,39 +16,6 @@ const SouthAfricaMap = lazy(() => import("../components/SouthAfricaMap"));
 const DATA_SCIENCE_LAB_PATH = import.meta.env.VITE_DSLAB_URL || "/ds-lab/";
 const EXPLORE_PATH = "/explore";
 
-const featureTiles = [
-    ["◇", "Atlas Tools", "Open SARVA interactive map apps", "/explore#atlas-tools"],
-    ["▤", "Dashboards", "View and customise dashboards", "/overview"],
-    ["▥", "Indicators", "Track indicators and trends", "/municipal-risk-profiler"],
-    ["⌕", "Search Glossary", "Find definitions and terminology", "/glossary"],
-    ["□", "Relevant Documents", "Browse reports, tools and reference websites", "/resources"],
-    ["▤", "National Policy", "Browse legislation and policy references", "/national-policy-and-legislation"],
-    ["♧", "Updates", "Stay informed of changes", "/overview"],
-];
-
-const featureGroups = [
-    {
-        title: "Explore",
-        detail: "National map, risk layers and indicator views",
-        items: featureTiles.slice(0, 3),
-    },
-    {
-        title: "Resources",
-        detail: "Definitions, documents and policy records",
-        items: featureTiles.slice(3, 6),
-    },
-    {
-        title: "Community",
-        detail: "Training, contributions and collaboration",
-        items: [
-            ["◇", "Help & Training", "Grow skills and find guidance", "/resources?search=training"],
-            ["▧", "Data Science Lab", "Tutorials, learning, apps and SARVA lab notes", DATA_SCIENCE_LAB_PATH],
-            ["◎", "Contribute Data", "Share datasets and knowledge", "https://docs.google.com/forms/d/1bxnefRblVoQ8hpJJx_KL1nzeZHQfEK-QKVCxoPIXnAU/viewform?edit_requested=true"],
-            ["♧", "Communities of Practice", "Connect with SARVA partners", "/about"],
-        ],
-    },
-];
-
 const portalCategories = [
     {
         icon: "◇",
@@ -1915,34 +1882,6 @@ export default function Home() {
                             ))}
                         </div>
                     </article>
-                </section>
-
-                <section className="sarva-dash__featureGroups" aria-label="Feature shortcuts">
-                    {featureGroups.map((group) => (
-                        <article className="sarva-dash__featureGroup" key={group.title}>
-                            <div>
-                                <h2>{group.title}</h2>
-                                <p>{group.detail}</p>
-                            </div>
-                            <div>
-                                {group.items.map(([icon, title, detail, to]) => (
-                                    isExternalLink(to) ? (
-                                        <a href={to} className="sarva-dash__feature" key={title} target="_blank" rel="noreferrer">
-                                            <span>{icon}</span>
-                                            <strong>{title}</strong>
-                                            <small>{detail}</small>
-                                        </a>
-                                    ) : (
-                                        <Link to={to} className="sarva-dash__feature" key={title}>
-                                            <span>{icon}</span>
-                                            <strong>{title}</strong>
-                                            <small>{detail}</small>
-                                        </Link>
-                                    )
-                                ))}
-                            </div>
-                        </article>
-                    ))}
                 </section>
 
                 <section className="sarva-dash__lower">
