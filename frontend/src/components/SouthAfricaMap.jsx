@@ -1,3 +1,4 @@
+import FireDetectionsLayer from "./FireDetectionsLayer";
 import { useEffect, useMemo, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -960,6 +961,7 @@ export default function SouthAfricaMap({ activeMode, onModeChange, focusHighligh
                     }}
                 >
                     <option value="rainfall-risk">SAEON live observations</option>
+                    <option value="satellite-fires">Satellite fire detections</option>
                     <option value="forecast-risk">ECMWF rainfall screening</option>
                     <option value="environmental-risk">SARVA combined screening index</option>
                     <option value="heat-risk">ECMWF temperature screening</option>
@@ -967,6 +969,7 @@ export default function SouthAfricaMap({ activeMode, onModeChange, focusHighligh
                     <option value="fire-risk">SARVA fire-weather screening</option>
                 </select>
             </div>
+            <FireDetectionsLayer map={mapRef.current} ready={ready} visible={activeMode === "satellite-fires"} />
             {forecastRiskVisible && (
                 <div className="sarva-map__legend sarva-map__legend--forecast" aria-label={`${forecastLayerMeta.label} legend`}>
                     <p className="sarva-map__authorityNotice">SARVA screening of <a href="https://www.ecmwf.int/en/forecasts/datasets/open-data" target="_blank" rel="noreferrer">ECMWF Open Data ↗</a>. Not an official forecast or warning. <a href="https://www.weathersa.co.za/warnings" target="_blank" rel="noreferrer">Official forecasts &amp; warnings: SAWS ↗</a></p>

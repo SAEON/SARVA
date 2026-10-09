@@ -1,3 +1,4 @@
+import {fireDetectionsRouter} from "./routes/fireDetections.js";
 import "dotenv/config";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -40,6 +41,7 @@ app.use("/api", catalogueRouter);
 app.use("/api", authRouter);
 app.use("/api", externalServicesRouter);
 app.use("/api", alertsRouter);
+app.use("/api", fireDetectionsRouter);
 app.use("/api", rainfallRouter);
 app.use("/api", forecastRiskRouter);
 app.use("/api", municipalProfilesRouter);

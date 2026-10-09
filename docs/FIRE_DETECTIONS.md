@@ -1,0 +1,5 @@
+Satellite fire detections use NASA FIRMS VIIRS S-NPP NRT CSV data. Set FIRMS_MAP_KEY in the Compose .env file (request a free key at https://firms.modaps.eosdis.nasa.gov/api/area/) and recreate the backend container. Keep the key server-side.
+
+The backend downloads eight calendar days in two API requests to cover a rolling seven-day UTC window, filters the southern African bounding box and deduplicates matching coordinate/time records. A shared 30-minute memory cache avoids per-user NASA downloads. The map offers rolling 24-hour and seven-day filters, with detection time, satellite, confidence and FRP in MW. Detections cover the regional bounding box, including neighbouring countries. Clouds, overpass times and detection thresholds affect coverage. Points represent thermal anomalies, not confirmed wildfire extents or official warnings. Settlements and conservation overlays are not included in this first version.
+
+Without a configured key the API returns an explicit 503 setup status; failed upstream requests return 502 and do not masquerade as zero fires. Restarting the backend clears the memory cache. The frontend polls while this layer is active.
