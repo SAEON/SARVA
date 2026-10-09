@@ -11,13 +11,11 @@ const SOUTH_AFRICA_BOUNDS = {
   north: -21.5,
 };
 const SOUTHERN_AFRICA_PATTERN = /\b(south africa|southern africa|africa|namibia|botswana|lesotho|eswatini|mozambique|zimbabwe|zambia|malawi|angola|madagascar)\b/i;
-const HAZARD_PATTERN = /\b(disaster|hazard|warning|alert|emergency|storm|cyclone|hurricane|typhoon|tornado|flood|flash flood|landslide|mudslide|structural fire|building fire|industrial fire|veld\s*fire|wildfire|bushfire|fire danger|drought|heatwave|heat wave|cold front|heavy rain|extreme rain|severe weather|dam levels|water restrictions|water shortage|outbreak|cholera|measles|evacuat|earthquake|volcano|volcanic|tsunami|oil spill|chemical spill)\b/i;
-const ENVIRONMENT_PATTERN = /\b(climate change|climate crisis|climate risk|environmental risk|environmental hazard|air quality|water quality|water security|water supply|water services|reliable water|food security|biodiversity|conservation|pollution|adaptation|mitigation|ecosystem|marine|coastal|deforestation|emissions|global warming|greenhouse gas|carbon|renewable energy|species loss|habitat loss|land degradation|water scarcity)\b/i;
-const RISK_CONTEXT_PATTERN = /\b(risk|risks|vulnerab|resilien|adaptation|disaster|hazard|emergency|crisis|impact|threat|warning|alert|response|preparedness|recovery|damage|losses|shortage|scarcity)\b/i;
-const POLICY_PATTERN = /\b(policy|legislation|act|regulation|strategy|framework|plan|programme|management system|governance)\b/i;
-const SERVICE_GOVERNANCE_PATTERN = /\b(service delivery|basic services|water services|water supply|sanitation|electricity|load shedding|energy security|infrastructure|municipal|municipality|local government|housing|settlement|public works|transport|road|dam|reservoir|waste management)\b/i;
-const CONFLICT_PATTERN = /\b(war|armed conflict|conflict|airstrike|air strike|missile|rocket|shelling|bombardment|bombing|invasion|troops?|soldiers?|military|militia|rebels?|insurgents?|hostages?|ceasefire|gunfire|opened fire|firearms?|battle|combat|terror|terrorist)\b/i;
-const CONFLICT_RELEVANCE_PATTERN = /\b(humanitarian|disaster|emergency|evacuat|displaced|displacement|refugee|relief|aid|food security|famine|hunger|cholera|outbreak|epidemic|disease|hospital|water|sanitation|infrastructure|power|electricity|shelter|flood|drought|heatwave|storm|climate|pollution|oil spill|chemical spill)\b/i;
+// Require a concrete environmental topic; generic warnings, crime and emergencies are insufficient.
+const HAZARD_PATTERN = /\b(storms?|cyclones?|hurricanes?|typhoons?|tornado(?:es)?|flood(?:s|ing)?|landslides?|mudslides?|veld\s*fire|wildfires?|bushfires?|fire danger|drought|heatwaves?|heat wave|extreme heat|cold front|heavy rain|extreme rain|severe weather|dam levels|water restrictions|water shortage|earthquakes?|volcano|volcanic|tsunami|oil spill|chemical spill)\b/i;
+const ENVIRONMENT_PATTERN = /\b(climate change|climate crisis|climate risk|environmental risk|environmental hazard|air quality|water quality|water security|water supply|water services|water scarcity|sanitation|biodiversity|conservation|pollution|adaptation|ecosystems?|deforestation|emissions|global warming|greenhouse gas|habitat loss|land degradation|coastal erosion|sea level rise|food security)\b/i;
+const RISK_CONTEXT_PATTERN = /\b(risks?|vulnerab\w*|resilien\w*|adaptation|disaster|hazard|emergency|crisis|impacts?|threat\w*|warning|alert|response|preparedness|recovery|damage|losses|shortage|scarcity|contamination|outbreak|cholera)\b/i;
+const POLICY_PATTERN = /\b(policy|legislation|regulation|strategy|framework|plans?|programme)\b/i;
 const MAJOR_NEWS_FEEDS = [
   {
     id: "bbc-environment",
@@ -234,56 +232,19 @@ function updateReason(record) {
   return parts.join(" | ") || "recent source item";
 }
 
-function classifyRiskRelevance(title = "", description = "") {
+export function classifyRiskRelevance(title = "", description = "") {
   const text = classificationText(title, description);
-  const conflict = CONFLICT_PATTERN.test(text);
-  const conflictRiskContext = CONFLICT_RELEVANCE_PATTERN.test(text);
-  const hazard = HAZARD_PATTERN.test(text);
-  const climateEnvironment = ENVIRONMENT_PATTERN.test(text);
-  const riskContext = RISK_CONTEXT_PATTERN.test(text);
-  const serviceGovernance = SERVICE_GOVERNANCE_PATTERN.test(text);
-  const policyContext = POLICY_PATTERN.test(text) && (climateEnvironment || serviceGovernance) && (riskContext || serviceGovernance);
-  const regionalContext = SOUTHERN_AFRICA_PATTERN.test(text) && (hazard || ((climateEnvironment || serviceGovernance) && riskContext) || policyContext);
-
-  if (conflict && !conflictRiskContext && !hazard && !climateEnvironment && !serviceGovernance) {
-    return { isRelevant: false, category: "Conflict/general news", severity: "watch", reason: "conflict item without SARVA disaster/environment/service relevance" };
+  const hazard = HAZARD_PATTERN.exec(text);
+  const environment = ENVIRONMENT_PATTERN.exec(text);
+  if (hazard) return { isRelevant: true, category: "Environmental hazard update", severity: "watch", reason: `environmental topic: ${hazard[0].toLowerCase()}` };
+  if (environment && (RISK_CONTEXT_PATTERN.test(text) || POLICY_PATTERN.test(text))) {
+    return { isRelevant: true, category: POLICY_PATTERN.test(text) ? "Environmental resilience policy" : "Environmental vulnerability and impacts", severity: "watch", reason: `environmental topic: ${environment[0].toLowerCase()}` };
   }
-  if (hazard) return { isRelevant: true, category: "Environmental hazard update", severity: "moderate", reason: "hazard/risk keyword" };
-  if (policyContext) return { isRelevant: true, category: climateEnvironment ? "Risk and climate policy" : "Services and governance policy", severity: "watch", reason: "policy linked to SARVA risk/environment/service context" };
-  if ((climateEnvironment && riskContext) || (serviceGovernance && riskContext) || regionalContext) return { isRelevant: true, category: climateEnvironment ? "Risk and climate context" : "Service-delivery risk context", severity: "watch", reason: "SARVA risk/environment/service context" };
-  if (conflict && conflictRiskContext && SOUTHERN_AFRICA_PATTERN.test(text)) {
-    return { isRelevant: true, category: "Humanitarian risk context", severity: "watch", reason: "conflict-linked humanitarian/disaster context in regional scope" };
-  }
-  return { isRelevant: false, category: "Local update", severity: "watch", reason: "outside SARVA risk/climate scope" };
+  return { isRelevant: false, category: "General news", severity: "watch", reason: "no explicit environmental hazard or vulnerability context" };
 }
 
 function classifyMajorNewsRelevance(title = "", description = "") {
-  const base = classifyRiskRelevance(title, description);
-  const text = classificationText(title, description);
-  const hasHazard = HAZARD_PATTERN.test(text);
-  const hasEnvironment = ENVIRONMENT_PATTERN.test(text);
-  const hasServiceGovernance = SERVICE_GOVERNANCE_PATTERN.test(text);
-  const hasRiskContext = RISK_CONTEXT_PATTERN.test(text);
-  const hasRegionalContext = SOUTHERN_AFRICA_PATTERN.test(text);
-  const hasConflict = CONFLICT_PATTERN.test(text);
-  const hasConflictRiskContext = CONFLICT_RELEVANCE_PATTERN.test(text);
-
-  if (!base.isRelevant) return base;
-  if (hasConflict && !(hasConflictRiskContext && (hasRegionalContext || hasHazard || hasEnvironment || hasServiceGovernance))) {
-    return { isRelevant: false, category: "Major news", severity: "watch", reason: "conflict item outside SARVA disaster/environment/service scope" };
-  }
-  if (hasHazard || ((hasEnvironment || hasServiceGovernance) && hasRiskContext && (hasRegionalContext || POLICY_PATTERN.test(text)))) {
-    return {
-      ...base,
-      category: hasHazard ? "Environmental risk and hazard news" : base.category,
-      severity: hasHazard && /\b(deadly|fatal|severe|emergency|evacuat|catastroph|record|extreme|red alert)\b/i.test(text)
-        ? "high"
-        : base.severity,
-      reason: `major news filter: ${base.reason}`,
-    };
-  }
-
-  return { isRelevant: false, category: "Major news", severity: "watch", reason: "major news item outside environmental risk/hazard scope" };
+  return classifyRiskRelevance(title, description);
 }
 
 function extractRiskTags(title = "", description = "") {
@@ -628,6 +589,8 @@ async function getNicdAlerts(days) {
         const publishedAt = validDate(xmlTag(item, "pubDate") || xmlTag(item, "dc:date"))?.toISOString();
         if (!title || !isInWindow(publishedAt, days)) return [];
         const text = `${title} ${description}`;
+        const relevance = classifyRiskRelevance(title, description);
+        if (!relevance.isRelevant) return [];
         const isHazard = /\b(outbreak|alert|warning|cholera|measles|rabies|mpox|malaria|disease|infection)\b/i.test(text);
 
         return [{
@@ -670,6 +633,8 @@ async function getWhoHealthUpdates(days) {
         const publishedAt = validDate(xmlTag(item, "pubDate") || xmlTag(item, "a10:updated"))?.toISOString();
         const text = `${title} ${description}`;
         if (!title || !isInWindow(publishedAt, days)) return [];
+        const relevance = classifyRiskRelevance(title, description);
+        if (!relevance.isRelevant) return [];
         const link = xmlTag(item, "link") || "https://www.who.int/";
 
         return [{
