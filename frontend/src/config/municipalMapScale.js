@@ -1,4 +1,4 @@
-export const MAP_COLOURS = ['#dbeafe', '#93c5fd', '#3b82f6', '#1d4ed8', '#172554'];
+export const MAP_COLOURS = ['#fee5d9', '#fcae91', '#fb6a4a', '#de2d26', '#a50f15'];
 
 // Equal-frequency breaks retain raw units while making skewed counts readable.
 export function municipalMapScale(values) {

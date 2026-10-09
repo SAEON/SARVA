@@ -654,6 +654,7 @@ export default function MunicipalRiskProfiler() {
     const [profile, setProfile] = useState(null);
     const [profileLoading, setProfileLoading] = useState(false);
     const [profileError, setProfileError] = useState("");
+    const [selectedPeriod, setSelectedPeriod] = useState("");
     const [selectedMetric, setSelectedMetric] = useState("indicator:crime_murder");
     const [metricData, setMetricData] = useState(null);
     const [metricLoading, setMetricLoading] = useState(false);
@@ -962,7 +963,7 @@ export default function MunicipalRiskProfiler() {
     useEffect(() => {
         const controller = new AbortController();
         setMetricLoading(true);
-        fetch(apiUrl(`/api/municipalities/metric?metric=${encodeURIComponent(selectedMetric)}`), { signal: controller.signal })
+        fetch(apiUrl(`/api/municipalities/metric?metric=${encodeURIComponent(selectedMetric)}${selectedPeriod ? `&period=${encodeURIComponent(selectedPeriod)}` : ""}`), { signal: controller.signal })
             .then((response) => response.json())
             .then((body) => {
                 if (body?.status !== "ok") throw new Error(body?.message || "Metric could not be loaded");
@@ -973,7 +974,7 @@ export default function MunicipalRiskProfiler() {
             })
             .finally(() => setMetricLoading(false));
         return () => controller.abort();
-    }, [selectedMetric]);
+    }, [selectedMetric, selectedPeriod]);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -1800,7 +1801,7 @@ export default function MunicipalRiskProfiler() {
             )}
 
             <div className="profiler-explorer">
-            <MapIndicatorControls value={selectedMetric} onChange={setSelectedMetric} metric={metricData?.metric} />
+            <MapIndicatorControls value={selectedMetric} onChange={value => {setSelectedMetric(value);setSelectedPeriod("");}} metric={metricData?.metric} period={selectedPeriod} onPeriodChange={setSelectedPeriod} />
             <section className="sarva-muniProfiler__mapPanel" aria-label="Municipality map">
                 <div ref={mapContainerRef} className="sarva-muniProfiler__map" />
                 {metricLoading && <div className="profiler-mapStatus" role="status">Loading map values…</div>}

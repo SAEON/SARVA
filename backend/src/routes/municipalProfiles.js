@@ -263,12 +263,13 @@ municipalProfilesRouter.get("/municipalities/metric", async (req, res) => {
   const metric = String(req.query.metric || "index:imported_composite_risk").trim();
   const [kind, key] = metric.includes(":") ? metric.split(":", 2) : ["index", metric];
   const safeKind = kind === "indicator" ? "indicator" : "index";
+  const period = String(req.query.period || "").trim() || null;
 
   try {
     if (safeKind === "indicator") {
       const result = await pool.query(
         `
-          ${latestIndicatorValuesSql("WHERE v.indicator_key = $1")}
+          ${latestIndicatorValuesSql("WHERE v.indicator_key = $1 AND ($2::text IS NULL OR v.period = $2)")}
           SELECT
             mb.gid,
             COALESCE(NULLIF(mb.municname, ''), NULLIF(mb.map_title, ''), 'Municipality') AS municipality,
@@ -292,7 +293,7 @@ municipalProfilesRouter.get("/municipalities/metric", async (req, res) => {
           JOIN sarva.municipal_indicator_definition d ON d.key = v.indicator_key
           ORDER BY municipality
         `,
-        [key]
+        [key, period]
       );
 
       const definition = result.rows[0] || null;
@@ -305,7 +306,7 @@ municipalProfilesRouter.get("/municipalities/metric", async (req, res) => {
             label: definition?.label || key,
             unit: definition?.display_unit || definition?.unit || "value",
             sourceName: definition?.source_name || null,
-            period: definition?.period || null,
+            period: period || definition?.period || null,
             scenario: definition?.scenario || null,
           },
           records: result.rows.map((row) => ({
