@@ -1520,3 +1520,22 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Map-first profiler: natural page height and a compact geographic selector. */
+.sarva-muniProfiler { display:flex; flex-direction:column; height:auto; min-height:0; font-family:var(--font-sans); padding:20px clamp(14px,3vw,36px) 36px; gap:16px; }
+.sarva-muniProfiler__tools { grid-template-columns:minmax(220px,.8fr) minmax(300px,1fr) auto auto; padding:16px; }
+.sarva-muniProfiler__intro h1 { font-size:26px; }
+.sarva-muniProfiler__intro p { font-weight:400; font-size:13px; }
+.sarva-muniProfiler__mapPanel { position:relative; height:390px; min-height:0; overflow:hidden; }
+.sarva-muniProfiler__map { height:100%; min-height:0; }
+.sarva-profilerMapHint { position:absolute; left:16px; top:16px; padding:12px 16px; background:rgba(255,253,247,.96); border:1px solid var(--border); border-radius:8px; max-width:calc(100% - 90px); pointer-events:none; }
+.sarva-profilerMapHint strong,.sarva-profilerMapHint span { display:block; }
+.sarva-profilerMapHint span { margin-top:4px; font-size:12px; color:var(--muted); }
+.sarva-profilerMapOptions { position:absolute; bottom:12px; left:12px; z-index:2; max-width:calc(100% - 80px); background:var(--surface); padding:8px 12px; border-radius:8px; }
+.sarva-profilerMapOptions summary { cursor:pointer; font-size:12px; }
+.sarva-profilerMapOptions .sarva-muniProfiler__mapNote { position:static; max-height:240px; overflow:auto; width:auto; margin-top:10px; }
+.sarva-profilerAdvanced__body { display:block; }
+.sarva-muniProfiler__profile { max-height:none; }
+@media(max-width:1000px){.sarva-muniProfiler__tools{grid-template-columns:1fr 1fr}.sarva-muniProfiler__mapPanel{height:340px}}
+@media(max-width:600px){.sarva-muniProfiler__tools{grid-template-columns:1fr}.sarva-muniProfiler__search{grid-template-columns:minmax(0,1fr) auto}.sarva-muniProfiler__mapPanel{height:290px}}
+.sarva-profilerMapOptions { display:none; }

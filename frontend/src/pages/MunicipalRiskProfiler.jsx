@@ -791,6 +791,9 @@ export default function MunicipalRiskProfiler() {
             zoom: 4.05,
             attributionControl: false,
             scrollZoom: true,
+            cooperativeGestures: true,
+            dragRotate: false,
+            pitchWithRotate: false,
             minZoom: 3,
             maxBounds: MAP_MAX_BOUNDS,
             style: {
@@ -826,28 +829,7 @@ export default function MunicipalRiskProfiler() {
                         source: "municipal_boundaries",
                         "source-layer": "municipalities",
                         paint: {
-                            "fill-color": [
-                                "case",
-                                ["boolean", ["feature-state", "hover"], false],
-                                "#f3c66a",
-                                ["!", ["boolean", ["feature-state", "hasMetric"], false]],
-                                "#c7c7bf",
-                                [
-                                    "interpolate",
-                                    ["linear"],
-                                    ["coalesce", ["feature-state", "metricValue"], 0],
-                                    0,
-                                    "#d9ead7",
-                                    25,
-                                    "#a7c98b",
-                                    50,
-                                    "#e7c95f",
-                                    75,
-                                    "#d47a4d",
-                                    100,
-                                    "#9d3f32",
-                                ],
-                            ],
+                            "fill-color": ["case", ["boolean", ["feature-state", "hover"], false], "#d7a84d", "#b7cbbb"],
                             "fill-opacity": [
                                 "case",
                                 ["boolean", ["feature-state", "selected"], false],
@@ -1757,10 +1739,10 @@ export default function MunicipalRiskProfiler() {
                 </form>
 
                 <button type="button" className="sarva-muniProfiler__infoButton" onClick={() => setInfoOpen(true)}>
-                    Indicator info
+                    Methodology
                 </button>
                 <button type="button" className="sarva-muniProfiler__infoButton" onClick={zoomToCountry}>
-                    Fit country
+                    Show country
                 </button>
             </section>
 
@@ -1806,10 +1788,10 @@ export default function MunicipalRiskProfiler() {
                 </div>
             )}
 
-            <RawMunicipalIndicators key={profile?.municipality?.gid || "empty"} profile={profile} loading={profileLoading} error={profileError} />
-            <details className="sarva-profilerAdvanced" onToggle={() => requestAnimationFrame(() => mapRef.current?.resize())}><summary>Advanced: map, legacy comparison scores and detailed analysis</summary><div className="sarva-profilerAdvanced__body">
             <section className="sarva-muniProfiler__mapPanel" aria-label="Municipality map">
                 <div ref={mapContainerRef} className="sarva-muniProfiler__map" />
+                <div className="sarva-profilerMapHint"><strong>{profile?.municipality?.municipality || "Select a municipality"}</strong><span>Click a boundary or search above to view its source values.</span></div>
+                <details className="sarva-profilerMapOptions"><summary>Legacy comparison layer controls</summary>
                 <div className={`sarva-muniProfiler__mapNote${layerBrowserOpen ? " is-expanded" : ""}`}>
                     <label>
                         <span className="sarva-muniProfiler__inlineHead">
@@ -1931,9 +1913,12 @@ export default function MunicipalRiskProfiler() {
                         <small><b>Lower relative pressure</b><b>Higher relative pressure</b></small>
                         <span><em /> No data</span>
                     </div>
-                </div>
+                </div>                </details>
+
             </section>
 
+            <RawMunicipalIndicators key={profile?.municipality?.gid || "empty"} profile={profile} loading={profileLoading} error={profileError} />
+            <details className="sarva-profilerAdvanced" onToggle={() => requestAnimationFrame(() => mapRef.current?.resize())}><summary>Advanced evidence and legacy analysis</summary><div className="sarva-profilerAdvanced__body">
             <aside className="sarva-muniProfiler__profile" aria-label="Municipal risk profile">
                 {profileLoading && <div className="sarva-muniProfiler__state">Loading municipal profile...</div>}
                 {profileError && <div className="sarva-muniProfiler__state">{profileError}</div>}
