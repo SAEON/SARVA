@@ -654,7 +654,7 @@ export default function MunicipalRiskProfiler() {
     const [profile, setProfile] = useState(null);
     const [profileLoading, setProfileLoading] = useState(false);
     const [profileError, setProfileError] = useState("");
-    const [selectedMetric, setSelectedMetric] = useState(DEFAULT_METRIC);
+    const [selectedMetric, setSelectedMetric] = useState("indicator:crime_murder");
     const [metricData, setMetricData] = useState(null);
     const [metricLoading, setMetricLoading] = useState(false);
     const [mapReady, setMapReady] = useState(false);
@@ -1720,7 +1720,7 @@ export default function MunicipalRiskProfiler() {
                     <span>SARVA municipal tool</span>
                     <h1>Municipal Risk Profiler</h1>
                     <p>
-                        Choose a municipality, browse source values by category and add compatible counts to make a custom total.
+                        Explore South Africa’s municipal data. Compare a layer, then select a municipality to inspect its values.
                     </p>
                 </div>
 
@@ -1799,11 +1799,13 @@ export default function MunicipalRiskProfiler() {
                 </div>
             )}
 
+            <div className="profiler-explorer">
             <MapIndicatorControls value={selectedMetric} onChange={setSelectedMetric} metric={metricData?.metric} />
             <section className="sarva-muniProfiler__mapPanel" aria-label="Municipality map">
                 <div ref={mapContainerRef} className="sarva-muniProfiler__map" />
+                {metricLoading && <div className="profiler-mapStatus" role="status">Loading map values…</div>}
                 <div className="sarva-profilerMapHint"><strong>{profile?.municipality?.municipality || "Select a municipality"}</strong><span>Click a boundary or search above to view its source values.</span></div>
-                {selectedMetric.startsWith("indicator:") && metricData?.metric?.key === selectedMetric.split(":")[1] && <div className="profiler-rawLegend"><strong>{metricData.metric?.label}</strong><small>{metricData.metric?.unit} · {metricData.metric?.period || "Period unknown"}</small><div className="profiler-legendClasses">{rawMapScale.map((item,index)=><div key={item.value}><i style={{background:item.colour}}/><span>{formatNumber(item.value,1)}{index<rawMapScale.length-1 ? ` – <${formatNumber(rawMapScale[index+1].value,1)}` : ` – ${formatNumber(rawMapHigh,1)}`}</span></div>)}</div><span>{rawMapLow==null ? "No comparable values" : `${formatNumber(rawMapLow, 1)} — ${formatNumber(rawMapHigh, 1)}`}</span><small>{rawMapValues.length} municipalities · grey: missing, proxy or different basis. Distribution classes in raw units; colour shows magnitude, not risk.</small></div>}
+                {selectedMetric.startsWith("indicator:") && !metricLoading && metricData?.metric?.key === selectedMetric.split(":")[1] && <div className="profiler-rawLegend"><strong>{metricData.metric?.label}</strong><small>{rawMapValues.length ? `${metricData.metric?.unit} · ${metricData.metric?.period || "Period unknown"}` : "No comparable raw values available. Choose another indicator."}</small><div className="profiler-legendClasses">{rawMapScale.map((item,index)=><div key={item.value}><i style={{background:item.colour}}/><span>{formatNumber(item.value,1)}{index<rawMapScale.length-1 ? ` – <${formatNumber(rawMapScale[index+1].value,1)}` : ` – ${formatNumber(rawMapHigh,1)}`}</span></div>)}</div><span>{rawMapLow==null ? "No comparable values" : `${formatNumber(rawMapLow, 1)} — ${formatNumber(rawMapHigh, 1)}`}</span><small>{rawMapValues.length} municipalities · grey: missing, proxy or different basis. Distribution classes in raw units; colour shows magnitude, not risk.</small></div>}
 
                 <details className="sarva-profilerMapOptions"><summary>Legacy comparison layer controls</summary>
                 <div className={`sarva-muniProfiler__mapNote${layerBrowserOpen ? " is-expanded" : ""}`}>
@@ -1931,6 +1933,7 @@ export default function MunicipalRiskProfiler() {
 
             </section>
 
+            </div>
             <RawMunicipalIndicators key={profile?.municipality?.gid || "empty"} profile={profile} loading={profileLoading} error={profileError} onSelect={gid => {const item=municipalities.find(m => Number(m.gid)===Number(gid));if(item)setSelected(item);}} />
             <details className="sarva-profilerAdvanced" onToggle={() => requestAnimationFrame(() => mapRef.current?.resize())}><summary>Advanced evidence and legacy analysis</summary><div className="sarva-profilerAdvanced__body">
             <aside className="sarva-muniProfiler__profile" aria-label="Municipal risk profile">

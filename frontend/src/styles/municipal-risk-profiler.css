@@ -1574,3 +1574,22 @@
 .profiler-legendClasses i { margin:0; width:22px; height:12px; flex:none; border-radius:2px; }
 .profiler-rawLegend > span { display:none; }
 @media(max-width:600px){.profiler-layerSource{flex-direction:column;gap:10px}.sarva-muniProfiler__mapPanel{height:410px}.profiler-rawLegend{max-width:220px;font-size:11px}}
+
+/* Keep the map and its controls together in a single exploration workspace. */
+.profiler-explorer { display:grid; grid-template-columns:280px minmax(0,1fr); border:1px solid #dbe3ed; border-radius:12px; overflow:hidden; background:white; }
+.profiler-explorer .profiler-mapControls { display:flex; flex-direction:column; gap:18px; border:0; border-right:1px solid #dbe3ed; border-radius:0; padding:22px; }
+.profiler-mapControls .profiler-controlHeading > span { font-size:10px; font-weight:700; letter-spacing:1.4px; color:#64748b; }
+.profiler-mapControls .profiler-controlHeading h2 { font-size:20px; line-height:1.2; margin:8px 0; letter-spacing:-.4px; }
+.profiler-mapControls .profiler-controlHeading p { line-height:1.5; }
+.profiler-mapControls select { height:42px; font-size:13px; }
+.profiler-explorer .profiler-layerSource { display:block; margin-top:auto; padding-top:18px; line-height:1.5; }
+.profiler-layerSource details { margin-top:12px; }
+.profiler-layerSource dl { display:block; }.profiler-layerSource dd { margin:0 0 8px; }
+.profiler-explorer .sarva-muniProfiler__mapPanel { height:570px; border:0; border-radius:0; }
+.sarva-profilerMapHint { padding:10px 14px; max-width:270px; font-size:13px; }
+.profiler-rawLegend { left:16px; bottom:30px; width:220px; font-size:11px; line-height:1.4; }
+.profiler-rawLegend strong { font-size:13px; }
+.profiler-mapStatus { position:absolute; top:16px; right:60px; padding:10px 14px; border-radius:8px; background:white; box-shadow:0 2px 12px #17255418; font-size:13px; }
+.sarva-muniProfiler__tools { background:transparent; border:0; padding:8px 0 14px; }
+@media(max-width:900px){.profiler-explorer{grid-template-columns:230px minmax(0,1fr)}.profiler-explorer .profiler-mapControls{padding:16px}}
+@media(max-width:600px){.profiler-explorer{grid-template-columns:1fr}.profiler-explorer .profiler-mapControls{border-right:0;border-bottom:1px solid #dbe3ed;gap:10px}.profiler-mapControls .profiler-controlHeading{display:none}.profiler-explorer .sarva-muniProfiler__mapPanel{height:440px}.profiler-explorer .profiler-layerSource{margin-top:0;padding-top:10px}}

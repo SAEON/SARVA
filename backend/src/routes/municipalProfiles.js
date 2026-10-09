@@ -404,6 +404,7 @@ municipalProfilesRouter.get("/municipalities/metadata", async (req, res) => {
         d.sort_order AS "sortOrder",
         array_remove(array_agg(DISTINCT v.period ORDER BY v.period), NULL) AS periods,
         array_remove(array_agg(DISTINCT v.scenario ORDER BY v.scenario), NULL) AS scenarios,
+        count(DISTINCT v.municipality_gid) FILTER (WHERE v.raw_value IS NOT NULL AND v.confidence IS DISTINCT FROM 'proxy')::int AS "rawMunicipalities",
         max(v.updated_at) AS "updatedAt"
       FROM sarva.municipal_indicator_definition d
       LEFT JOIN sarva.municipal_indicator_value v ON v.indicator_key = d.key
