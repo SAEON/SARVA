@@ -1,3 +1,4 @@
+import {municipalMapScale} from "../config/municipalMapScale";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import maplibregl from "maplibre-gl";
@@ -837,7 +838,7 @@ export default function MunicipalRiskProfiler() {
                                 0.82,
                                 ["boolean", ["feature-state", "hover"], false],
                                 0.68,
-                                0.42,
+                                0.88,
                             ],
                         },
                     },
@@ -847,7 +848,7 @@ export default function MunicipalRiskProfiler() {
                         source: "municipal_boundaries",
                         "source-layer": "municipalities",
                         paint: {
-                            "line-color": "#203a31",
+                            "line-color": "#475569",
                             "line-opacity": 0.82,
                             "line-width": [
                                 "case",
@@ -1041,9 +1042,9 @@ export default function MunicipalRiskProfiler() {
         metricRecordsRef.current = recordsByGid;
         const applyMetricState = () => {
             const values=selectedMetric.startsWith("indicator:") ? usableMapRecords(metricData).map(r=>Number(r.rawValue)) : [];
-            const low=values.length?Math.min(...values):0;
-            const high=values.length?Math.max(...values):0;
-            map.setPaintProperty("municipal-profile-fill","fill-color",["case",["boolean",["feature-state","hover"],false],"#d7a84d",["!",["boolean",["feature-state","hasMetric"],false]],"#c7c7bf", ...(high>low ? [["interpolate",["linear"],["coalesce",["feature-state","metricValue"],low],low,"#e0efee",high,"#17616a"]] : ["#7cb2b4"])]);
+            const scale=municipalMapScale(values);
+            const colour=scale.length>1 ? ["step",["coalesce",["feature-state","metricValue"],0],scale[0].colour,...scale.slice(1).flatMap(item=>[item.value,item.colour])] : scale[0]?.colour || "#cbd5e1";
+            map.setPaintProperty("municipal-profile-fill","fill-color",["case",["boolean",["feature-state","hover"],false],"#fbbf24",["!",["boolean",["feature-state","hasMetric"],false]],"#cbd5e1",colour]);
 
             municipalities.forEach((municipality) => {
                 const record = recordsByGid.get(Number(municipality.gid));
@@ -1709,6 +1710,7 @@ export default function MunicipalRiskProfiler() {
     }, [activeTab, isAdmin]);
 
     const rawMapValues = usableMapRecords(metricData).map(r=>Number(r.rawValue));
+    const rawMapScale = municipalMapScale(rawMapValues);
     const rawMapLow = rawMapValues.length ? Math.min(...rawMapValues) : null;
     const rawMapHigh = rawMapValues.length ? Math.max(...rawMapValues) : null;
     return (
@@ -1797,11 +1799,11 @@ export default function MunicipalRiskProfiler() {
                 </div>
             )}
 
-            <MapIndicatorControls value={selectedMetric} onChange={setSelectedMetric} />
+            <MapIndicatorControls value={selectedMetric} onChange={setSelectedMetric} metric={metricData?.metric} />
             <section className="sarva-muniProfiler__mapPanel" aria-label="Municipality map">
                 <div ref={mapContainerRef} className="sarva-muniProfiler__map" />
                 <div className="sarva-profilerMapHint"><strong>{profile?.municipality?.municipality || "Select a municipality"}</strong><span>Click a boundary or search above to view its source values.</span></div>
-                {selectedMetric.startsWith("indicator:") && metricData?.metric?.key === selectedMetric.split(":")[1] && <div className="profiler-rawLegend"><strong>{metricData.metric?.label}</strong><small>{metricData.metric?.unit} · {metricData.metric?.period || "Period unknown"}</small><i style={rawMapLow===rawMapHigh ? {background:"#7cb2b4"} : undefined}/><span>{rawMapLow==null ? "No comparable values" : `${formatNumber(rawMapLow, 1)} — ${formatNumber(rawMapHigh, 1)}`}</span><small>{rawMapValues.length} municipalities · grey: missing, proxy or different basis. Colour shows magnitude, not risk.</small></div>}
+                {selectedMetric.startsWith("indicator:") && metricData?.metric?.key === selectedMetric.split(":")[1] && <div className="profiler-rawLegend"><strong>{metricData.metric?.label}</strong><small>{metricData.metric?.unit} · {metricData.metric?.period || "Period unknown"}</small><div className="profiler-legendClasses">{rawMapScale.map((item,index)=><div key={item.value}><i style={{background:item.colour}}/><span>{formatNumber(item.value,1)}{index<rawMapScale.length-1 ? ` – <${formatNumber(rawMapScale[index+1].value,1)}` : ` – ${formatNumber(rawMapHigh,1)}`}</span></div>)}</div><span>{rawMapLow==null ? "No comparable values" : `${formatNumber(rawMapLow, 1)} — ${formatNumber(rawMapHigh, 1)}`}</span><small>{rawMapValues.length} municipalities · grey: missing, proxy or different basis. Distribution classes in raw units; colour shows magnitude, not risk.</small></div>}
 
                 <details className="sarva-profilerMapOptions"><summary>Legacy comparison layer controls</summary>
                 <div className={`sarva-muniProfiler__mapNote${layerBrowserOpen ? " is-expanded" : ""}`}>

@@ -1547,3 +1547,30 @@
 .profiler-rawLegend small,.profiler-rawLegend span { display:block; }
 .profiler-rawLegend i { display:block;height:8px;background:linear-gradient(to right,#e0efee,#17616a);margin:8px 0; }
 @media(max-width:600px){.profiler-mapControls{grid-template-columns:1fr}.profiler-rawLegend{max-width:220px}}
+
+/* A clear, cool palette scoped to the municipal explorer. */
+.sarva-muniProfiler { --surface:#fff; --surface-soft:#f8fafc; --border:#dbe3ed; --text:#172033; --muted:#52647a; --primary:#2563eb; --primary-strong:#172554; --primary-soft:#eff6ff; --accent:#2563eb; --accent-strong:#1d4ed8; background:#f1f5f9; color:var(--text); gap:12px; }
+.sarva-muniProfiler__tools { box-shadow:none; border-radius:12px; }
+.sarva-muniProfiler__intro h1 { letter-spacing:-.8px; color:#172554; }
+.sarva-muniProfiler__intro small { color:#2563eb; }
+.sarva-muniProfiler input,.sarva-muniProfiler select { color:#172033; background:#fff; border:1px solid #cbd5e1; border-radius:7px; }
+.sarva-muniProfiler input:focus,.sarva-muniProfiler select:focus { outline:2px solid #93c5fd; outline-offset:2px; }
+.profiler-mapControls { border-radius:12px; padding:16px 20px; gap:10px 20px; }
+.profiler-layerSource { grid-column:1/-1; display:flex; justify-content:space-between; align-items:flex-start; gap:20px; border-top:1px solid var(--border); padding-top:12px; font-size:12px; }
+.profiler-layerSource strong,.profiler-layerSource span { display:block; }
+.profiler-layerSource strong { margin:3px 0; font-size:13px; }
+.profiler-layerSource__eyebrow { font-size:10px; letter-spacing:1px; color:#2563eb; font-weight:700; }
+.profiler-layerSource details { max-width:520px; }
+.profiler-layerSource summary { cursor:pointer; color:#1d4ed8; font-weight:600; }
+.profiler-layerSource details p { margin-top:10px; }
+.profiler-layerSource dl { display:grid; grid-template-columns:130px 1fr; gap:6px; }
+.profiler-layerSource dt { color:var(--muted); }.profiler-layerSource dd { margin:0; }
+.profiler-layerSource a { color:#1d4ed8; }
+.sarva-muniProfiler__mapPanel { height:460px; border-radius:12px; border:1px solid var(--border); }
+.sarva-profilerMapHint { background:rgba(255,255,255,.96); box-shadow:0 3px 14px #17255412; }
+.profiler-rawLegend { max-width:310px; background:rgba(255,255,255,.97); border:1px solid var(--border); box-shadow:0 3px 14px #17255412; }
+.profiler-legendClasses { margin:8px 0; display:grid; gap:3px; }
+.profiler-legendClasses > div { display:flex;align-items:center;gap:8px; }
+.profiler-legendClasses i { margin:0; width:22px; height:12px; flex:none; border-radius:2px; }
+.profiler-rawLegend > span { display:none; }
+@media(max-width:600px){.profiler-layerSource{flex-direction:column;gap:10px}.sarva-muniProfiler__mapPanel{height:410px}.profiler-rawLegend{max-width:220px;font-size:11px}}
