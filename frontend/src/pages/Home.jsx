@@ -1325,6 +1325,47 @@ export default function Home() {
                     )}
                 </section>
 
+                <section className="sarva-dash__workspace" id="risk-map" ref={mapSectionRef}>
+                    <article className="sarva-panel sarva-panel--map sarva-panel--featured">
+                        <div className="sarva-panel__head">
+                            <div>
+                                <h2>Explore South Africa</h2>
+                                <p>ECMWF rainfall screening, environmental risk layers and SAEON live observations for national context.</p>
+                            </div>
+                            <div className="sarva-dash__tabs">
+                                <button
+                                    type="button"
+                                    className={mapMode === "forecast-risk" ? "is-active" : ""}
+                                    onClick={() => setMapMode("forecast-risk")}
+                                >
+                                    Forecast Rainfall Risk
+                                </button>
+                                <button
+                                    type="button"
+                                    className={mapMode === "rainfall-risk" ? "is-active" : ""}
+                                    onClick={() => setMapMode("rainfall-risk")}
+                                >
+                                    SAEON Live Observations
+                                </button>
+                                <button
+                                    type="button"
+                                    className={mapMode === "environmental-risk" ? "is-active" : ""}
+                                    onClick={() => setMapMode("environmental-risk")}
+                                >
+                                    Environmental Risk Index
+                                </button>
+                            </div>
+                        </div>
+                        <Suspense fallback={<div className="sarva-map sarva-map__loading">Loading map...</div>}>
+                            <SouthAfricaMap
+                                activeMode={mapMode}
+                                onModeChange={setMapMode}
+                                focusHighlight={mapFocusHighlight}
+                            />
+                        </Suspense>
+                    </article>
+                </section>
+
                 <section className="sarva-dash__stats sarva-dash__heroStats" aria-label="SARVA data summary">
                     {heroStats.map((stat) => (
                         <button
@@ -1651,47 +1692,6 @@ export default function Home() {
                         <strong>Essential Ecosystem Service Variables</strong>
                         <small>GEO BON ecosystem-services framework</small>
                     </a>
-                </section>
-
-                <section className="sarva-dash__workspace" id="risk-map" ref={mapSectionRef}>
-                    <article className="sarva-panel sarva-panel--map sarva-panel--featured">
-                        <div className="sarva-panel__head">
-                            <div>
-                                <h2>Explore South Africa</h2>
-                                <p>ECMWF rainfall screening, environmental risk layers and SAEON live observations for national context.</p>
-                            </div>
-                            <div className="sarva-dash__tabs">
-                                <button
-                                    type="button"
-                                    className={mapMode === "forecast-risk" ? "is-active" : ""}
-                                    onClick={() => setMapMode("forecast-risk")}
-                                >
-                                    Forecast Rainfall Risk
-                                </button>
-                                <button
-                                    type="button"
-                                    className={mapMode === "rainfall-risk" ? "is-active" : ""}
-                                    onClick={() => setMapMode("rainfall-risk")}
-                                >
-                                    SAEON Live Observations
-                                </button>
-                                <button
-                                    type="button"
-                                    className={mapMode === "environmental-risk" ? "is-active" : ""}
-                                    onClick={() => setMapMode("environmental-risk")}
-                                >
-                                    Environmental Risk Index
-                                </button>
-                            </div>
-                        </div>
-                        <Suspense fallback={<div className="sarva-map sarva-map__loading">Loading map...</div>}>
-                            <SouthAfricaMap
-                                activeMode={mapMode}
-                                onModeChange={setMapMode}
-                                focusHighlight={mapFocusHighlight}
-                            />
-                        </Suspense>
-                    </article>
                 </section>
 
                 <section className="sarva-dash__libraryPair" aria-label="Featured reports and data spotlight">

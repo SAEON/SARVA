@@ -3911,3 +3911,20 @@ body {
 .sarva-fireLegend__scale > strong { font-size:12px; }
 .sarva-fireLegend__scale > div { display:flex;align-items:center;gap:9px; }
 .sarva-fireLegend__scale i { width:11px;height:11px;border:2px solid white;box-shadow:0 0 0 1px #cbd5e1;border-radius:50%;flex:none; }
+.sarva-layerPicker { position:relative; width:290px; font-family:var(--font-sans); }
+.sarva-layerPicker summary { list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 15px;background:white;border:1px solid #d0dbd6;border-radius:10px;cursor:pointer;box-shadow:0 3px 12px #173d3020;color:#203a31; }
+.sarva-layerPicker summary::-webkit-details-marker { display:none; }
+.sarva-layerPicker summary small { display:block; font-size:10px;letter-spacing:1.2px;color:#64776f;font-weight:700;margin-bottom:4px; }
+.sarva-layerPicker summary strong { font-size:14px; }.sarva-layerPicker summary > b { font-size:22px; }
+.sarva-layerPicker[open] summary { border-color:#38806d; }
+.sarva-layerPicker__panel { position:absolute;top:calc(100% + 8px);left:0;width:350px;max-width:calc(100vw - 60px);max-height:440px;overflow:auto;padding:12px;background:white;border:1px solid #d0dbd6;border-radius:12px;box-shadow:0 12px 32px #173d3030;color:#203a31;z-index:10; }
+.sarva-layerPicker__intro { font-size:12px;color:#64776f;margin:2px 8px 12px; }
+.sarva-layerPicker__panel h3 { font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:#64776f;margin:14px 8px 6px; }
+.sarva-layerPicker__panel button { display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;padding:10px;border:0;border-radius:7px;background:white;color:#203a31;cursor:pointer; }
+.sarva-layerPicker__panel button strong { display:block;font-size:13px; }.sarva-layerPicker__panel button small { display:block;font-size:11px;line-height:1.4;font-weight:400;color:#64776f;margin-top:3px; }
+.sarva-layerPicker__panel button:hover { background:#f1f6f4; }.sarva-layerPicker__panel button[aria-pressed=true] { background:#e6f2ed;color:#185d48; }
+.sarva-layerPicker__panel p { font-size:10px;line-height:1.4;margin:12px 8px 4px;color:#64776f; }
+.sarva-layerPicker summary:focus-visible,.sarva-layerPicker button:focus-visible { outline:3px solid #cf9d42;outline-offset:2px; }
+.sarva-map__toolbar { z-index:6; }
+@media(max-width:600px){.sarva-layerPicker{width:min(250px,calc(100vw - 70px))}.sarva-layerPicker__panel{width:min(330px,calc(100vw - 70px));max-height:340px}}
+@media(max-width:600px){.sarva-layerPicker__panel{max-height:220px}}

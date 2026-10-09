@@ -1,3 +1,4 @@
+import MapLayerPicker from "./MapLayerPicker";
 import FireDetectionsLayer from "./FireDetectionsLayer";
 import { useEffect, useMemo, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
@@ -950,24 +951,7 @@ export default function SouthAfricaMap({ activeMode, onModeChange, focusHighligh
                 Hold <kbd>⌘</kbd> or <kbd>Ctrl</kbd> and scroll to zoom
             </div>
             <div className="sarva-map__toolbar">
-                <select
-                    aria-label="Selected map layer"
-                    value={activeMode}
-                    onChange={(event) => {
-                        if (!FORECAST_LAYER_BY_MODE[event.target.value]) {
-                            setForecastInfoOpen(false);
-                        }
-                        onModeChange?.(event.target.value);
-                    }}
-                >
-                    <option value="rainfall-risk">SAEON live observations</option>
-                    <option value="satellite-fires">Satellite fire detections</option>
-                    <option value="forecast-risk">ECMWF rainfall screening</option>
-                    <option value="environmental-risk">SARVA combined screening index</option>
-                    <option value="heat-risk">ECMWF temperature screening</option>
-                    <option value="wind-risk">ECMWF wind screening</option>
-                    <option value="fire-risk">SARVA fire-weather screening</option>
-                </select>
+                <MapLayerPicker value={activeMode} onChange={mode=>{if(!FORECAST_LAYER_BY_MODE[mode])setForecastInfoOpen(false);onModeChange?.(mode);}} />
             </div>
             <FireDetectionsLayer map={mapRef.current} ready={ready} visible={activeMode === "satellite-fires"} />
             {forecastRiskVisible && (
