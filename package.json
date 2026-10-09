@@ -1,7 +1,10 @@
 {
   "scripts": {
     "backup:dev": "sh scripts/backup-dev.sh",
-    "restore:dev": "sh scripts/restore-dev.sh"
+    "restore:dev": "sh scripts/restore-dev.sh",
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "lint": "npm --prefix frontend run lint"
   },
   "dependencies": {
     "react-router-dom": "^7.13.1"

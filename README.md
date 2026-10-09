@@ -70,6 +70,24 @@ More supporting documentation:
 
 ## Local Development
 
+If the Docker database, backend and Martin services are already running, start
+the frontend from the repository root with `npm run dev` and open
+http://127.0.0.1:5173. The development server proxies `/api` and `/public` to
+http://127.0.0.1:5060 and `/tiles` to http://127.0.0.1:3010, matching the
+Docker Compose defaults. This serves current frontend edits without rebuilding
+the frontend container.
+
+To use a separately started backend or custom ports, set `DEV_API_TARGET` and
+`DEV_TILE_TARGET` in `frontend/.env.local`, for example:
+
+```dotenv
+DEV_API_TARGET=http://127.0.0.1:5050
+DEV_TILE_TARGET=http://127.0.0.1:3010
+```
+
+Restart the development server after changing these settings. Leave
+`VITE_API_BASE` and `VITE_MARTIN_BASE` unset to use the same-origin proxies.
+
 Install dependencies in each app directory:
 
 ```sh

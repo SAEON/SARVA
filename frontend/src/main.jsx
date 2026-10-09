@@ -2,6 +2,9 @@ import React, { Suspense, lazy } from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
+import PageLoading from "./components/PageLoading.jsx";
+import RouteError from "./components/RouteError.jsx";
+
 import HomeLayout from "./layouts/HomeLayout.jsx";
 import AppLayout from "./layouts/AppLayout.jsx";
 
@@ -23,11 +26,12 @@ const MdbBoundaryPreview = lazy(() => import("./pages/MdbBoundaryPreview.jsx"));
 const router = createBrowserRouter([
     {
         element: <HomeLayout />,
+        errorElement: <RouteError />,
         children: [
             {
                 path: "/",
                 element: (
-                    <Suspense fallback={null}>
+                    <Suspense fallback={<PageLoading />}>
                         <Home />
                     </Suspense>
                 ),
@@ -36,11 +40,12 @@ const router = createBrowserRouter([
     },
     {
         element: <AppLayout />,
+        errorElement: <RouteError />,
         children: [
             {
                 path: "/explore",
                 element: (
-                    <Suspense fallback={null}>
+                    <Suspense fallback={<PageLoading />}>
                         <Explore />
                     </Suspense>
                 ),
@@ -48,7 +53,7 @@ const router = createBrowserRouter([
             {
                 path: "/overview",
                 element: (
-                    <Suspense fallback={null}>
+                    <Suspense fallback={<PageLoading />}>
                         <Overview />
                     </Suspense>
                 ),
@@ -56,7 +61,7 @@ const router = createBrowserRouter([
             {
                 path: "/themes/:slug",
                 element: (
-                    <Suspense fallback={null}>
+                    <Suspense fallback={<PageLoading />}>
                         <Theme />
                     </Suspense>
                 ),
@@ -64,7 +69,7 @@ const router = createBrowserRouter([
             {
                 path: "/glossary",
                 element: (
-                    <Suspense fallback={null}>
+                    <Suspense fallback={<PageLoading />}>
                         <Glossary />
                     </Suspense>
                 ),
@@ -72,7 +77,7 @@ const router = createBrowserRouter([
             {
                 path: "/resources",
                 element: (
-                    <Suspense fallback={null}>
+                    <Suspense fallback={<PageLoading />}>
                         <Resources />
                     </Suspense>
                 ),
@@ -80,7 +85,7 @@ const router = createBrowserRouter([
             {
                 path: "/search",
                 element: (
-                    <Suspense fallback={null}>
+                    <Suspense fallback={<PageLoading />}>
                         <SearchRoute />
                     </Suspense>
                 ),
@@ -88,7 +93,7 @@ const router = createBrowserRouter([
             {
                 path: "/national-policy-and-legislation",
                 element: (
-                    <Suspense fallback={null}>
+                    <Suspense fallback={<PageLoading />}>
                         <NationalPolicy />
                     </Suspense>
                 ),
@@ -96,7 +101,7 @@ const router = createBrowserRouter([
             {
                 path: "/municipal-risk-profiler",
                 element: (
-                    <Suspense fallback={null}>
+                    <Suspense fallback={<PageLoading />}>
                         <MunicipalRiskProfiler />
                     </Suspense>
                 ),
@@ -104,7 +109,7 @@ const router = createBrowserRouter([
             {
                 path: "/municipal-planning-workspace",
                 element: (
-                    <Suspense fallback={null}>
+                    <Suspense fallback={<PageLoading />}>
                         <MunicipalPlanningWorkspace />
                     </Suspense>
                 ),
@@ -112,7 +117,7 @@ const router = createBrowserRouter([
             {
                 path: "/mdb-2026-boundaries",
                 element: (
-                    <Suspense fallback={null}>
+                    <Suspense fallback={<PageLoading />}>
                         <MdbBoundaryPreview />
                     </Suspense>
                 ),
@@ -120,7 +125,7 @@ const router = createBrowserRouter([
             {
                 path: "/about",
                 element: (
-                    <Suspense fallback={null}>
+                    <Suspense fallback={<PageLoading />}>
                         <About />
                     </Suspense>
                 ),

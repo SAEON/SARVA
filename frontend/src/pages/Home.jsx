@@ -6,6 +6,7 @@ import dataScienceLabLogo from "../assets/logos/lab_logo.png";
 import saeonLogo from "../assets/logos/SAEON-NRF-LOGO-alpha.png";
 import sarvaLogo from "../assets/logos/SARVA_final-logo-01b.png";
 import { apiUrl } from "../config/api";
+import { isExpiredForecast } from "../config/forecastFreshness";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import { useJsonResource } from "../hooks/useJsonResource";
 import "../styles/home.css";
@@ -1391,7 +1392,9 @@ export default function Home() {
                                         <p>{highlight.detail}</p>
                                         <span>{highlight.source}</span>
                                         <em>
-                                            {highlight.freshness}
+                                            {isExpiredForecast(highlight.forecastDate)
+                                                ? "Past forecast — historical context only"
+                                                : highlight.freshness}
                                             {highlight.updatedAtLabel ? ` | ${highlight.updatedAtLabel}` : ""}
                                         </em>
                                     </button>

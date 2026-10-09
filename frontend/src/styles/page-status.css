@@ -1,0 +1,38 @@
+.sarva-pageStatus {
+    box-sizing: border-box;
+    max-width: 640px;
+    margin: 64px auto;
+    padding: 36px 24px;
+    text-align: center;
+    font-family: var(--font-sans);
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+.sarva-pageStatus h1 { font-size: clamp(22px, 4vw, 30px); }
+.sarva-pageStatus p { color: var(--muted); line-height: 1.6; }
+.sarva-pageStatus__label { font-size: 13px; }
+.sarva-pageStatus__actions { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; align-items: center; }
+.sarva-pageStatus__actions button {
+    padding: 12px 20px;
+    border: 0;
+    border-radius: var(--radius);
+    background: var(--primary);
+    color: white;
+    font: inherit;
+    cursor: pointer;
+}
+.sarva-pageStatus__actions a { color: var(--link); }
+.sarva-pageStatus__actions :focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+.sarva-pageStatus__spinner {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    border: 3px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: sarva-loading 0.9s linear infinite;
+}
+@keyframes sarva-loading { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .sarva-pageStatus__spinner { animation: none; } }
