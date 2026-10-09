@@ -1,6 +1,7 @@
 import {useRef} from 'react';
 const groups=[
  {label:'Ground observations',icon:'◉',layers:[['rainfall-risk','SAEON live observations','Weather stations and ecosystem monitoring sites.']]},
+ {label:'Regional disaster reports',icon:'⚑',layers:[['disaster-events','Regional disaster events','GDACS floods, cyclones, earthquakes and other reported events.']]},
  {label:'Satellite observations',icon:'✦',layers:[['satellite-fires','Satellite fire detections','NASA FIRMS thermal hotspots · 24 hours or 7 days.']]},
  {label:'Model-based environmental screening',icon:'▧',layers:[
   ['forecast-risk','Rainfall','ECMWF daily rainfall estimates.'],

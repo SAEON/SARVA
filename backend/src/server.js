@@ -1,3 +1,4 @@
+import {disasterEventsRouter} from "./routes/disasterEvents.js";
 import {fireDetectionsRouter} from "./routes/fireDetections.js";
 import "dotenv/config";
 import path from "path";
@@ -42,6 +43,7 @@ app.use("/api", authRouter);
 app.use("/api", externalServicesRouter);
 app.use("/api", alertsRouter);
 app.use("/api", fireDetectionsRouter);
+app.use("/api", disasterEventsRouter);
 app.use("/api", rainfallRouter);
 app.use("/api", forecastRiskRouter);
 app.use("/api", municipalProfilesRouter);

@@ -1,3 +1,4 @@
+import DisasterEventsLayer from "./DisasterEventsLayer";
 import MapLayerPicker from "./MapLayerPicker";
 import FireDetectionsLayer from "./FireDetectionsLayer";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -953,6 +954,7 @@ export default function SouthAfricaMap({ activeMode, onModeChange, focusHighligh
             <div className="sarva-map__toolbar">
                 <MapLayerPicker value={activeMode} onChange={mode=>{if(!FORECAST_LAYER_BY_MODE[mode])setForecastInfoOpen(false);onModeChange?.(mode);}} />
             </div>
+            <DisasterEventsLayer map={mapRef.current} ready={ready} visible={activeMode === "disaster-events"} />
             <FireDetectionsLayer map={mapRef.current} ready={ready} visible={activeMode === "satellite-fires"} />
             {forecastRiskVisible && (
                 <div className="sarva-map__legend sarva-map__legend--forecast" aria-label={`${forecastLayerMeta.label} legend`}>

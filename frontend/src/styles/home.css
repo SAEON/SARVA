@@ -3964,3 +3964,7 @@ body {
 .sarva-dash__referenceStrip .sarva-frameworkAction { margin-top:4px; }
 @media(max-width:1000px){.sarva-dash__referenceStrip{grid-template-columns:repeat(2,minmax(0,1fr))}.sarva-dash__referenceStrip a:nth-child(2){border-right:0}}
 @media(max-width:600px){.sarva-dash__referenceStrip{grid-template-columns:1fr}.sarva-dash__referenceStrip a{border-right:0;border-bottom:1px solid var(--border)}.sarva-dash__referenceStrip a:last-child{border-bottom:0}}
+
+.sarva-disasterLegend { max-height:calc(100% - 40px);overflow-y:auto; }
+.sarva-disasterLegend label + label { margin-top:10px; }
+.sarva-disasterLegend button { padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--text);cursor:pointer; }
