@@ -1,0 +1,16 @@
+.raw-municipal { grid-column:1/-1; padding:24px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); line-height:1.6; }
+.raw-municipal nav { display:flex; flex-wrap:wrap; gap:8px; margin:20px 0; }
+.raw-municipal button { padding:10px 14px; border:1px solid var(--border); border-radius:6px; background:var(--surface-soft); color:var(--text); cursor:pointer; margin-right:8px; }
+.raw-municipal button[aria-pressed=true] { background:var(--primary); color:white; }
+.raw-municipal input[type=search] { display:block; padding:12px; width:min(100%,480px); box-sizing:border-box; font:inherit; }
+.raw-municipal__total { margin:20px 0; padding:16px; background:var(--primary-soft); border-radius:8px; }
+.raw-municipal__total > strong { font-size:24px; }
+.raw-municipal__table { overflow:auto; }
+.raw-municipal table { width:100%; border-collapse:collapse; text-align:left; }
+.raw-municipal th,.raw-municipal td { padding:12px; border-bottom:1px solid var(--border); vertical-align:top; }
+.raw-municipal small,.raw-municipal td a { display:block; font-weight:400; color:var(--muted); }
+.raw-municipal input[type=checkbox] { width:20px;height:20px; }
+.sarva-profilerAdvanced { grid-column:1/-1; }
+.sarva-profilerAdvanced > summary { padding:16px; cursor:pointer; font-weight:600; }
+.sarva-profilerAdvanced__body { display:grid; grid-template-columns:minmax(0,1fr) minmax(320px,440px); gap:16px; }
+@media(max-width:900px){.sarva-profilerAdvanced__body{grid-template-columns:1fr}.raw-municipal{padding:16px}}

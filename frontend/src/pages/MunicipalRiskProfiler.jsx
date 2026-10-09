@@ -4,6 +4,7 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { apiUrl, martinUrl } from "../config/api";
 import { isExpiredForecast } from "../config/forecastFreshness";
+import RawMunicipalIndicators from "../components/RawMunicipalIndicators";
 import MunicipalEvidenceSummary from "../components/MunicipalEvidenceSummary";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import "../styles/municipal-risk-profiler.css";
@@ -1726,7 +1727,7 @@ export default function MunicipalRiskProfiler() {
                     <span>SARVA municipal tool</span>
                     <h1>Municipal Risk Profiler</h1>
                     <p>
-                        Start with a municipality, then read the summary before opening drivers, trends or the full indicator catalogue.
+                        Choose a municipality, browse source values by category and add compatible counts to make a custom total.
                     </p>
                 </div>
 
@@ -1805,6 +1806,8 @@ export default function MunicipalRiskProfiler() {
                 </div>
             )}
 
+            <RawMunicipalIndicators key={profile?.municipality?.gid || "empty"} profile={profile} loading={profileLoading} error={profileError} />
+            <details className="sarva-profilerAdvanced" onToggle={() => requestAnimationFrame(() => mapRef.current?.resize())}><summary>Advanced: map, legacy comparison scores and detailed analysis</summary><div className="sarva-profilerAdvanced__body">
             <section className="sarva-muniProfiler__mapPanel" aria-label="Municipality map">
                 <div ref={mapContainerRef} className="sarva-muniProfiler__map" />
                 <div className={`sarva-muniProfiler__mapNote${layerBrowserOpen ? " is-expanded" : ""}`}>
@@ -2486,6 +2489,7 @@ export default function MunicipalRiskProfiler() {
                     </>
                 )}
             </aside>
+            </div></details>
         </div>
     );
 }
