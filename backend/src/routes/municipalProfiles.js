@@ -317,6 +317,7 @@ municipalProfilesRouter.get("/municipalities/metric", async (req, res) => {
             displayValue: numberOrNull(row.raw_value, 3) ?? numberOrNull(row.normalized_value, 1),
             displayUnit: row.display_unit,
             confidence: row.confidence,
+            period: row.period, scenario: row.scenario, sourceName: row.source_name, isProxy: Boolean(row.is_proxy),
           })),
         },
       });

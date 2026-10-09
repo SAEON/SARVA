@@ -4,21 +4,22 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { apiUrl, martinUrl } from "../config/api";
 import { isExpiredForecast } from "../config/forecastFreshness";
+import MapIndicatorControls from "../components/MapIndicatorControls";
 import RawMunicipalIndicators from "../components/RawMunicipalIndicators";
 import MunicipalEvidenceSummary from "../components/MunicipalEvidenceSummary";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import "../styles/municipal-risk-profiler.css";
 
+function usableMapRecords(data) {
+    return (data?.records || []).filter(r => r.rawValue != null && Number.isFinite(Number(r.rawValue)) && !r.isProxy && r.confidence !== "proxy" && r.period === data.metric?.period && r.displayUnit === data.metric?.unit && r.scenario === data.metric?.scenario);
+}
 const MUNICIPAL_TILE_URL = martinUrl("/municipal_boundaries/{z}/{x}/{y}");
 const SOUTH_AFRICA_BOUNDS = [
     [16.45, -34.84],
     [32.95, -22.13],
 ];
 const SOUTH_AFRICA_CENTER = [24.7, -29.1];
-const MAP_MAX_BOUNDS = [
-    [8, -39],
-    [41, -15],
-];
+
 const EMPTY = [];
 const DEFAULT_METRIC = "index:imported_composite_risk";
 const DEFAULT_METRIC_LABEL = "Relative indicator pressure";
@@ -794,8 +795,8 @@ export default function MunicipalRiskProfiler() {
             cooperativeGestures: true,
             dragRotate: false,
             pitchWithRotate: false,
-            minZoom: 3,
-            maxBounds: MAP_MAX_BOUNDS,
+            minZoom: 0,
+
             style: {
                 version: 8,
                 sources: {
@@ -1039,14 +1040,19 @@ export default function MunicipalRiskProfiler() {
         const recordsByGid = new Map(records.map((record) => [Number(record.gid), record]));
         metricRecordsRef.current = recordsByGid;
         const applyMetricState = () => {
+            const values=selectedMetric.startsWith("indicator:") ? usableMapRecords(metricData).map(r=>Number(r.rawValue)) : [];
+            const low=values.length?Math.min(...values):0;
+            const high=values.length?Math.max(...values):0;
+            map.setPaintProperty("municipal-profile-fill","fill-color",["case",["boolean",["feature-state","hover"],false],"#d7a84d",["!",["boolean",["feature-state","hasMetric"],false]],"#c7c7bf", ...(high>low ? [["interpolate",["linear"],["coalesce",["feature-state","metricValue"],low],low,"#e0efee",high,"#17616a"]] : ["#7cb2b4"])]);
+
             municipalities.forEach((municipality) => {
                 const record = recordsByGid.get(Number(municipality.gid));
-                const hasMetric = Number.isFinite(Number(record?.mapValue));
+                const hasMetric = selectedMetric.startsWith("indicator:") && record?.rawValue != null && !record.isProxy && record.confidence !== "proxy" && record.period === metricData?.metric?.period && record.displayUnit === metricData?.metric?.unit && record.scenario === metricData?.metric?.scenario && Number.isFinite(Number(record.rawValue));
                 map.setFeatureState(
                     { source: "municipal_boundaries", sourceLayer: "municipalities", id: Number(municipality.gid) },
                     {
                         hasMetric,
-                        metricValue: hasMetric ? Number(record.mapValue) : null,
+                        metricValue: hasMetric ? Number(record.rawValue) : null,
                         metricDisplay: hasMetric ? formatIndicatorValue(record.displayValue, record.displayUnit) : "No data",
                     }
                 );
@@ -1054,7 +1060,7 @@ export default function MunicipalRiskProfiler() {
         };
         if (map.isStyleLoaded()) applyMetricState();
         else map.once("load", applyMetricState);
-    }, [metricData, mapReady, municipalities]);
+    }, [metricData, mapReady, municipalities, selectedMetric]);
 
     useEffect(() => {
         const map = mapRef.current;
@@ -1702,6 +1708,9 @@ export default function MunicipalRiskProfiler() {
         }
     }, [activeTab, isAdmin]);
 
+    const rawMapValues = usableMapRecords(metricData).map(r=>Number(r.rawValue));
+    const rawMapLow = rawMapValues.length ? Math.min(...rawMapValues) : null;
+    const rawMapHigh = rawMapValues.length ? Math.max(...rawMapValues) : null;
     return (
         <div className="sarva-muniProfiler">
             <section className="sarva-muniProfiler__tools" aria-label="Municipal risk profiler controls">
@@ -1788,9 +1797,12 @@ export default function MunicipalRiskProfiler() {
                 </div>
             )}
 
+            <MapIndicatorControls value={selectedMetric} onChange={setSelectedMetric} />
             <section className="sarva-muniProfiler__mapPanel" aria-label="Municipality map">
                 <div ref={mapContainerRef} className="sarva-muniProfiler__map" />
                 <div className="sarva-profilerMapHint"><strong>{profile?.municipality?.municipality || "Select a municipality"}</strong><span>Click a boundary or search above to view its source values.</span></div>
+                {selectedMetric.startsWith("indicator:") && metricData?.metric?.key === selectedMetric.split(":")[1] && <div className="profiler-rawLegend"><strong>{metricData.metric?.label}</strong><small>{metricData.metric?.unit} · {metricData.metric?.period || "Period unknown"}</small><i style={rawMapLow===rawMapHigh ? {background:"#7cb2b4"} : undefined}/><span>{rawMapLow==null ? "No comparable values" : `${formatNumber(rawMapLow, 1)} — ${formatNumber(rawMapHigh, 1)}`}</span><small>{rawMapValues.length} municipalities · grey: missing, proxy or different basis. Colour shows magnitude, not risk.</small></div>}
+
                 <details className="sarva-profilerMapOptions"><summary>Legacy comparison layer controls</summary>
                 <div className={`sarva-muniProfiler__mapNote${layerBrowserOpen ? " is-expanded" : ""}`}>
                     <label>
@@ -1917,7 +1929,7 @@ export default function MunicipalRiskProfiler() {
 
             </section>
 
-            <RawMunicipalIndicators key={profile?.municipality?.gid || "empty"} profile={profile} loading={profileLoading} error={profileError} />
+            <RawMunicipalIndicators key={profile?.municipality?.gid || "empty"} profile={profile} loading={profileLoading} error={profileError} onSelect={gid => {const item=municipalities.find(m => Number(m.gid)===Number(gid));if(item)setSelected(item);}} />
             <details className="sarva-profilerAdvanced" onToggle={() => requestAnimationFrame(() => mapRef.current?.resize())}><summary>Advanced evidence and legacy analysis</summary><div className="sarva-profilerAdvanced__body">
             <aside className="sarva-muniProfiler__profile" aria-label="Municipal risk profile">
                 {profileLoading && <div className="sarva-muniProfiler__state">Loading municipal profile...</div>}

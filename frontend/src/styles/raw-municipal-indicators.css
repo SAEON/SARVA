@@ -26,3 +26,9 @@
 .raw-municipal__total p { margin:6px 0; font-size:13px; }
 .raw-municipal table { font-size:14px; }
 .raw-municipal th,.raw-municipal td { padding:10px; }
+.raw-municipal__views { display:flex; gap:8px; margin:16px 0; }
+.raw-municipal__views button[aria-pressed=true] { background:var(--primary);color:white; }
+.municipal-compare__controls { display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0; }
+.municipal-compare__controls select { display:block;width:100%;padding:12px;font:inherit; }
+.municipal-compare .is-selected { background:var(--primary-soft); }
+@media(max-width:600px){.municipal-compare__controls{grid-template-columns:1fr}}

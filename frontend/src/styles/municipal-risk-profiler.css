@@ -1539,3 +1539,11 @@
 @media(max-width:1000px){.sarva-muniProfiler__tools{grid-template-columns:1fr 1fr}.sarva-muniProfiler__mapPanel{height:340px}}
 @media(max-width:600px){.sarva-muniProfiler__tools{grid-template-columns:1fr}.sarva-muniProfiler__search{grid-template-columns:minmax(0,1fr) auto}.sarva-muniProfiler__mapPanel{height:290px}}
 .sarva-profilerMapOptions { display:none; }
+.profiler-mapControls { display:grid;grid-template-columns:1fr 2fr;gap:12px 20px;background:var(--surface);padding:16px;border:1px solid var(--border);border-radius:8px; }
+.profiler-mapControls label { font-size:13px;font-weight:600; }
+.profiler-mapControls select { display:block;width:100%;padding:10px;font:inherit;margin-top:5px; }
+.profiler-mapControls p { grid-column:1/-1;font-size:12px;color:var(--muted);margin:0; }
+.profiler-rawLegend { position:absolute;bottom:16px;left:16px;background:var(--surface);padding:12px;border-radius:8px;max-width:300px;font-size:12px; }
+.profiler-rawLegend small,.profiler-rawLegend span { display:block; }
+.profiler-rawLegend i { display:block;height:8px;background:linear-gradient(to right,#e0efee,#17616a);margin:8px 0; }
+@media(max-width:600px){.profiler-mapControls{grid-template-columns:1fr}.profiler-rawLegend{max-width:220px}}
