@@ -1294,7 +1294,7 @@ export default function Home() {
                                     </button>
                                 </div>
                             </div>
-                            <p className="sarva-screeningNotice">ECMWF model data interpreted by SARVA for environmental screening. These are not official forecasts or early warnings. <a href="https://www.weathersa.co.za/warnings" target="_blank" rel="noreferrer">Official forecasts and warnings: SAWS ↗</a></p>
+                            <p className="sarva-screeningNotice"><a href="https://www.ecmwf.int/en/forecasts/datasets/open-data" target="_blank" rel="noreferrer">ECMWF Open Data ↗</a> interpreted by SARVA for environmental screening. These are not official forecasts or early warnings. <a href="https://www.weathersa.co.za/warnings" target="_blank" rel="noreferrer">Official forecasts and warnings: SAWS ↗</a></p>
                             <div className="sarva-dash__heroHighlightGrid">
                                 {heroHighlights.slice(0, 5).map((highlight) => (
                                     <button

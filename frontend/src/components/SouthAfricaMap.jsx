@@ -969,7 +969,7 @@ export default function SouthAfricaMap({ activeMode, onModeChange, focusHighligh
             </div>
             {forecastRiskVisible && (
                 <div className="sarva-map__legend sarva-map__legend--forecast" aria-label={`${forecastLayerMeta.label} legend`}>
-                    <p className="sarva-map__authorityNotice">SARVA screening of ECMWF model data. Not an official forecast or warning. <a href="https://www.weathersa.co.za/warnings" target="_blank" rel="noreferrer">Official forecasts &amp; warnings: SAWS ↗</a></p>
+                    <p className="sarva-map__authorityNotice">SARVA screening of <a href="https://www.ecmwf.int/en/forecasts/datasets/open-data" target="_blank" rel="noreferrer">ECMWF Open Data ↗</a>. Not an official forecast or warning. <a href="https://www.weathersa.co.za/warnings" target="_blank" rel="noreferrer">Official forecasts &amp; warnings: SAWS ↗</a></p>
                     <div className="sarva-map__legendHeader">
                         <strong>{forecastLayerMeta.label}</strong>
                         <button
