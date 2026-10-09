@@ -268,6 +268,7 @@ function resourceLogoKind(item = {}, preferProvider = false) {
     const text = `${item.title || ""} ${item.author || ""} ${type}`.toLowerCase();
 
     if (!preferProvider && (type.includes("report") || type.includes("brief") || type.includes("case study"))) return "report";
+    if (type.includes("research tool") || type.includes("tool")) return "tool";
     if (type.includes("website") || text.includes("catalogue") || text.includes("search")) return "website";
     if (type.includes("research tool") || type.includes("tool") || text.includes("monitor")) return "tool";
     if (type.includes("database") || text.includes("data catalog")) return "database";
@@ -389,7 +390,7 @@ function ResourceLogoMark({ item, preferProviderLogo = false }) {
     const kind = resourceLogoKind(item, preferProviderLogo);
 
     return (
-        <span className={`sarva-reportCard__logoMark${imageUrl && !failed ? " has-image" : ""}`} aria-hidden="true">
+        <span className={`sarva-reportCard__logoMark is-${kind}${imageUrl && !failed ? " has-image" : ""}`} aria-hidden="true">
             {imageUrl && !failed ? (
                 <img src={imageUrl} alt="" loading="lazy" onError={() => setFailed(true)} />
             ) : (
@@ -416,7 +417,7 @@ function ResourceCard({
     const shownKeywords = keywords.slice(0, 5);
 
     return (
-        <article className="sarva-reportCard">
+        <article className={`sarva-reportCard is-${resourceLogoKind(item, preferProviderLogo)}`}>
             <ResourceLogoMark item={item} preferProviderLogo={preferProviderLogo} />
             <div className="sarva-reportCard__body">
                 <div className="sarva-reportCard__topline">
@@ -770,6 +771,10 @@ export default function Home() {
     const [deletedReportIds, setDeletedReportIds] = useState(new Set());
     const [editingReport, setEditingReport] = useState(null);
     const [checkingReportId, setCheckingReportId] = useState(null);
+    const [reportSearch,setReportSearch]=useState("");
+    const [spotlightSearch,setSpotlightSearch]=useState("");
+    const [reportLimit,setReportLimit]=useState(6);
+    const [spotlightLimit,setSpotlightLimit]=useState(6);
     const [reportCategory, setReportCategory] = useState("");
     const [reportInstitute, setReportInstitute] = useState("");
     const [reportKeyword, setReportKeyword] = useState("");
@@ -803,11 +808,12 @@ export default function Home() {
             sort: "publication_year",
             order: "desc",
         });
+        if (reportSearch) params.set("search",reportSearch);
         if (reportCategory) params.set("resource_type", reportCategory);
         if (reportInstitute) params.set("author", reportInstitute);
         if (reportKeyword) params.set("keyword", reportKeyword);
         return `/api/resources?${params.toString()}`;
-    }, [reportCategory, reportInstitute, reportKeyword]);
+    }, [reportCategory, reportInstitute, reportKeyword, reportSearch]);
     const spotlightPath = useMemo(() => {
         const params = new URLSearchParams({
             resource_group: "data_spotlight",
@@ -816,11 +822,12 @@ export default function Home() {
             sort: "publication_year",
             order: "desc",
         });
+        if (spotlightSearch) params.set("search",spotlightSearch);
         if (spotlightCategory) params.set("resource_type", spotlightCategory);
         if (spotlightInstitute) params.set("author", spotlightInstitute);
         if (spotlightKeyword) params.set("keyword", spotlightKeyword);
         return `/api/resources?${params.toString()}`;
-    }, [spotlightCategory, spotlightInstitute, spotlightKeyword]);
+    }, [spotlightCategory, spotlightInstitute, spotlightKeyword, spotlightSearch]);
     const supportingPath = useMemo(() => {
         const params = new URLSearchParams({
             resource_group: "supporting_data",
@@ -861,7 +868,7 @@ export default function Home() {
     const recentUpdates = updateItems.filter((item) => isRecentUpdate(item, 5));
     const updatePanelItems = recentUpdates.length > 0 ? recentUpdates : monitoringItems;
     const reportFilters = reportsResponse?.filters || { resourceTypes: [], authors: [], keywords: [] };
-    const reportHasFilters = reportCategory || reportInstitute || reportKeyword;
+    const reportHasFilters = reportSearch || reportCategory || reportInstitute || reportKeyword;
     const createdReportsForFilters = createdReports.filter((report) => (
         (!reportCategory || report.resource_type === reportCategory)
         && (!reportInstitute || report.author === reportInstitute)
@@ -877,7 +884,7 @@ export default function Home() {
                 ]
             : createdReportsForFilters;
     const spotlightFilters = spotlightResponse?.filters || { resourceTypes: [], authors: [], keywords: [] };
-    const spotlightHasFilters = spotlightCategory || spotlightInstitute || spotlightKeyword;
+    const spotlightHasFilters = spotlightSearch || spotlightCategory || spotlightInstitute || spotlightKeyword;
     const createdSpotlightsForFilters = createdSpotlights.filter((item) => (
         (!spotlightCategory || item.resource_type === spotlightCategory)
         && (!spotlightInstitute || item.author === spotlightInstitute)
@@ -1715,6 +1722,7 @@ export default function Home() {
                         </div>
 
                         <div className="sarva-reports__filters" aria-label="Filter reports and stories">
+                            <label className="sarva-librarySearch"><span>Search reports</span><input type="search" placeholder="Title, topic or organisation" value={reportSearch} onChange={e=>{setReportSearch(e.target.value);setReportLimit(6);}} /></label>
                             <label>
                                 <span>Category</span>
                                 <select value={reportCategory} onChange={(event) => setReportCategory(event.target.value)}>
@@ -1752,6 +1760,7 @@ export default function Home() {
                                 <button
                                     type="button"
                                     onClick={() => {
+                                        setReportSearch("");
                                         setReportCategory("");
                                         setReportInstitute("");
                                         setReportKeyword("");
@@ -1775,7 +1784,7 @@ export default function Home() {
                         )}
 
                         <div className="sarva-reports__grid">
-                            {reportsAndStories.map((report) => (
+                            {reportsAndStories.slice(0,reportLimit).map((report) => (
                                 <ResourceCard
                                     key={report.id}
                                     item={report}
@@ -1787,6 +1796,7 @@ export default function Home() {
                                 />
                             ))}
                         </div>
+                        {reportsAndStories.length>reportLimit&&<button className="sarva-libraryMore" onClick={()=>setReportLimit(n=>n+6)}>Show more reports ({reportsAndStories.length-reportLimit} remaining)</button>}
                     </article>
 
                     <article className="sarva-panel sarva-panel--reports">
@@ -1809,6 +1819,7 @@ export default function Home() {
                         </div>
 
                         <div className="sarva-reports__filters" aria-label="Filter data spotlight items">
+                            <label className="sarva-librarySearch"><span>Search datasets and tools</span><input type="search" placeholder="Title, topic or organisation" value={spotlightSearch} onChange={e=>{setSpotlightSearch(e.target.value);setSpotlightLimit(6);}} /></label>
                             <label>
                                 <span>Category</span>
                                 <select value={spotlightCategory} onChange={(event) => setSpotlightCategory(event.target.value)}>
@@ -1846,6 +1857,7 @@ export default function Home() {
                                 <button
                                     type="button"
                                     onClick={() => {
+                                        setSpotlightSearch("");
                                         setSpotlightCategory("");
                                         setSpotlightInstitute("");
                                         setSpotlightKeyword("");
@@ -1869,7 +1881,7 @@ export default function Home() {
                         )}
 
                         <div className="sarva-reports__grid">
-                            {dataSpotlights.map((item) => (
+                            {dataSpotlights.slice(0,spotlightLimit).map((item) => (
                                 <ResourceCard
                                     key={item.id}
                                     item={item}
@@ -1881,6 +1893,7 @@ export default function Home() {
                                 />
                             ))}
                         </div>
+                        {dataSpotlights.length>spotlightLimit&&<button className="sarva-libraryMore" onClick={()=>setSpotlightLimit(n=>n+6)}>Show more datasets and tools ({dataSpotlights.length-spotlightLimit} remaining)</button>}
                     </article>
                 </section>
 

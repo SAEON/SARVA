@@ -3928,3 +3928,19 @@ body {
 .sarva-map__toolbar { z-index:6; }
 @media(max-width:600px){.sarva-layerPicker{width:min(250px,calc(100vw - 70px))}.sarva-layerPicker__panel{width:min(330px,calc(100vw - 70px));max-height:340px}}
 @media(max-width:600px){.sarva-layerPicker__panel{max-height:220px}}
+/* Resource browsing follows page scrolling; load more explicitly. */
+.sarva-dash__libraryPair .sarva-reports__grid { max-height:none;overflow:visible;scrollbar-gutter:auto; }
+.sarva-librarySearch { grid-column:1/-1; }.sarva-librarySearch input { width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:7px;font:inherit;background:white;box-sizing:border-box; }
+.sarva-libraryMore { display:block;margin:0 18px 18px;padding:10px 16px;border:1px solid var(--border);border-radius:7px;background:white;color:var(--text);cursor:pointer; }
+.sarva-reportCard { --resource-colour:#607d8b;--resource-tint:#eff4f7;border-left:4px solid var(--resource-colour);background:linear-gradient(100deg,var(--resource-tint),white 35%); }
+.sarva-reportCard.is-report { --resource-colour:#a85d32;--resource-tint:#fff4e8; }
+.sarva-reportCard.is-tool { --resource-colour:#7754a5;--resource-tint:#f5effc; }
+.sarva-reportCard.is-website { --resource-colour:#3379b1;--resource-tint:#edf6ff; }
+.sarva-reportCard.is-database { --resource-colour:#b18420;--resource-tint:#fff9e5; }
+.sarva-reportCard.is-satellite { --resource-colour:#4258a5;--resource-tint:#eef0ff; }
+.sarva-reportCard.is-climate { --resource-colour:#b57020;--resource-tint:#fff4df; }
+.sarva-reportCard.is-hazard { --resource-colour:#bd493f;--resource-tint:#fff0ee; }
+.sarva-reportCard.is-data { --resource-colour:#267e76;--resource-tint:#ecf8f5; }
+.sarva-reportCard .sarva-reportCard__logoMark { background:var(--resource-tint);color:var(--resource-colour);border:1px solid color-mix(in srgb,var(--resource-colour) 30%,transparent); }
+.sarva-reportCard__logoMark svg { stroke:currentColor; }
+.sarva-reportCard__logoMark b { background:white;color:var(--resource-colour);border-color:currentColor; }
