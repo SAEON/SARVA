@@ -104,3 +104,99 @@ postgres:
         districtco: varchar
         wardno: int4
         effective_date: date
+    topography_contours:
+      layer_id: topography_contours
+      schema: sarva
+      table: topography_contours
+      srid: 3857
+      geometry_column: geom
+      id_column: gid
+      minzoom: 9
+      maxzoom: 14
+      bounds: [16.45, -34.84, 32.95, -22.13]
+      geometry_type: MULTILINESTRING
+      properties:
+        gid: int4
+        elevation_m: int4
+        contour_interval_m: int4
+        source_name: text
+        source_url: text
+        source_date: text
+        processing_note: text
+    topography_slope_zones:
+      layer_id: topography_slope_zones
+      schema: sarva
+      table: topography_slope_zones
+      srid: 3857
+      geometry_column: geom
+      id_column: gid
+      minzoom: 7
+      maxzoom: 14
+      bounds: [16.45, -34.84, 32.95, -22.13]
+      geometry_type: MULTIPOLYGON
+      properties:
+        gid: int4
+        slope_class: text
+        slope_min_degrees: numeric
+        slope_max_degrees: numeric
+        source_name: text
+        source_url: text
+        source_date: text
+        processing_note: text
+
+    access_roads:
+      layer_id: access_roads
+      schema: sarva
+      table: access_roads
+      srid: 3857
+      geometry_column: geom
+      id_column: id
+      geometry_type: LINESTRING
+      minzoom: 0
+      maxzoom: 16
+      properties:
+        id: int8
+        source_id: int8
+        edit_id: int8
+        name: text
+        category: text
+        kind: text
+        provenance: text
+
+    access_facilities:
+      layer_id: access_facilities
+      schema: sarva
+      table: access_facilities
+      srid: 3857
+      geometry_column: geom
+      id_column: id
+      geometry_type: POINT
+      minzoom: 0
+      maxzoom: 16
+      properties:
+        id: int8
+        source_id: int8
+        edit_id: int8
+        name: text
+        category: text
+        kind: text
+        provenance: text
+
+    access_zones:
+      layer_id: access_zones
+      schema: sarva
+      table: access_zones
+      srid: 3857
+      geometry_column: geom
+      id_column: id
+      geometry_type: POLYGON
+      minzoom: 0
+      maxzoom: 16
+      properties:
+        id: int8
+        source_id: int8
+        edit_id: int8
+        name: text
+        category: text
+        kind: text
+        provenance: text

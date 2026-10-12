@@ -24,6 +24,19 @@ backups/
 
 # Downloaded spatial extracts are too large for normal GitHub storage.
 data/mdb-2026/*.geojson
+data/topography/*.tif
+data/topography/*.tiff
+data/topography/*.geojson
+data/topography/**/*.tif
+data/topography/**/*.tiff
+data/topography/**/*.geojson
+data/topography/dem-tiles/
+data/topography/**/dem-tiles/
+data/topography/work/
+data/topography/**/work/
+data/topography/partial-*/
+data/topography/test-*/
+data/topography/opentopography-dem-download.json
 
 # OS files
 .DS_Store

@@ -1907,9 +1907,7 @@ body {
 }
 
 .sarva-dash__footer {
-    position: sticky;
-    bottom: 0;
-    z-index: 30;
+    position: static;
     display: grid;
     gap: 12px;
     max-height: none;
