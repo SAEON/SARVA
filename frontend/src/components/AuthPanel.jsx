@@ -148,7 +148,7 @@ export default function AuthPanel() {
                             <strong>{user.displayName}</strong>
                             <span>{user.email}</span>
                             {roleLabels && <small>{roleLabels}</small>}
-                            {user.roles?.some(role => role.name === 'admin') && <Link to="/analytics" onClick={() => setOpen(false)}>Analytics</Link>}
+                            {user.roles?.some(role => role.name === 'admin') && <><Link to="/analytics" onClick={() => setOpen(false)}>Analytics</Link><Link to="/data-health" onClick={() => setOpen(false)}>Data health</Link></>}
                             <button type="button" onClick={signOut}>
                                 Sign out
                             </button>
