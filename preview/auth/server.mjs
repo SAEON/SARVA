@@ -8,12 +8,17 @@ const style = await readFile(new URL('./login.css', import.meta.url));
 const logo = await readFile(new URL('./branding/logo.png', import.meta.url));
 const hero = await readFile(new URL('./branding/hero.jpg', import.meta.url));
 
-export function createServer({ record, origins, secure = true, ttl = 7200000, clock = Date.now } = {}) {
+export function createServer({ record, origins, secure = true, ttl = 7200000, clock = Date.now, internalOrigin = null } = {}) {
   if (!record || !/^[a-f0-9]{32}$/.test(record.salt) || !/^[a-f0-9]{128}$/.test(record.digest) || !record.username) throw Error('A valid preview credential file is required.');
   if (record.localOnly && secure) throw Error('Local short-password credentials cannot be used for an internet preview.');
   if (!origins?.length || origins.some(value => new URL(value).origin !== value)) throw Error('Configure explicit preview origins.');
   if (secure && origins.some(value => !value.startsWith('https://'))) throw Error('HTTPS is required unless local HTTP mode is explicitly enabled.');
-  if (!secure && origins.some(value => !['localhost','127.0.0.1','[::1]'].includes(new URL(value).hostname))) throw Error('Local HTTP mode permits only loopback origins.');
+  if (internalOrigin) {
+    const u = new URL(internalOrigin), octets = u.hostname.split('.').map(Number);
+    const privateIP = octets.length === 4 && octets.every(n => Number.isInteger(n) && n >= 0 && n <= 255) && (octets[0] === 10 || (octets[0] === 192 && octets[1] === 168) || (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31));
+    if (secure || u.protocol !== 'http:' || u.origin !== internalOrigin || !privateIP || record.localOnly) throw Error('Internal HTTP requires an explicit private IPv4 origin and a full-length credential.');
+  }
+  if (!secure && origins.some(value => value !== internalOrigin && !['localhost','127.0.0.1','[::1]'].includes(new URL(value).hostname))) throw Error('Local HTTP mode permits only loopback origins.');
   const store = sessions({ ttl, clock }), allowAttempt = limiter({ clock });
   const cookieName = secure ? '__Host-sarva_preview' : 'sarva_preview_local';
   function cookie(value, maxAge) { return `${cookieName}=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure ? '; Secure' : ''}`; }
@@ -76,7 +81,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     const record = JSON.parse(await readFile(process.env.PREVIEW_CREDENTIAL_FILE || '/run/preview/credentials.json', 'utf8'));
     const ttlMinutes = Number(process.env.PREVIEW_SESSION_MINUTES || 120);
     if (!Number.isInteger(ttlMinutes) || ttlMinutes < 5 || ttlMinutes > 1440) throw Error('Use a session duration of 5–1440 minutes.');
-    const server = createServer({ record, secure: process.env.PREVIEW_LOCAL_HTTP !== 'true', origins: (process.env.PREVIEW_ALLOWED_ORIGINS || '').split(',').filter(Boolean), ttl: ttlMinutes * 60000 });
+    const server = createServer({ record, internalOrigin: process.env.PREVIEW_INTERNAL_HTTP_ORIGIN || null, secure: process.env.PREVIEW_LOCAL_HTTP !== 'true', origins: (process.env.PREVIEW_ALLOWED_ORIGINS || '').split(',').filter(Boolean), ttl: ttlMinutes * 60000 });
     server.requestTimeout = 15000;
     server.headersTimeout = 10000;
     server.listen(8080, '0.0.0.0', () => console.log('Preview authentication service listening on port 8080.'));

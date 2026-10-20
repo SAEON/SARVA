@@ -82,3 +82,12 @@ test('HTTP password attempts are throttled and malformed bodies/origins are refu
   assert.equal(limited.status, 429);
   assert.equal(limited.headers.get('retry-after'), '900');
 });
+
+test('internal HTTP is limited to the explicitly configured private address', () => {
+  const origin = 'http://192.168.115.77';
+  const server = createServer({ record, secure: false, origins: [origin], internalOrigin: origin });
+  server.close();
+  assert.throws(() => createServer({ record, secure: false, origins: ['http://8.8.8.8'], internalOrigin: 'http://8.8.8.8' }));
+  assert.throws(() => createServer({ record, secure: false, origins: ['http://192.168.115.78'], internalOrigin: origin }));
+  assert.throws(() => createServer({ record: {...record, localOnly: true}, secure: false, origins: [origin], internalOrigin: origin }));
+});
