@@ -1,0 +1,31 @@
+name: sarva-preview-access
+services:
+  preview-auth:
+    image: node:22-alpine
+    working_dir: /auth
+    command: ["node", "server.mjs"]
+    restart: unless-stopped
+    environment:
+      PREVIEW_LOCAL_HTTP: "true"
+      PREVIEW_ALLOWED_ORIGINS: "http://127.0.0.1:5180,http://localhost:5180"
+      PREVIEW_SESSION_MINUTES: "120"
+    volumes:
+      - ./auth:/auth:ro
+      - ../.local/preview-access/auth:/run/preview:ro
+    networks: [preview-private]
+  preview-gateway:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports: ["127.0.0.1:5180:80"]
+    environment:
+      SARVA_PREVIEW_UPSTREAM: "http://sarva-analytics-web:5174"
+    volumes:
+      - ./nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+    depends_on: [preview-auth]
+    networks: [preview-private, sarva]
+networks:
+  preview-private:
+    internal: true
+  sarva:
+    external: true
+    name: sarva_default
