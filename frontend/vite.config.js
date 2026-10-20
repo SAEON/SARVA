@@ -15,6 +15,8 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       host: '127.0.0.1',
+      // Windows bind mounts may not deliver filesystem events into Docker.
+      watch: { usePolling: true, interval: 500 },
       proxy: {
         '/api': { target: apiTarget, changeOrigin: true, xfwd: true },
         '/public': { target: apiTarget, changeOrigin: true },
