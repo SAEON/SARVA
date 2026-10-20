@@ -1,5 +1,6 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import AnalyticsTracker from "./AnalyticsTracker.jsx";
+import PreviewAccess from "./PreviewAccess.jsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import logo from "../assets/SARVA_final-logo-01a.png";
 import AuthPanel from "./AuthPanel";
@@ -211,6 +212,7 @@ export default function Header() {
     return (
         <header className="sarva-header" ref={rootRef}>
             <AnalyticsTracker />
+            <PreviewAccess />
             <div className="sarva-header__inner">
                 <div className="sarva-brand">
                     <NavLink to="/" className="sarva-logoLink" aria-label="SARVA Home">
