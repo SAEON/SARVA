@@ -253,6 +253,67 @@ preview page are visible. The backend service normally mounts `./data`
 read-only, so the script uses a temporary Node container with a read-write
 `/data` mount for the download step only.
 
+For releases that add or refresh DEM-derived topography layers, set an
+OpenTopography API key and run:
+
+```sh
+cd /opt/sarva
+export OPENTOPOGRAPHY_API_KEY="your-key"
+deploy/server-update.sh --with-topography
+```
+
+The topography option downloads a national DEM extract from the OpenTopography
+Global DEM API, processes it with a temporary GDAL container into contour and
+slope-zone GeoJSON files, imports those vectors into PostGIS, then recreates
+Martin and the frontend. The default DEM type is `NASADEM` and the default
+processing extent is South Africa:
+
+```sh
+export OPENTOPOGRAPHY_DEM_TYPE=NASADEM
+export TOPOGRAPHY_WEST=16.0
+export TOPOGRAPHY_SOUTH=-35.0
+export TOPOGRAPHY_EAST=33.0
+export TOPOGRAPHY_NORTH=-22.0
+export TOPOGRAPHY_TILE_DEGREES=2
+export TOPOGRAPHY_CONTOUR_INTERVAL=100
+```
+
+Because the OpenTopography API can enforce daily request limits, the DEM
+download is resumable. Existing GeoTIFF tiles in `data/topography/dem-tiles`
+are skipped on the next run.
+
+To automate the topography refresh on the development server, add the API key
+to `/opt/sarva/.env`:
+
+```sh
+OPENTOPOGRAPHY_API_KEY=your-key
+OPENTOPOGRAPHY_DEM_TYPE=NASADEM
+TOPOGRAPHY_TILE_DEGREES=2
+TOPOGRAPHY_CONTOUR_INTERVAL=100
+```
+
+Use `TOPOGRAPHY_CONTOUR_INTERVAL=100` for the national overview layer. The
+planning map can still support denser 20 m contours for smaller municipal or
+ward-focused extracts later.
+
+Then install the daily systemd timer:
+
+```sh
+cd /opt/sarva
+deploy/install-topography-refresh-timer.sh
+```
+
+The timer runs `deploy/topography-refresh.sh`, which resumes downloads, skips
+existing GeoTIFF tiles, processes whatever DEM tiles are available by default,
+imports the topography tables, restarts Martin/frontend, and writes logs to
+`/opt/sarva/logs/topography-refresh.log`. Set
+`TOPOGRAPHY_PROCESS_PARTIAL=false` if you want to wait until the full national
+download completes before processing.
+
+The raw DEM and generated GeoJSON files are ignored by git. Keep them in the
+server data volume and re-import when the DEM source, extent or processing
+interval changes.
+
 ## Backups
 
 Before risky local development work, create a timestamped database and source snapshot:

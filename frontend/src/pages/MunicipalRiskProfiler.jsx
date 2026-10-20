@@ -1042,19 +1042,24 @@ export default function MunicipalRiskProfiler() {
         const recordsByGid = new Map(records.map((record) => [Number(record.gid), record]));
         metricRecordsRef.current = recordsByGid;
         const applyMetricState = () => {
-            const values=selectedMetric.startsWith("indicator:") ? usableMapRecords(metricData).map(r=>Number(r.rawValue)) : [];
+            const values = selectedMetric.startsWith("indicator:")
+                ? usableMapRecords(metricData).map(record => Number(record.rawValue))
+                : records.filter(record => record.mapValue != null && Number.isFinite(Number(record.mapValue))).map(record => Number(record.mapValue));
             const scale=municipalMapScale(values);
             const colour=scale.length>1 ? ["step",["coalesce",["feature-state","metricValue"],0],scale[0].colour,...scale.slice(1).flatMap(item=>[item.value,item.colour])] : scale[0]?.colour || "#cbd5e1";
             map.setPaintProperty("municipal-profile-fill","fill-color",["case",["boolean",["feature-state","hover"],false],"#fbbf24",["!",["boolean",["feature-state","hasMetric"],false]],"#cbd5e1",colour]);
 
             municipalities.forEach((municipality) => {
                 const record = recordsByGid.get(Number(municipality.gid));
-                const hasMetric = selectedMetric.startsWith("indicator:") && record?.rawValue != null && !record.isProxy && record.confidence !== "proxy" && record.period === metricData?.metric?.period && record.displayUnit === metricData?.metric?.unit && record.scenario === metricData?.metric?.scenario && Number.isFinite(Number(record.rawValue));
+                const isIndicator = selectedMetric.startsWith("indicator:");
+                const hasMetric = isIndicator
+                    ? record?.rawValue != null && !record.isProxy && record.confidence !== "proxy" && record.period === metricData?.metric?.period && record.displayUnit === metricData?.metric?.unit && record.scenario === metricData?.metric?.scenario && Number.isFinite(Number(record.rawValue))
+                    : record?.mapValue != null && Number.isFinite(Number(record.mapValue));
                 map.setFeatureState(
                     { source: "municipal_boundaries", sourceLayer: "municipalities", id: Number(municipality.gid) },
                     {
                         hasMetric,
-                        metricValue: hasMetric ? Number(record.rawValue) : null,
+                        metricValue: hasMetric ? Number(isIndicator ? record.rawValue : record.mapValue) : null,
                         metricDisplay: hasMetric ? formatIndicatorValue(record.displayValue, record.displayUnit) : "No data",
                     }
                 );

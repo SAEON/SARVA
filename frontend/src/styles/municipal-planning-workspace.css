@@ -72,14 +72,20 @@
 }
 
 .planning-workspace__topbar,
-.planning-workspace__municipality,
 .planning-workspace__summary article,
-.planning-workspace__guide,
 .planning-panel {
     border: 1px solid var(--border);
     border-radius: 8px;
     background: rgba(255, 253, 247, 0.86);
     box-shadow: 0 14px 30px rgba(50, 43, 34, 0.06);
+}
+
+.planning-panel--boundaries {
+    overflow: hidden;
+}
+
+.planning-panel--boundaries .mdb-preview__workspace {
+    margin-top: 12px;
 }
 
 .planning-workspace__topbar {
@@ -91,8 +97,7 @@
 }
 
 .planning-workspace__topbar span,
-.planning-panel__head span,
-.planning-workspace__guide strong {
+.planning-panel__head span {
     color: var(--accent-strong);
     font-size: 12px;
     font-weight: 950;
@@ -125,17 +130,9 @@
     min-width: 0;
 }
 
-.planning-workspace__actions button:nth-child(3) {
+.planning-workspace__actions button:nth-child(4) {
     border-color: var(--primary);
     background: var(--primary);
-}
-
-.planning-workspace__municipality {
-    display: grid;
-    grid-template-columns: minmax(260px, 1fr) minmax(180px, 260px) minmax(280px, 0.9fr);
-    gap: 12px;
-    align-items: end;
-    padding: 16px;
 }
 
 .planning-field {
@@ -160,29 +157,6 @@
     font-style: normal;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-}
-
-.planning-workspace__selected {
-    display: grid;
-    gap: 4px;
-    min-width: 0;
-    min-height: 66px;
-    padding: 11px 12px;
-    border-left: 5px solid var(--success);
-    border-radius: 7px;
-    background: var(--primary-soft);
-}
-
-.planning-workspace__selected strong {
-    color: var(--primary-strong);
-    font-size: 15px;
-}
-
-.planning-workspace__selected span {
-    color: var(--muted);
-    font-size: 13px;
-    font-weight: 780;
-    line-height: 1.35;
 }
 
 .planning-workspace__summary {
@@ -218,68 +192,13 @@
 
 .planning-workspace__grid {
     display: grid;
-    grid-template-columns: minmax(250px, 320px) minmax(0, 1fr);
-    gap: 16px;
-    align-items: start;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
     min-width: 0;
 }
 
-.planning-workspace__guide {
-    position: sticky;
-    top: 92px;
-    display: grid;
-    gap: 16px;
-    padding: 16px;
-}
-
-.planning-workspace__guide h2,
 .planning-panel h2 {
     color: var(--primary-strong);
-}
-
-.planning-workspace__guide ol {
-    display: grid;
-    gap: 10px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.planning-workspace__guide li {
-    display: grid;
-    gap: 3px;
-    padding: 11px;
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    background: rgba(223, 232, 221, 0.45);
-}
-
-.planning-workspace__guide li strong {
-    color: var(--primary-strong);
-    font-size: 14px;
-}
-
-.planning-workspace__guide li span,
-.planning-workspace__guide p {
-    color: var(--muted);
-    font-size: 13px;
-    font-weight: 760;
-    line-height: 1.38;
-}
-
-.planning-workspace__guide > div {
-    display: grid;
-    gap: 5px;
-    padding: 12px;
-    border: 1px dashed rgba(201, 111, 74, 0.45);
-    border-radius: 7px;
-    background: rgba(243, 223, 213, 0.34);
-}
-
-.planning-workspace__guide button {
-    border-color: var(--border);
-    background: var(--surface);
-    color: var(--accent-strong);
 }
 
 .planning-workspace__main {
@@ -306,81 +225,6 @@
     color: var(--muted);
     font-size: 12px;
     font-weight: 850;
-}
-
-.planning-audience {
-    display: grid;
-    grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
-    gap: 12px;
-    align-items: stretch;
-}
-
-.planning-audience > div,
-.planning-audience article {
-    min-width: 0;
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    background: rgba(223, 232, 221, 0.5);
-}
-
-.planning-audience > div {
-    display: grid;
-    gap: 8px;
-    align-content: center;
-    padding: 12px;
-}
-
-.planning-audience > div span {
-    color: var(--accent-strong);
-    font-size: 11px;
-    font-weight: 950;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-.planning-audience article {
-    display: grid;
-    gap: 6px;
-    padding: 14px;
-    border-left: 5px solid var(--success);
-}
-
-.planning-audience article strong {
-    color: var(--primary-strong);
-    font-size: 18px;
-    line-height: 1.2;
-}
-
-.planning-audience article p {
-    color: var(--muted);
-    font-size: 14px;
-    font-weight: 760;
-    line-height: 1.45;
-}
-
-.planning-feed-intro {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 14px;
-    align-items: center;
-    padding: 12px;
-    border: 1px dashed rgba(201, 111, 74, 0.46);
-    border-radius: 7px;
-    background: rgba(243, 223, 213, 0.28);
-}
-
-.planning-feed-intro p {
-    color: var(--muted);
-    font-size: 14px;
-    font-weight: 760;
-    line-height: 1.45;
-}
-
-.planning-feed-intro button {
-    min-width: 190px;
-    padding: 0 14px;
-    border-color: var(--primary);
-    background: var(--primary);
 }
 
 .planning-feed-grid {
@@ -458,6 +302,29 @@
     font-size: 13px;
     font-weight: 760;
     line-height: 1.4;
+}
+
+.planning-signal-picker {
+    display: grid;
+    gap: 5px;
+    min-width: 0;
+}
+
+.planning-signal-picker span {
+    color: var(--accent-strong);
+    font-size: 10px;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.planning-signal-picker select {
+    min-height: 38px;
+    border-color: rgba(79, 124, 82, 0.34);
+    background: rgba(255, 253, 247, 0.94);
+    color: var(--primary-strong);
+    font-size: 13px;
+    font-weight: 900;
 }
 
 .planning-feed-card__actions {
@@ -654,7 +521,6 @@
 
 @media (max-width: 1180px) {
     .planning-workspace__topbar,
-    .planning-workspace__municipality,
     .planning-workspace__grid {
         grid-template-columns: 1fr;
     }
@@ -663,24 +529,11 @@
         justify-content: flex-start;
     }
 
-    .planning-workspace__guide {
-        position: static;
-    }
-
     .planning-form,
     .planning-coverage,
     .planning-lists,
     .planning-feed-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .planning-audience,
-    .planning-feed-intro {
-        grid-template-columns: 1fr;
-    }
-
-    .planning-feed-intro button {
-        justify-self: start;
     }
 
     .planning-form .planning-field,
@@ -732,3 +585,12 @@
         display: grid;
     }
 }
+
+.planning-workspace__saveStatus { padding: 14px 20px; margin: 12px 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); line-height: 1.6; }
+.planning-workspace__saveStatus button { margin: 6px 8px 0 0; padding: 8px 12px; cursor: pointer; }
+.planning-form select[multiple] { min-height: 120px; }
+.planning-lists article button { margin-right: 8px; }
+.planning-sourceDirectory { margin-top:16px; border-top:1px solid var(--border); padding-top:14px; }
+.planning-sourceDirectory summary { cursor:pointer; font-weight:700; }
+.planning-sourceDirectory article { padding:12px 0; border-bottom:1px solid var(--border); }
+.planning-sourceDirectory article a { margin-left:12px; }

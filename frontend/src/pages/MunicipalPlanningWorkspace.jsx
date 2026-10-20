@@ -1,7 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import AccessibilityWorkspace from "./AccessibilityWorkspace";
+import StormwaterReadiness from "../components/StormwaterReadiness";
+import { normalizeDraft } from "../config/planningDraft";
 import { Link } from "react-router-dom";
-import { apiUrl } from "../config/api";
+import { MdbBoundaryMap } from "./MdbBoundaryPreview.jsx";
 import "../styles/municipal-planning-workspace.css";
+
+let draftReadError = "";
 
 const STORAGE_KEY = "sarva:municipal-planning-workspace:v1";
 
@@ -22,28 +27,48 @@ const confidenceLevels = ["High", "Medium", "Low"];
 const urgencyLevels = ["Immediate", "This year", "Medium term", "Long term"];
 const statuses = ["Draft", "In review", "Approved", "In progress", "Complete"];
 
-const audienceGuidance = {
-    official: {
-        label: "Municipal official",
-        title: "Watch risk signals and turn them into municipal action.",
-        detail: "Start with SARVA forecast and vulnerability layers, then add local exposure, service constraints, infrastructure backlogs, ward reports and response capacity. Export a brief for IDP, SDBIP, disaster management or grant planning discussions.",
+const forecastSignalOptions = [
+    {
+        key: "rainfall",
+        label: "Rainfall",
+        category: "Water",
+        title: "Forecast rainfall risk signal",
+        source: "SARVA forecast rainfall risk layer from cached ECMWF Open Data",
+        detail: "5-day rainfall watch layer for flooding, drainage and stormwater planning.",
     },
-    resident: {
-        label: "Resident or community member",
-        title: "Add risk observations without replacing emergency or fault reporting.",
-        detail: "Use official emergency and municipal channels for urgent incidents. Use SARVA to capture recurring flood, heat, fire, outage, dumping or access patterns that show where vulnerability is building up.",
+    {
+        key: "heat",
+        label: "Heat",
+        category: "Health and social support",
+        title: "Forecast heat risk signal",
+        source: "SARVA forecast heat risk layer from cached ECMWF Open Data",
+        detail: "5-day heat watch layer for exposed people, facilities, workforces and response planning.",
     },
-    researcher: {
-        label: "Researcher",
-        title: "Connect hazard signals, exposure and vulnerability evidence.",
-        detail: "Use this workspace to assemble watch feeds, local observations, SARVA indicators and source metadata into a transparent planning brief with dates, confidence and data gaps.",
+    {
+        key: "wind",
+        label: "Wind",
+        category: "Disaster management",
+        title: "Forecast wind risk signal",
+        source: "SARVA forecast wind risk layer from cached ECMWF Open Data",
+        detail: "5-day wind watch layer for exposed infrastructure, roads, settlements and service planning.",
     },
-    partner: {
-        label: "Partner organisation",
-        title: "Bring programme evidence into risk-informed planning.",
-        detail: "Add monitoring findings, project records, community survey summaries or partner datasets as sourced vulnerability evidence. Use aggregate counts and avoid personal information unless there is a formal data-sharing process.",
+    {
+        key: "fire",
+        label: "Fire-weather",
+        category: "Environment",
+        title: "Forecast fire-weather proxy signal",
+        source: "SARVA forecast fire-weather proxy from cached ECMWF Open Data",
+        detail: "5-day fire-weather screening proxy for dry, hot and windy conditions. Not a formal fire danger index.",
     },
-};
+    {
+        key: "overall",
+        label: "Combined",
+        category: "Disaster management",
+        title: "Combined environmental forecast risk signal",
+        source: "SARVA combined forecast risk index from cached ECMWF Open Data",
+        detail: "Combined 5-day screening layer across rainfall, heat, wind and fire-weather proxy signals.",
+    },
+];
 
 const riskSignalChannels = [
     {
@@ -53,6 +78,8 @@ const riskSignalChannels = [
         source: "SARVA forecast rainfall, heat, wind and fire-weather risk layers",
         title: "SARVA forecast risk signal",
         detail: "Use the existing SARVA 5-day signals as the first watch layer, then add local vulnerability and response constraints.",
+        forecastLayer: "rainfall",
+        options: forecastSignalOptions,
         to: "/#risk-map",
         action: "Prefill signal",
     },
@@ -85,6 +112,16 @@ const riskSignalChannels = [
         detail: "Useful for near-real-time stage, flows, rainfall, dam levels and routed hydrographs where available.",
         href: "https://www.dws.gov.za/Hydrology/Default.aspx",
         action: "Prefill signal",
+    },
+    {
+        name: "Topography and slope",
+        status: "Prepared layer",
+        category: "Roads and stormwater",
+        source: "Processed DEM-derived topography layers served from SARVA PostGIS via Martin",
+        title: "Terrain exposure signal",
+        detail: "Contours and slope zones help interpret where rainfall may concentrate, drain slowly or create access and infrastructure exposure.",
+        topographyLayer: true,
+        action: "Show on map",
     },
     {
         name: "Municipal FEWS telemetry",
@@ -183,6 +220,7 @@ const emptyEvidence = {
 };
 
 const emptyPriority = {
+    evidenceIds: [],
     category: categories[0],
     title: "",
     why: "",
@@ -193,6 +231,7 @@ const emptyPriority = {
 };
 
 const emptyAction = {
+    priorityId: "",
     priority: "",
     action: "",
     owner: "",
@@ -219,8 +258,9 @@ function readDraft() {
 
     try {
         const stored = window.localStorage.getItem(STORAGE_KEY);
-        return stored ? { ...makeDraft(), ...JSON.parse(stored) } : makeDraft();
+        return stored ? normalizeDraft(JSON.parse(stored)) : makeDraft();
     } catch {
+        draftReadError = "Existing draft could not be read. It has been preserved in browser storage. Export or restore a valid backup before replacing it.";
         return makeDraft();
     }
 }
@@ -277,6 +317,8 @@ function buildBrief(workspace) {
             lines.push(
                 `${index + 1}. ${item.title || "Untitled priority"} | ${item.category} | ${item.urgency} | ${item.status}`,
                 `   Owner: ${item.owner || "Not assigned"}`,
+                `   Supporting evidence: ${(item.evidenceIds || []).map(id => workspace.evidence.find(e => e.id === id)?.title || "Missing evidence").join("; ") || "Not linked"}`,
+                `   Impact (user judgement): ${item.impact || "Not supplied"}`,
                 `   Rationale: ${item.why || "Not supplied"}`
             );
         });
@@ -289,13 +331,14 @@ function buildBrief(workspace) {
         workspace.actions.forEach((item, index) => {
             lines.push(
                 `${index + 1}. ${item.action || "Untitled action"} | ${item.status} | ${item.timeframe || "No timeframe"}`,
-                `   Priority: ${item.priority || "Not linked"}`,
+                `   Priority: ${workspace.priorities.find(p => p.id === item.priorityId)?.title || item.priority || "Not linked"}`,
                 `   Owner: ${item.owner || "Not assigned"} | Cost: ${item.estimatedCost || "Not estimated"} | Funding: ${item.fundingSource || "Not supplied"}`,
                 `   Expected change: ${item.expectedChange || "Not supplied"}`
             );
         });
     }
 
+    lines.push("", "## Review gaps", `Priorities without evidence: ${workspace.priorities.filter(p => !p.evidenceIds?.length).length}`, `Actions without priority: ${workspace.actions.filter(a => !a.priorityId).length}`, `Actions without owner: ${workspace.actions.filter(a => !a.owner?.trim()).length}`, "Status, impact and confidence are user judgements, not formal approval or validated scientific assessments.");
     return lines.join("\n");
 }
 
@@ -313,46 +356,60 @@ function Field({ label, children, required = false }) {
 
 export default function MunicipalPlanningWorkspace() {
     const [workspace, setWorkspace] = useState(readDraft);
-    const [municipalities, setMunicipalities] = useState([]);
     const [evidenceForm, setEvidenceForm] = useState(emptyEvidence);
     const [priorityForm, setPriorityForm] = useState(emptyPriority);
     const [actionForm, setActionForm] = useState(emptyAction);
     const [clearArmed, setClearArmed] = useState(false);
-    const [audience, setAudience] = useState("official");
+    const [activeMapSignal, setActiveMapSignal] = useState(null);
+    const [selectedForecastLayer, setSelectedForecastLayer] = useState("rainfall");
+    const [selectedBoundary, setSelectedBoundary] = useState(null);
+    const boundariesRef = useRef(null);
+    const [saveStatus, setSaveStatus] = useState("Saving locally…");
+    const [notice, setNotice] = useState("");
+    const [editing, setEditing] = useState(null);
+    const [undo, setUndo] = useState(null);
+    const [pendingImport, setPendingImport] = useState(null);
+    const importRef = useRef(null);
+
 
     useEffect(() => {
-        window.localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify({ ...workspace, updatedAt: new Date().toISOString() })
-        );
+        let active = true;
+        let status = draftReadError;
+        if (!status) {
+            try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(workspace)); status = "Saved in this browser"; }
+            catch { status = "Could not save locally — export JSON to keep your work"; }
+        }
+        queueMicrotask(() => { if (active) setSaveStatus(status); });
+        return () => { active = false; };
     }, [workspace]);
 
-    useEffect(() => {
-        const controller = new AbortController();
-
-        fetch(apiUrl("/api/municipalities?limit=260"), { signal: controller.signal })
-            .then((response) => response.json())
-            .then((body) => {
-                if (body?.status === "ok") {
-                    setMunicipalities(body.data?.records || []);
-                }
-            })
-            .catch((error) => {
-                if (error.name !== "AbortError") console.warn("Municipalities could not be loaded", error);
-            });
-
-        return () => controller.abort();
-    }, []);
-
-    const selectedMunicipality = useMemo(() => {
-        const normalized = workspace.municipality.trim().toLowerCase();
-        if (!normalized) return null;
-        return municipalities.find((item) =>
-            [item.municipality, item.code, item.district, item.province]
-                .filter(Boolean)
-                .some((value) => String(value).toLowerCase() === normalized)
-        );
-    }, [municipalities, workspace.municipality]);
+    function saveRecord(collection, form, emptyForm, setter) {
+        const record = {...form, ...(collection === "evidence" ? {municipality: form.municipality || workspace.municipality, municipalityCode: form.municipalityCode || workspace.municipalityCode} : {}), id: editing?.collection === collection ? editing.id : makeId(collection)};
+        setWorkspace(current => ({...current, updatedAt: new Date().toISOString(),
+            [collection]: editing?.collection === collection ? current[collection].map(row => row.id === editing.id ? record : row) : [record, ...current[collection]]}));
+        setter(emptyForm);
+        setEditing(null);
+    }
+    function editRecord(collection, item) {
+        setEditing({collection, id: item.id});
+        if (collection === "evidence") setEvidenceForm({...emptyEvidence, ...item});
+        if (collection === "priorities") setPriorityForm({...emptyPriority, ...item});
+        if (collection === "actions") setActionForm({...emptyAction, ...item});
+        document.querySelector(`.planning-form--${collection === "priorities" ? "priority" : collection === "actions" ? "action" : "evidence"}`)?.scrollIntoView({behavior: "smooth", block: "start"});
+    }
+    function cancelEdit() {
+        setEditing(null); setEvidenceForm(emptyEvidence); setPriorityForm(emptyPriority); setActionForm(emptyAction);
+    }
+    async function readImport(event) {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        try {
+            if (file.size > 5 * 1024 * 1024) throw new Error("Workspace backup must be smaller than 5 MB.");
+            setPendingImport(normalizeDraft(JSON.parse(await file.text())));
+            setNotice("Backup validated. Restore replaces the current draft; you can undo it.");
+        } catch (error) { setNotice(`Backup not restored: ${error.message}`); }
+        event.target.value = "";
+    }
 
     const categoryCoverage = useMemo(() => (
         categories.map((category) => ({
@@ -367,50 +424,40 @@ export default function MunicipalPlanningWorkspace() {
     ), [workspace.evidence]);
 
     const brief = useMemo(() => buildBrief(workspace), [workspace]);
-    const activeGuidance = audienceGuidance[audience];
 
-    function updateWorkspace(patch) {
-        setWorkspace((current) => ({ ...current, ...patch }));
-    }
+    const updateWorkspace = useCallback((patch) => {
+        if (patch.municipality !== undefined && workspace.municipality && patch.municipality !== workspace.municipality && workspace.evidence.length) setNotice("Planning area changed. Existing evidence retains its recorded area; review it before use.");
+        setWorkspace((current) => ({ ...current, ...patch, updatedAt: new Date().toISOString() }));
+    }, [workspace.municipality, workspace.evidence.length]);
 
     function addEvidence(event) {
         event.preventDefault();
         if (!evidenceForm.title.trim()) return;
 
-        setWorkspace((current) => ({
-            ...current,
-            evidence: [{ ...evidenceForm, id: makeId("evidence") }, ...current.evidence],
-        }));
-        setEvidenceForm(emptyEvidence);
+        saveRecord("evidence", evidenceForm, emptyEvidence, setEvidenceForm);
     }
 
     function addPriority(event) {
         event.preventDefault();
         if (!priorityForm.title.trim()) return;
 
-        setWorkspace((current) => ({
-            ...current,
-            priorities: [{ ...priorityForm, id: makeId("priority") }, ...current.priorities],
-        }));
-        setPriorityForm(emptyPriority);
+        saveRecord("priorities", priorityForm, emptyPriority, setPriorityForm);
     }
 
     function addAction(event) {
         event.preventDefault();
         if (!actionForm.action.trim()) return;
 
-        setWorkspace((current) => ({
-            ...current,
-            actions: [{ ...actionForm, id: makeId("action") }, ...current.actions],
-        }));
-        setActionForm(emptyAction);
+        saveRecord("actions", actionForm, emptyAction, setActionForm);
     }
 
     function removeItem(collection, id) {
-        setWorkspace((current) => ({
-            ...current,
-            [collection]: current[collection].filter((item) => item.id !== id),
-        }));
+        const linked = collection === "evidence" ? workspace.priorities.some(p => p.evidenceIds?.includes(id)) : collection === "priorities" ? workspace.actions.some(a => a.priorityId === id) : false;
+        if (linked) { setNotice("This record has linked records. Edit those links before removing it."); return; }
+        setUndo(workspace);
+        setWorkspace(current => ({...current, updatedAt: new Date().toISOString(), [collection]: current[collection].filter(item => item.id !== id)}));
+        if (editing?.id === id) cancelEdit();
+        setNotice("Record removed. Undo is available.");
     }
 
     function resetDraft() {
@@ -418,84 +465,123 @@ export default function MunicipalPlanningWorkspace() {
             setClearArmed(true);
             return;
         }
+        draftReadError = "";
+        setUndo(workspace);
+        cancelEdit();
         setWorkspace(makeDraft());
+        setNotice("Draft cleared. Undo is available.");
         setClearArmed(false);
     }
 
-    function applyMunicipality(value) {
-        const match = municipalities.find((item) => item.municipality === value || item.code === value);
-        updateWorkspace({
-            municipality: value,
-            municipalityCode: match?.code || workspace.municipalityCode,
-        });
-    }
-
     function applyCommunityFeed(feed) {
+        const selectedOption = feed.options?.find((option) => option.key === selectedForecastLayer);
+        const signal = {
+            name: feed.name,
+            detail: selectedOption?.detail || feed.detail,
+            category: selectedOption?.category || feed.category,
+            source: selectedOption?.source || feed.source,
+            forecastLayer: selectedOption?.key || feed.forecastLayer,
+            topographyLayer: feed.topographyLayer,
+        };
+        if (signal.forecastLayer || signal.topographyLayer) setActiveMapSignal(signal);
+        else setNotice("Source added to the evidence form. This source has no connected map layer; verify and enter its observations before saving.");
         setEvidenceForm((current) => ({
             ...current,
-            category: feed.category,
-            title: current.title || feed.title,
-            source: feed.source,
+            category: signal.category,
+            title: current.title || selectedOption?.title || feed.title,
+            source: signal.source,
             confidence: feed.status === "Use now" ? "Medium" : "Low",
-            notes: current.notes || `${feed.name}: ${feed.detail}`,
+            notes: current.notes || `${feed.name}: ${signal.detail}`,
         }));
+        boundariesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
+
+    const applyBoundarySelection = useCallback((boundary) => {
+        setSelectedBoundary(boundary);
+        const properties = boundary.properties || {};
+        const municipalityName = properties.municname || properties.MUNICNAME || properties.municipali || properties.Municipali || properties.map_title || "";
+        const municipalityCode = properties.cat_b || properties.CAT_B || "";
+        const location = boundary.type === "wards"
+            ? [boundary.label, municipalityName].filter(Boolean).join(", ")
+            : boundary.label;
+
+        setEvidenceForm((current) => ({
+            ...current,
+            location: editing?.collection === "evidence" ? current.location : location,
+            notes: current.notes || `Planning geography selected from MDB 2026 boundaries: ${location}.`,
+        }));
+
+        if (municipalityName) {
+            updateWorkspace({
+                municipality: municipalityName,
+                municipalityCode: municipalityCode || workspace.municipalityCode,
+            });
+        }
+    }, [workspace.municipalityCode, editing, updateWorkspace]);
 
     return (
         <div className="planning-workspace">
             <section className="planning-workspace__topbar">
                 <div>
                     <span>Municipal planning workspace</span>
-                    <h1>Turn risk signals into municipal action.</h1>
+                    <h2>Municipal planning workspace</h2>
                     <p>
-                        Combine hazard watches, vulnerability evidence, exposed assets and response constraints,
-                        then rank priorities and export a planning brief.
+                        Start with the guided stormwater task below. Your draft is saved in this browser; export a backup to keep a copy.
                     </p>
                 </div>
-                <div className="planning-workspace__actions">
+                <details className="planning-workspace__actions"><summary>Backups and other tools</summary>
                     <Link to="/municipal-risk-profiler">Open risk profiler</Link>
+                    <a href="#boundaries">View ward boundaries</a>
                     <button type="button" onClick={() => download("municipal-planning-brief.md", brief, "text/markdown")}>
                         Download brief
+                    </button>
+                    <button type="button" onClick={() => download("sarva-local-evidence-template.csv", evidenceTemplate, "text/csv")}>
+                        CSV template
                     </button>
                     <button type="button" onClick={() => download("municipal-planning-workspace.json", JSON.stringify(workspace, null, 2), "application/json")}>
                         Export JSON
                     </button>
-                </div>
+                    <button type="button" onClick={resetDraft}>
+                        {clearArmed ? "Confirm clear draft" : "Clear draft"}
+                    </button>
+                </details>
             </section>
 
-            <section className="planning-workspace__municipality">
-                <Field label="Municipality" required>
-                    <input
-                        list="planning-municipalities"
-                        value={workspace.municipality}
-                        onChange={(event) => applyMunicipality(event.target.value)}
-                        placeholder="Type municipality name or code..."
-                    />
-                    <datalist id="planning-municipalities">
-                        {municipalities.map((item) => (
-                            <option key={item.gid} value={item.municipality}>
-                                {item.code} | {item.district} | {item.province}
-                            </option>
-                        ))}
-                    </datalist>
-                </Field>
-                <Field label="Municipality code">
-                    <input
-                        value={workspace.municipalityCode}
-                        onChange={(event) => updateWorkspace({ municipalityCode: event.target.value })}
-                        placeholder="Example: TSH"
-                    />
-                </Field>
-                <div className="planning-workspace__selected">
-                    <strong>{selectedMunicipality ? "Matched SARVA boundary" : "Local planning draft"}</strong>
-                    <span>
-                        {selectedMunicipality
-                            ? `${selectedMunicipality.code || "No code"} | ${selectedMunicipality.district || "No district"} | ${selectedMunicipality.province || "No province"}`
-                            : "Use the profiler link to compare this municipality with national SARVA indicators."}
-                    </span>
-                </div>
-            </section>
+            <div className="planning-workspace__saveStatus" role="status">
+                <strong>{saveStatus}</strong> · Draft: {workspace.municipality || "Choose a municipality"}
+                {notice && <p>{notice}</p>}
+                <input ref={importRef} type="file" accept=".json,application/json" hidden onChange={readImport} />
+                <button type="button" onClick={() => importRef.current?.click()}>Import backup</button>
+                {pendingImport && <><button type="button" onClick={() => {draftReadError = ""; setUndo(workspace); setWorkspace(pendingImport); setPendingImport(null); cancelEdit(); setNotice("Backup restored.");}}>Restore {pendingImport.municipality || "unnamed draft"} ({pendingImport.evidence.length} evidence items)</button><button type="button" onClick={() => setPendingImport(null)}>Cancel restore</button></>}
+                {undo && <button type="button" onClick={() => {setWorkspace(undo); setUndo(null); cancelEdit(); setNotice("Previous draft restored.");}}>Undo last removal / restore / clear</button>}
+                {editing && <><p>Editing {editing.collection} record. Save the form below to apply changes.</p><button type="button" onClick={cancelEdit}>Cancel edit</button></>}
+            </div>
+            <AccessibilityWorkspace />
+            <details className="planning-advanced"><summary>Optional: local evidence and stormwater brief</summary>
+            <StormwaterReadiness workspace={workspace} setWorkspace={setWorkspace}
+                onDownload={() => download("stormwater-readiness-brief.md", "# Stormwater readiness: draft for team review\n\nCurrent official warnings must be checked before operational use. Hazard-specific exposure and flood risk are not assessed.\n\n" + brief, "text/markdown")}
+                onTerrain={() => {setActiveMapSignal({name:"Terrain context",topographyLayer:"topography",detail:"Explore slope and elevation where available."}); setNotice("Terrain selected. Return to Choose area to view the map.");}}
+                onWeather={() => {setActiveMapSignal({name:"Cached rainfall",forecastLayer:"rainfall",detail:"Cached rainfall screening; verify dates before use."}); setNotice("Rainfall selected. Return to Choose area to view the map.");}}>
+                    <section className="planning-panel planning-panel--boundaries" id="boundaries" ref={boundariesRef}>
+                        <div className="planning-panel__head">
+                            <div>
+                                <span>Planning geography</span>
+                                <h2>MDB 2026 ward and municipal boundaries</h2>
+                            </div>
+                            <small>Use for planning preview, not operational replacement yet</small>
+                        </div>
+                        <MdbBoundaryMap
+                            embedded
+                            activeSignal={activeMapSignal}
+                            selectedBoundary={selectedBoundary}
+                            onFeatureSelect={applyBoundarySelection}
+                            onClearSignal={() => setActiveMapSignal(null)}
+                        />
+                    </section>
 
+            </StormwaterReadiness>
+            </details>
+            <details className="planning-advanced"><summary>Advanced register, sources, editing and full brief</summary>
             <section className="planning-workspace__summary" aria-label="Workspace summary">
                 <article>
                     <strong>{workspace.evidence.length}</strong>
@@ -516,70 +602,36 @@ export default function MunicipalPlanningWorkspace() {
             </section>
 
             <div className="planning-workspace__grid">
-                <aside className="planning-workspace__guide">
-                    <h2>Planning flow</h2>
-                    <ol>
-                        <li><strong>1. Watch</strong><span>Start with forecast, warning, hydrology or observation signals.</span></li>
-                        <li><strong>2. Expose</strong><span>Add where people, services, infrastructure or ecosystems are vulnerable.</span></li>
-                        <li><strong>3. Act</strong><span>Assign owners, timeframes, funding ideas and expected changes.</span></li>
-                        <li><strong>4. Brief</strong><span>Export a concise risk-planning note for review, workshops or future upload.</span></li>
-                    </ol>
-                    <div>
-                        <strong>Risk rule</strong>
-                        <p>A signal becomes useful when it is tied to exposure, vulnerability, source date and a clear action owner.</p>
-                    </div>
-                    <div>
-                        <strong>Public-friendly</strong>
-                        <p>Ask for what happened, where, when and who can verify it. Avoid names, ID numbers, phone numbers and private addresses.</p>
-                    </div>
-                    <button type="button" onClick={resetDraft}>
-                        {clearArmed ? "Confirm clear draft" : "Clear local draft"}
-                    </button>
-                </aside>
-
                 <main className="planning-workspace__main">
                     <section className="planning-panel planning-panel--feeds">
                         <div className="planning-panel__head">
                             <div>
                                 <span>Risk integrator</span>
-                                <h2>Watch risks and map vulnerability</h2>
+                                <h2>Add map context</h2>
                             </div>
-                            <small>Watch feeds now, APIs later</small>
-                        </div>
-                        <div className="planning-audience">
-                            <div>
-                                <span>I am a</span>
-                                <select value={audience} onChange={(event) => setAudience(event.target.value)}>
-                                    {Object.entries(audienceGuidance).map(([key, item]) => (
-                                        <option key={key} value={key}>{item.label}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <article>
-                                <strong>{activeGuidance.title}</strong>
-                                <p>{activeGuidance.detail}</p>
-                            </article>
-                        </div>
-                        <div className="planning-feed-intro">
-                            <p>
-                                SARVA should not replace emergency, disaster or service-reporting systems. Use this workspace to pull together
-                                risk signals, exposure context, vulnerability evidence and aggregate community patterns for planning.
-                            </p>
-                            <button type="button" onClick={() => download("sarva-local-evidence-template.csv", evidenceTemplate, "text/csv")}>
-                                Download CSV template
-                            </button>
+                            <small>One overlay at a time · showing a layer does not save evidence</small>
                         </div>
                         <div className="planning-feed-grid">
-                            {riskSignalChannels.map((feed) => (
+                            {riskSignalChannels.filter(feed => feed.forecastLayer || feed.topographyLayer).map((feed) => (
                                 <article key={feed.name}>
                                     <div>
                                         <small>{feed.status}</small>
                                         <h3>{feed.name}</h3>
                                     </div>
                                     <p>{feed.detail}</p>
+                                    {feed.options && (
+                                        <label className="planning-signal-picker">
+                                            <span>Weather variable</span>
+                                            <select value={selectedForecastLayer} onChange={(event) => setSelectedForecastLayer(event.target.value)}>
+                                                {feed.options.map((option) => (
+                                                    <option key={option.key} value={option.key}>{option.label}</option>
+                                                ))}
+                                            </select>
+                                        </label>
+                                    )}
                                     <div className="planning-feed-card__actions">
                                         <button type="button" onClick={() => applyCommunityFeed(feed)}>
-                                            {feed.action}
+                                            Show on map
                                         </button>
                                         {feed.to && (
                                             <Link to={feed.to}>
@@ -595,6 +647,9 @@ export default function MunicipalPlanningWorkspace() {
                                 </article>
                             ))}
                         </div>
+                        <details className="planning-sourceDirectory"><summary>Other evidence sources — no connected map layers</summary><p>These links can help you gather evidence. They do not load observations onto this map.</p>
+                            {riskSignalChannels.filter(feed => !feed.forecastLayer && !feed.topographyLayer).map(feed => <article key={feed.name}><strong>{feed.name}</strong><p>{feed.detail}</p><button type="button" onClick={() => applyCommunityFeed(feed)}>Use source in evidence form</button>{feed.href && <a href={feed.href} target="_blank" rel="noreferrer">Visit source</a>}</article>)}
+                        </details>
                     </section>
 
                     <section className="planning-panel">
@@ -605,7 +660,7 @@ export default function MunicipalPlanningWorkspace() {
                             </div>
                             <small>Signal, exposure and source date stay visible</small>
                         </div>
-                        <form className="planning-form" onSubmit={addEvidence}>
+                        <form className="planning-form planning-form--evidence" onSubmit={addEvidence}>
                             <Field label="Category">
                                 <select value={evidenceForm.category} onChange={(event) => setEvidenceForm({ ...evidenceForm, category: event.target.value })}>
                                     {categories.map((category) => <option key={category}>{category}</option>)}
@@ -637,7 +692,7 @@ export default function MunicipalPlanningWorkspace() {
                             <Field label="Notes">
                                 <textarea value={evidenceForm.notes} onChange={(event) => setEvidenceForm({ ...evidenceForm, notes: event.target.value })} placeholder="Add context, uncertainty, affected groups or verification needs." />
                             </Field>
-                            <button type="submit">Add evidence</button>
+                            <button type="submit">{editing?.collection === "evidence" ? "Save evidence" : "Add evidence"}</button>
                         </form>
                     </section>
 
@@ -692,10 +747,16 @@ export default function MunicipalPlanningWorkspace() {
                                     {statuses.map((status) => <option key={status}>{status}</option>)}
                                 </select>
                             </Field>
+                            <Field label="Supporting evidence">
+                                <select multiple value={priorityForm.evidenceIds || []} onChange={event => setPriorityForm({...priorityForm, evidenceIds: Array.from(event.target.selectedOptions, option => option.value)})}>
+                                    {workspace.evidence.map(item => <option key={item.id} value={item.id}>{item.title} — {item.location || "Location unknown"}</option>)}
+                                </select>
+                                <small>Select evidence supporting this priority. Use Ctrl / Command to select multiple items.</small>
+                            </Field>
                             <Field label="Why this matters">
                                 <textarea value={priorityForm.why} onChange={(event) => setPriorityForm({ ...priorityForm, why: event.target.value })} placeholder="Summarise the evidence, affected people and planning implication." />
                             </Field>
-                            <button type="submit">Add priority</button>
+                            <button type="submit">{editing?.collection === "priorities" ? "Save priority" : "Add priority"}</button>
                         </form>
                     </section>
 
@@ -708,9 +769,9 @@ export default function MunicipalPlanningWorkspace() {
                         </div>
                         <form className="planning-form planning-form--action" onSubmit={addAction}>
                             <Field label="Linked priority">
-                                <select value={actionForm.priority} onChange={(event) => setActionForm({ ...actionForm, priority: event.target.value })}>
+                                <select value={actionForm.priorityId} onChange={(event) => setActionForm({ ...actionForm, priorityId: event.target.value, priority: "" })}>
                                     <option value="">Not linked yet</option>
-                                    {workspace.priorities.map((priority) => <option key={priority.id}>{priority.title}</option>)}
+                                    {workspace.priorities.map((priority) => <option key={priority.id} value={priority.id}>{priority.title}</option>)}
                                 </select>
                             </Field>
                             <Field label="Action" required>
@@ -736,7 +797,7 @@ export default function MunicipalPlanningWorkspace() {
                             <Field label="Expected change">
                                 <textarea value={actionForm.expectedChange} onChange={(event) => setActionForm({ ...actionForm, expectedChange: event.target.value })} placeholder="Describe the risk, service or governance improvement expected." />
                             </Field>
-                            <button type="submit">Add action</button>
+                            <button type="submit">{editing?.collection === "actions" ? "Save action" : "Add action"}</button>
                         </form>
                     </section>
 
@@ -754,8 +815,10 @@ export default function MunicipalPlanningWorkspace() {
                                 {workspace.evidence.map((item) => (
                                     <article key={item.id} className={!item.source || !item.sourceDate ? "needs-source" : ""}>
                                         <strong>{item.title}</strong>
+                                        {item.municipality && item.municipality !== workspace.municipality && <small>Area mismatch: recorded for {item.municipality}</small>}
                                         <span>{item.category} | {item.location || "No location"} | {item.value || "No value"} {item.unit}</span>
                                         <small>Source: {item.source || "missing"} | Date: {formatDate(item.sourceDate)} | Confidence: {item.confidence}</small>
+                                        <button type="button" onClick={() => editRecord("evidence", item)}>Edit</button>
                                         <button type="button" onClick={() => removeItem("evidence", item.id)}>Remove</button>
                                     </article>
                                 ))}
@@ -767,7 +830,8 @@ export default function MunicipalPlanningWorkspace() {
                                     <article key={item.id}>
                                         <strong>{item.title}</strong>
                                         <span>{item.category} | {item.urgency} | {item.impact}</span>
-                                        <small>{item.owner || "No owner"} | {item.status}</small>
+                                        <small>{item.owner || "No owner"} | {item.status} (user-entered)</small>
+                                        <button type="button" onClick={() => editRecord("priorities", item)}>Edit</button>
                                         <button type="button" onClick={() => removeItem("priorities", item.id)}>Remove</button>
                                     </article>
                                 ))}
@@ -778,8 +842,9 @@ export default function MunicipalPlanningWorkspace() {
                                 {workspace.actions.map((item) => (
                                     <article key={item.id}>
                                         <strong>{item.action}</strong>
-                                        <span>{item.priority || "No priority linked"} | {item.timeframe || "No timeframe"}</span>
-                                        <small>{item.owner || "No owner"} | {item.status}</small>
+                                        <span>{workspace.priorities.find(p => p.id === item.priorityId)?.title || item.priority || "No priority linked"} | {item.timeframe || "No timeframe"}</span>
+                                        <small>{item.owner || "No owner"} | {item.status} (user-entered)</small>
+                                        <button type="button" onClick={() => editRecord("actions", item)}>Edit</button>
                                         <button type="button" onClick={() => removeItem("actions", item.id)}>Remove</button>
                                     </article>
                                 ))}
@@ -798,6 +863,7 @@ export default function MunicipalPlanningWorkspace() {
                     </section>
                 </main>
             </div>
+            </details>
         </div>
     );
 }

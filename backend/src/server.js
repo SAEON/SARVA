@@ -3,6 +3,7 @@ import {fireDetectionsRouter} from "./routes/fireDetections.js";
 import "dotenv/config";
 import path from "path";
 import { fileURLToPath } from "url";
+import { accessibilityRouter } from "./routes/accessibility.js";
 import express from "express";
 import cors from "cors";
 import { healthRouter } from "./routes/health.js";
@@ -19,20 +20,29 @@ import { forecastRiskRouter } from "./routes/forecastRisk.js";
 import { libraryAdminRouter } from "./routes/libraryAdmin.js";
 import { alertsRouter } from "./routes/alerts.js";
 import { municipalProfilesRouter } from "./routes/municipalProfiles.js";
+import { mdb2026Router } from "./routes/mdb2026.js";
 import { startCatalogueSyncScheduler } from "./services/catalogueSync.js";
+import { analyticsRouter, trackApi } from "./routes/analytics.js";
 
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+// Forwarded client IPs are accepted only from explicitly configured proxies.
+if (process.env.ANALYTICS_TRUST_PROXY_CIDRS) {
+  app.set('trust proxy', process.env.ANALYTICS_TRUST_PROXY_CIDRS.split(',').map(value => value.trim()).filter(Boolean));
+}
 app.use(cors({ origin: true }));
 app.use(express.json());
+app.use(trackApi);
+app.use("/api", analyticsRouter);
 
 
 
 app.get("/", (req, res) => res.json({ name: "sarva-api", status: "ok" }));
 app.use("/api", healthRouter);
+app.use("/api", accessibilityRouter);
 app.use("/api/site", siteRouter);
 app.use("/api/nav", navRouter);
 app.use("/api", glossaryRouter);
@@ -47,6 +57,7 @@ app.use("/api", disasterEventsRouter);
 app.use("/api", rainfallRouter);
 app.use("/api", forecastRiskRouter);
 app.use("/api", municipalProfilesRouter);
+app.use("/api", mdb2026Router);
 app.use("/api", libraryAdminRouter);
 
 

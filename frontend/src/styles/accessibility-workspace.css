@@ -1,0 +1,13 @@
+.access-workspace { background:var(--surface); padding:20px; border:1px solid var(--border); border-radius:10px; line-height:1.6; }
+.access-workspace h1 { font-size:30px; margin:8px 0; }
+.access-toolbar { display:flex; flex-wrap:wrap; gap:14px; align-items:center; margin:18px 0; }
+.access-workspace button { padding:9px 12px; margin:4px; cursor:pointer; border:1px solid var(--border); border-radius:6px; background:var(--surface-soft); color:var(--text); }
+.access-workspace button:disabled { opacity:.5; cursor:not-allowed; }
+.access-layout { display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:18px; }
+.access-map { height:650px; border-radius:8px; }
+.access-layout aside { max-height:650px; overflow:auto; }
+.access-layout aside label { display:block; margin:12px 0; }
+.access-layout aside input,.access-layout aside select { display:block; width:100%; box-sizing:border-box; padding:10px; font:inherit; }
+.access-workspace details { margin:12px 0; }
+.access-workspace summary { cursor:pointer; font-weight:700; }
+@media(max-width:850px){.access-layout{grid-template-columns:1fr}.access-map{height:450px}.access-layout aside{max-height:none}}

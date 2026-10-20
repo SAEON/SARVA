@@ -1,4 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import AnalyticsTracker from "./AnalyticsTracker.jsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import logo from "../assets/SARVA_final-logo-01a.png";
 import AuthPanel from "./AuthPanel";
@@ -34,7 +35,6 @@ const fallbackNav = [
         items: [
             { label: "Municipal Risk Profiler", to: "/municipal-risk-profiler" },
             { label: "Municipal Planning Workspace", to: "/municipal-planning-workspace" },
-            { label: "MDB 2026 Boundary Preview", to: "/mdb-2026-boundaries" },
             { label: "Rainfall Risk Layers", to: "/#risk-map" },
             { label: "SARVA Atlas Gallery", href: "https://sarva.saeon.ac.za/atlas/", external: true },
             { label: "2017 Agriculture Census", href: "https://sarvamaps.saeon.ac.za/agri-census/", external: true },
@@ -208,6 +208,7 @@ export default function Header() {
 
     return (
         <header className="sarva-header" ref={rootRef}>
+            <AnalyticsTracker />
             <div className="sarva-header__inner">
                 <div className="sarva-brand">
                     <NavLink to="/" className="sarva-logoLink" aria-label="SARVA Home">

@@ -20,6 +20,8 @@
     "import:municipal-finance-indicators": "node scripts/import-municipal-finance-indicators.js",
     "download:mdb-2026-boundaries": "node scripts/download-mdb-2026-boundaries.js",
     "import:mdb-2026-boundaries": "node scripts/import-mdb-2026-boundaries.js",
+    "download:topography": "node scripts/download-opentopography-dem.js",
+    "import:topography": "node scripts/import-topography-layers.js",
     "sync:catalogue": "node scripts/sync-catalogue.js",
     "refresh:catalogue-ev": "node scripts/refresh-catalogue-essential-variables.js",
     "check:links": "node scripts/check-library-links.js"
@@ -28,6 +30,7 @@
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "geoip-lite": "^1.4.10",
     "pg": "^8.18.0"
   },
   "devDependencies": {

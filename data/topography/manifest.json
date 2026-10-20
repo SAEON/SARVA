@@ -1,0 +1,31 @@
+{
+  "name": "SARVA topography derived layer workspace",
+  "status": "prepared",
+  "source_candidates": [
+    {
+      "name": "NASADEM / SRTM-derived elevation",
+      "use": "Open global DEM candidate for contours and slope zones"
+    },
+    {
+      "name": "Copernicus DEM GLO-30",
+      "use": "Higher-quality global DEM candidate subject to licence and attribution review"
+    },
+    {
+      "name": "OpenTopography global DEM services",
+      "use": "Reproducible DEM extraction and citation workflow"
+    }
+  ],
+  "expected_files": [
+    "dem-tiles/*.tif",
+    "topography_contours.geojson",
+    "topography_slope_zones.geojson"
+  ],
+  "postgis_tables": [
+    "sarva.topography_contours",
+    "sarva.topography_slope_zones"
+  ],
+  "martin_tile_paths": [
+    "/tiles/topography_contours/{z}/{x}/{y}",
+    "/tiles/topography_slope_zones/{z}/{x}/{y}"
+  ]
+}
