@@ -3,6 +3,7 @@ import AnalyticsTracker from "./AnalyticsTracker.jsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import logo from "../assets/SARVA_final-logo-01a.png";
 import AuthPanel from "./AuthPanel";
+import { useCurrentUser } from "../hooks/useCurrentUser";
 import { apiUrl } from "../config/api";
 import { useJsonResource } from "../hooks/useJsonResource";
 import "../styles/header.css";
@@ -81,6 +82,7 @@ const fallbackNav = [
 export default function Header() {
     const location = useLocation();
     const navigate = useNavigate();
+    const { isAdmin } = useCurrentUser();
     const [openDropdown, setOpenDropdown] = useState({
         key: null,
         pathname: location.pathname,
@@ -338,6 +340,15 @@ export default function Header() {
                                 </div>
                             );
                         })
+                    )}
+                    {isAdmin && (
+                        <NavLink
+                            to="/analytics"
+                            className={({ isActive }) => "sarva-nav__link" + (isActive ? " is-active" : "")}
+                            onClick={() => setOpenKey(null)}
+                        >
+                            Analytics
+                        </NavLink>
                     )}
                 </nav>
 
