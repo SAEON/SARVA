@@ -19,6 +19,7 @@ const Resources = lazy(() => import("./pages/Resources.jsx"));
 const NationalPolicy = lazy(() => import("./pages/NationalPolicy.jsx"));
 const SearchRoute = lazy(() => import("./routes/SearchRoute.jsx"));
 const About = lazy(() => import("./pages/About.jsx"));
+const Analytics = lazy(() => import("./pages/Analytics.jsx"));
 const MunicipalRiskProfiler = lazy(() => import("./pages/MunicipalRiskProfiler.jsx"));
 const MunicipalPlanningWorkspace = lazy(() => import("./pages/MunicipalPlanningWorkspace.jsx"));
 const MdbBoundaryPreview = lazy(() => import("./pages/MdbBoundaryPreview.jsx"));
@@ -42,6 +43,7 @@ const router = createBrowserRouter([
         element: <AppLayout />,
         errorElement: <RouteError />,
         children: [
+            { path: "/analytics", element: <Suspense fallback={<PageLoading />}><Analytics /></Suspense> },
             {
                 path: "/explore",
                 element: (

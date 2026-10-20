@@ -43,3 +43,6 @@ data/topography/opentopography-dem-download.json
 
 # PM2
 .pm2/
+
+# macOS resource-fork metadata
+._*

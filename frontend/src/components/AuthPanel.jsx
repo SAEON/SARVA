@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import { AUTH_CHANGED_EVENT, AUTH_TOKEN_KEY, notifyAuthChanged } from "../hooks/useCurrentUser";
 
@@ -147,6 +148,7 @@ export default function AuthPanel() {
                             <strong>{user.displayName}</strong>
                             <span>{user.email}</span>
                             {roleLabels && <small>{roleLabels}</small>}
+                            {user.roles?.some(role => role.name === 'admin') && <Link to="/analytics" onClick={() => setOpen(false)}>Analytics</Link>}
                             <button type="button" onClick={signOut}>
                                 Sign out
                             </button>

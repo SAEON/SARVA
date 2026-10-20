@@ -22,14 +22,21 @@ import { alertsRouter } from "./routes/alerts.js";
 import { municipalProfilesRouter } from "./routes/municipalProfiles.js";
 import { mdb2026Router } from "./routes/mdb2026.js";
 import { startCatalogueSyncScheduler } from "./services/catalogueSync.js";
+import { analyticsRouter, trackApi } from "./routes/analytics.js";
 
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+// Forwarded client IPs are accepted only from explicitly configured proxies.
+if (process.env.ANALYTICS_TRUST_PROXY_CIDRS) {
+  app.set('trust proxy', process.env.ANALYTICS_TRUST_PROXY_CIDRS.split(',').map(value => value.trim()).filter(Boolean));
+}
 app.use(cors({ origin: true }));
 app.use(express.json());
+app.use(trackApi);
+app.use("/api", analyticsRouter);
 
 
 
