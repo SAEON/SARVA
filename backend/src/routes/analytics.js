@@ -19,7 +19,7 @@ export function recordAnalytics(kind, path, sessionId = null, status = null, dur
 export function trackApi(req, res, next) {
   const start = performance.now();
   res.once('finish', () => {
-    if (!req.originalUrl.startsWith('/api/') || req.originalUrl.startsWith('/api/analytics') || req.originalUrl.startsWith('/api/auth')) return;
+    if (!req.originalUrl.startsWith('/api/') || req.originalUrl.startsWith('/api/analytics') || req.originalUrl.startsWith('/api/auth') || req.originalUrl.split('?')[0] === '/api/data-health') return;
     // Store route templates, never query strings, credentials or arbitrary URL values.
     const route = req.route?.path;
     if (typeof route === 'string') recordAnalytics('api', `${req.baseUrl || ''}${route}`, null, res.statusCode, Math.round(performance.now() - start));

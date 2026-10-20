@@ -1,3 +1,4 @@
+param([switch]$RecreateApi)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 Set-Location -LiteralPath $projectRoot
@@ -6,10 +7,17 @@ if ($LASTEXITCODE -ne 0) { throw 'Start the existing local SARVA backend/databas
 $apiName = 'sarva-analytics-api'
 $webName = 'sarva-analytics-web'
 $existing = @(docker ps -a --format '{{.Names}}')
+if ($RecreateApi -and $apiName -in $existing) {
+  docker stop $apiName
+  if ($LASTEXITCODE -ne 0) { throw 'Could not stop the preview API.' }
+  docker rm $apiName
+  if ($LASTEXITCODE -ne 0) { throw 'Could not remove the stopped preview API.' }
+  $existing = @($existing | Where-Object { $_ -ne $apiName })
+}
 if ($apiName -notin $existing) {
   $argsList = @('run', '-d', '--name', $apiName, '--network', 'sarva_default', '-p', '127.0.0.1:5061:5050')
   foreach ($line in $backend[0].Config.Env) {
-    if ($line -match '^(DB_HOST|DB_PORT|DB_NAME|DB_USER|DB_PASSWORD|AUTH_SECRET)=') { $argsList += @('--env', $line) }
+    if ($line -match '^(DB_HOST|DB_PORT|DB_NAME|DB_USER|DB_PASSWORD|AUTH_SECRET|FIRMS_MAP_KEY)=') { $argsList += @('--env', $line) }
   }
   $argsList += @('--env', 'CATALOGUE_SYNC_ENABLED=false', '--mount', "type=bind,source=$projectRoot\backend\src,target=/app/src,readonly", '--mount', "type=bind,source=$projectRoot\backend\package.json,target=/app/package.json,readonly", '--mount', "type=bind,source=$projectRoot\backend\package-lock.json,target=/app/package-lock.json,readonly", '--entrypoint', 'sh', 'sarva-backend', '-c', 'npm ci --omit=dev --ignore-scripts --no-audit --no-fund && node src/server.js')
   & docker @argsList

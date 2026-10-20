@@ -14,7 +14,7 @@ function send(body) {
 export default function AnalyticsTracker() {
   const { pathname, key } = useLocation();
   useEffect(() => {
-    if (pathname === '/analytics' || navigator.globalPrivacyControl || navigator.doNotTrack === '1') return;
+    if (['/analytics', '/data-health'].includes(pathname) || navigator.globalPrivacyControl || navigator.doNotTrack === '1') return;
     let view;
     try {
       const now = Date.now();

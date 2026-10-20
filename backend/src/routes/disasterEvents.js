@@ -2,6 +2,10 @@ import { Router } from 'express';
 export const disasterEventsRouter = Router();
 const sourceUrl = 'https://www.gdacs.org/';
 let cache, pending;
+let lastAttemptAt=null, failed=false;
+export function disasterHealthSnapshot() {
+ return {configured:true,updatedAt:cache?.updatedAt,lastAttemptAt,failed,count:cache?.geojson.features.length??null};
+}
 export function normalizeEvents(input) {
  if(input?.type !== 'FeatureCollection' || !Array.isArray(input.features)) throw Error('Invalid GDACS response');
  const seen = new Set();
@@ -14,15 +18,17 @@ export function normalizeEvents(input) {
  })};
 }
 async function refresh(){
+ lastAttemptAt=new Date().toISOString();
  const params=new URLSearchParams({geometryArea:'POLYGON((10 -40,55 -40,55 -10,10 -10,10 -40))',days:'30'});
  const r=await fetch(`https://www.gdacs.org/gdacsapi/api/Events/geteventlist/eventsbyarea?${params}`,{signal:AbortSignal.timeout(45000)});
  if(!r.ok)throw Error('GDACS unavailable');
  cache={geojson:normalizeEvents(await r.json()),updatedAt:new Date().toISOString()};
+ failed=false;
 }
 disasterEventsRouter.get('/disaster-events',async(req,res)=>{
  try{
   if(!cache||Date.now()-Date.parse(cache.updatedAt)>30*60000){if(!pending)pending=refresh().finally(()=>{pending=null;});await pending;}
   const days=req.query.days==='7'?7:30,cutoff=Date.now()-days*86400000;
   res.json({status:'ok',sourceUrl,updatedAt:cache.updatedAt,days,geojson:{type:'FeatureCollection',features:cache.geojson.features.filter(f=>Date.parse(f.properties.todate)>=cutoff)}});
- }catch{res.status(502).json({status:'unavailable',message:'GDACS events could not be refreshed. Try again later.',sourceUrl});}
+ }catch{failed=true;res.status(502).json({status:'unavailable',message:'GDACS events could not be refreshed. Try again later.',sourceUrl});}
 });

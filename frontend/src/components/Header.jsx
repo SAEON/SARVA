@@ -343,6 +343,15 @@ export default function Header() {
                     )}
                     {isAdmin && (
                         <NavLink
+                            to="/data-health"
+                            className={({ isActive }) => "sarva-nav__link" + (isActive ? " is-active" : "")}
+                            onClick={() => setOpenKey(null)}
+                        >
+                            Data health
+                        </NavLink>
+                    )}
+                    {isAdmin && (
+                        <NavLink
                             to="/analytics"
                             className={({ isActive }) => "sarva-nav__link" + (isActive ? " is-active" : "")}
                             onClick={() => setOpenKey(null)}

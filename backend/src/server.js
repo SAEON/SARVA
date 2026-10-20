@@ -7,6 +7,7 @@ import { accessibilityRouter } from "./routes/accessibility.js";
 import express from "express";
 import cors from "cors";
 import { healthRouter } from "./routes/health.js";
+import { dataHealthRouter } from "./routes/dataHealth.js";
 import { siteRouter } from "./routes/site.js";
 import { navRouter } from "./routes/nav.js";
 import { glossaryRouter } from "./routes/glossary.js";
@@ -42,6 +43,7 @@ app.use("/api", analyticsRouter);
 
 app.get("/", (req, res) => res.json({ name: "sarva-api", status: "ok" }));
 app.use("/api", healthRouter);
+app.use("/api", dataHealthRouter);
 app.use("/api", accessibilityRouter);
 app.use("/api/site", siteRouter);
 app.use("/api/nav", navRouter);
