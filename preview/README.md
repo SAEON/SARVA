@@ -135,3 +135,7 @@ ssh -N -L 5180:127.0.0.1:5180 marc@192.168.115.77
 ```
 
 Then open http://127.0.0.1:5180. DNS, a certificate, HTTPS cookies, and closing all direct SARVA access paths are still required before internet hosting. Preserve the shared host Nginx routes for other applications.
+
+## Internal server landing page
+
+compose.server-internal.yml explicitly permits http://192.168.115.77 with full-length credentials. This is for the trusted internal network only: HTTP does not encrypt passwords or cookies. It cannot use local short-password credentials. Keep the gateway on loopback, route only the host Nginx SARVA root to 5180, and bind the original frontend port 8090 to loopback to prevent bypass. Preserve other host Nginx application locations. For public internet hosting use HTTPS mode and Secure cookies instead.
