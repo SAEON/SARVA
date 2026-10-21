@@ -335,3 +335,7 @@ To remove the database volume and start from a completely fresh DB:
 ```sh
 docker compose down -v
 ```
+
+### Runtime for the dependency security update
+
+The backend and frontend Docker build stage require Node 24. For non-Docker backend development, use Node 24 and `npm ci`; `npm run dev` uses built-in `node --watch`. The protected preview auth service remains separately configured; do not remove or bypass it when deploying the dependency update. See docs/PRODUCTION-READINESS.md for local verification and pending production acceptance.

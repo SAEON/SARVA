@@ -1,7 +1,7 @@
 import {municipalMapScale} from "../config/municipalMapScale";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
-import maplibregl from "maplibre-gl";
+import maplibregl from "../config/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { apiUrl, martinUrl } from "../config/api";
 import { isExpiredForecast } from "../config/forecastFreshness";

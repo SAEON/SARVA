@@ -1,5 +1,5 @@
 import {useEffect,useState} from 'react';
-import maplibregl from 'maplibre-gl';
+import maplibregl from '../config/maplibre';
 import {apiUrl} from '../config/api';
 export default function FireDetectionsLayer({map,ready,visible}){
  const [hours,setHours]=useState('24'),[data,setData]=useState(null),[message,setMessage]=useState('Loading satellite detections…');
