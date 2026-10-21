@@ -28,4 +28,12 @@ Record the deployed commit, image IDs, migration state, backup reference, verifi
 
 ## Pending evidence
 
-Production host and hostname, TLS, credentials rotation, historical dump assessment, image scan, backup restore test, runtime checks and cutover approval are not yet verified. Local Docker inspection was unavailable during this audit because the active WSL distribution could not find Docker. This document is a checklist, not a claim of production readiness.
+Production host and hostname, TLS, credentials rotation, historical dump assessment, image scan, backup restore test, runtime checks and cutover approval are not yet verified. Docker became available after Docker Desktop was started; see the follow-up audit below. This document is a checklist, not a claim of production readiness.
+
+## Local runtime follow-up, 21 October 2026
+
+Docker Desktop is reachable. Recreating Martin and the local preview gateway refreshed stale Docker Desktop file mounts; the source files already existed. Restarted the local analytics API/web and frontend. HTTP 200 verified at ports 5174 (data health page), 5061 and 8090 (API health), 8090/tiles/catalog, and 5180/__preview/login. Database, backend and Martin are healthy. No database volumes were removed and no server was changed.
+
+The older local stack is based in /home/private/sarva, whereas the review frontend/API use the Windows Git checkout. It is not a production-candidate image validation. The older local backend reports development AUTH_SECRET and database password defaults (values not copied into this report). FIRMS is configured. Its frontend binds 8090 on all interfaces; the reviewed main Compose source uses loopback. Runtime drift must be checked on the target server separately.
+
+Backend lockfile audit of this release branch reported 7 production dependency findings: 1 critical, 2 high, 3 moderate and 1 low. Affected packages: proxy-addr, path-to-regexp, ip-address, geoip-lite, qs, sprintf-js and body-parser. npm proposes a direct geoip-lite version change for part of the chain; do not use an unreviewed forced downgrade. Resolve dependencies, test analytics/IP handling and API routes, then repeat the audit and build fresh release images. This is an npm advisory audit, not an operating-system/image scan or proof of exploitability.
