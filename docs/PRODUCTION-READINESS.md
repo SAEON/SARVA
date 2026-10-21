@@ -77,3 +77,11 @@ Deploy this reviewed release on the existing development server only; this is no
 6. Keep previous images and backups until acceptance. Do not run the repository's host-wide container/build-cache prune script automatically on this shared DS Lab host. Review cleanup scope separately after verification; never remove database volumes.
 
 Deployment has not been performed by these instructions. Capture the actual server commit, image IDs, smoke checks and preview-login result after the operator completes them.
+
+## Existing development-server deployment verified, 21 October 2026
+
+Operator deployed release branch chore/production-readiness through 582d7ca to /opt/sarva on ulwdslabsdev01 (192.168.115.77). This is the existing internal development server, not a new production/public-internet cutover. Pre-update backups completed: approximately 99 MB database dump, configuration archive and prior image IDs under the operator's timestamped ~/sarva-backups directory.
+
+App rebuild/start completed; migrations 055 and 056 were already applied. Backend, database and Martin were healthy, and frontend port 8090 was loopback-only. Only preview-gateway was recreated using preview/compose.server-internal.yml; existing preview-auth and credential files were retained. An initial 502 immediately after gateway startup cleared on follow-up: direct frontend API returned 200 and preview gateway returned 401. Operator then confirmed host Nginx also returns 401 anonymously, the existing dev login works and maps work. Analytics and Data Health acceptance after this deployment have not been separately confirmed.
+
+Image cleanup is authorised but not yet confirmed complete. On this shared host, retain the prior backend/frontend images recorded in image-ids.txt with explicit rollback tags before pruning. Limit cleanup to dangling images older than 24 hours with docker image prune --filter until=24h; do not use image prune -a, system prune, container prune, builder prune or volume prune as part of this step. Docker preserves images referenced by containers; explicit rollback tags also protect the previous release from dangling-image cleanup. Capture before/after disk usage and recheck app/preview status after cleanup. Update this record when the operator confirms completion.
