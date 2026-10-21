@@ -187,7 +187,9 @@ export default function Search() {
     const [page, setPage] = useState(1);
     const debouncedText = useDebouncedValue(text);
 
-    useEffect(() => {
+    const [filterSearch, setFilterSearch] = useState(null);
+    if (filterSearch !== location.search) {
+        setFilterSearch(location.search);
         const params = new URLSearchParams(location.search);
         setText(params.get("q") || params.get("text") || "");
         setCollection(params.get("collection") || "");
@@ -198,7 +200,7 @@ export default function Search() {
         setEssentialVariable(params.get("ev") || "");
         setSingleSitesOnly(params.get("singleSitesOnly") === "true");
         setPage(1);
-    }, [location.search]);
+    }
     const effectiveText = useMemo(
         () => (essentialVariable && isFrameworkOnlyQuery(debouncedText, essentialVariable) ? "" : debouncedText.trim()),
         [debouncedText, essentialVariable]

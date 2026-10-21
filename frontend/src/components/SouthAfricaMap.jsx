@@ -2,7 +2,7 @@ import DisasterEventsLayer from "./DisasterEventsLayer";
 import MapLayerPicker from "./MapLayerPicker";
 import FireDetectionsLayer from "./FireDetectionsLayer";
 import { useEffect, useMemo, useRef, useState } from "react";
-import maplibregl from "maplibre-gl";
+import maplibregl from "../config/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { apiUrl, martinUrl } from "../config/api";
 
@@ -274,6 +274,7 @@ export default function SouthAfricaMap({ activeMode, onModeChange, focusHighligh
     const focusMarkerRef = useRef(null);
     const clickPopupStationRef = useRef(null);
     const [ready, setReady] = useState(false);
+    const [layerMap, setLayerMap] = useState(null);
     const [tileError, setTileError] = useState(false);
     const [forecastRiskLayer, setForecastRiskLayer] = useState(null);
     const [forecastRiskStatus, setForecastRiskStatus] = useState({ source: "loading", message: null });
@@ -541,7 +542,7 @@ export default function SouthAfricaMap({ activeMode, onModeChange, focusHighligh
         map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
         map.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-left");
 
-        map.on("load", () => setReady(true));
+        map.on("load", () => { setLayerMap(map); setReady(true); });
         map.on("error", (event) => {
             if (String(event?.error?.message || "").includes("municipal_boundaries")) {
                 setTileError(true);
@@ -954,8 +955,8 @@ export default function SouthAfricaMap({ activeMode, onModeChange, focusHighligh
             <div className="sarva-map__toolbar">
                 <MapLayerPicker value={activeMode} onChange={mode=>{if(!FORECAST_LAYER_BY_MODE[mode])setForecastInfoOpen(false);onModeChange?.(mode);}} />
             </div>
-            <DisasterEventsLayer map={mapRef.current} ready={ready} visible={activeMode === "disaster-events"} />
-            <FireDetectionsLayer map={mapRef.current} ready={ready} visible={activeMode === "satellite-fires"} />
+            <DisasterEventsLayer map={layerMap} ready={ready} visible={activeMode === "disaster-events"} />
+            <FireDetectionsLayer map={layerMap} ready={ready} visible={activeMode === "satellite-fires"} />
             {forecastRiskVisible && (
                 <div className="sarva-map__legend sarva-map__legend--forecast" aria-label={`${forecastLayerMeta.label} legend`}>
                     <p className="sarva-map__authorityNotice">SARVA screening of <a href="https://www.ecmwf.int/en/forecasts/datasets/open-data" target="_blank" rel="noreferrer">ECMWF Open Data ↗</a>. Not an official forecast or warning. <a href="https://www.weathersa.co.za/warnings" target="_blank" rel="noreferrer">Official forecasts &amp; warnings: SAWS ↗</a></p>

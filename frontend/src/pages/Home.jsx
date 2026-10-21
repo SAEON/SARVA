@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import LibraryEditModal from "../components/LibraryEditModal";
 import dstiLogo from "../assets/logos/DSTI.png";
@@ -1222,14 +1222,18 @@ export default function Home() {
         ));
     };
 
-    useEffect(() => {
+    const updatePanelKey = updatePanelItems.map((item) => item.id).join("|");
+    const [previousUpdatePanelKey, setPreviousUpdatePanelKey] = useState(null);
+    if (previousUpdatePanelKey !== updatePanelKey) {
+        setPreviousUpdatePanelKey(updatePanelKey);
         setActiveUpdateIndex(0);
-    }, [updatePanelItems.map((item) => item.id).join("|")]);
+    }
 
-    useEffect(() => {
-        const params = new URLSearchParams(location.search);
-        if (params.get("supportingData") === "true") setShowSupportingData(true);
-    }, [location.search]);
+    const [previousSupportingSearch, setPreviousSupportingSearch] = useState(null);
+    if (previousSupportingSearch !== location.search) {
+        setPreviousSupportingSearch(location.search);
+        if (new URLSearchParams(location.search).get("supportingData") === "true") setShowSupportingData(true);
+    }
 
     function closeSupportingData() {
         setShowSupportingData(false);

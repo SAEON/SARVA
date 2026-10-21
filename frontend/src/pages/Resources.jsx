@@ -112,7 +112,9 @@ export default function Resources() {
     const debouncedSearch = useDebouncedValue(search);
     const { isAdmin, token } = useCurrentUser();
 
-    useEffect(() => {
+    const [filterSearch, setFilterSearch] = useState(null);
+    if (filterSearch !== location.search) {
+        setFilterSearch(location.search);
         const params = new URLSearchParams(location.search);
         setSearch(params.get("search") || params.get("q") || "");
         setResourceType(params.get("resource_type") || "");
@@ -120,7 +122,7 @@ export default function Resources() {
         setKeyword(params.get("keyword") || "");
         setResourceGroup(params.get("resource_group") || params.get("group") || "");
         setPage(1);
-    }, [location.search]);
+    }
 
     const path = useMemo(
         () =>

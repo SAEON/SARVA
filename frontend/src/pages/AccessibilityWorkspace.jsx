@@ -1,5 +1,5 @@
 import {useEffect,useRef,useState} from 'react';
-import maplibregl from 'maplibre-gl';
+import maplibregl from '../config/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import {apiUrl,martinUrl} from '../config/api';
 import {useCurrentUser} from '../hooks/useCurrentUser';

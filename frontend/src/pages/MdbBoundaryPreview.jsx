@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import maplibregl from "maplibre-gl";
+import maplibregl from "../config/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { apiUrl, martinUrl } from "../config/api";
 import "../styles/mdb-boundary-preview.css";
@@ -527,6 +527,20 @@ export function MdbBoundaryMap({ embedded = false, activeSignal = null, selected
     const [municipalityOptions, setMunicipalityOptions] = useState([]);
     const [wardOptions, setWardOptions] = useState([]);
     const [filter, setFilter] = useState({ district: "", municipality: "", ward: "" });
+    const [previousSignal, setPreviousSignal] = useState(undefined);
+    if (previousSignal !== activeSignal) {
+        setPreviousSignal(activeSignal);
+        if (activeSignal?.topographyLayer) {
+            setVisible(current => ({ ...current, slope: true, contours: true }));
+            setSignalStatus("loading topography");
+        } else setSignalStatus(activeSignal?.forecastLayer ? "loading" : activeSignal ? "manual" : "idle");
+    }
+    const wardRequestKey = `${filter.district}:${filter.municipality}`;
+    const [previousWardRequest, setPreviousWardRequest] = useState(wardRequestKey);
+    if (previousWardRequest !== wardRequestKey) {
+        setPreviousWardRequest(wardRequestKey);
+        if (!filter.district && !filter.municipality) setWardOptions([]);
+    }
     const layersBySource = useMemo(() => ({
         districts: ["districts-fill", "districts-line"],
         locals: ["locals-fill", "locals-line"],
@@ -643,9 +657,6 @@ export function MdbBoundaryMap({ embedded = false, activeSignal = null, selected
         const map = mapRef.current;
         if (!activeSignal?.topographyLayer) return undefined;
 
-        setVisible((current) => ({ ...current, slope: true, contours: true }));
-        setSignalStatus("loading topography");
-
         const controller = new AbortController();
         Promise.all([
             fetch(apiUrl("/api/topography/status"), { signal: controller.signal }).then((response) => response.json()),
@@ -719,7 +730,6 @@ export function MdbBoundaryMap({ embedded = false, activeSignal = null, selected
             params.set("district", filter.district);
             params.set("limit", "1000");
         } else {
-            setWardOptions([]);
             return undefined;
         }
 
@@ -751,7 +761,6 @@ export function MdbBoundaryMap({ embedded = false, activeSignal = null, selected
     useEffect(() => {
         const map = mapRef.current;
         if (!map || !activeSignal?.forecastLayer) {
-            if (!activeSignal?.topographyLayer) setSignalStatus(activeSignal ? "manual" : "idle");
             if (map?.getSource("planning_signal")) map.getSource("planning_signal").setData(EMPTY_FEATURE_COLLECTION);
             if (map?.getLayer("planning-signal-heat")) map.setPaintProperty("planning-signal-heat", "heatmap-opacity", 0);
             if (map?.getLayer("planning-signal-points")) map.setPaintProperty("planning-signal-points", "circle-opacity", 0);
@@ -759,7 +768,6 @@ export function MdbBoundaryMap({ embedded = false, activeSignal = null, selected
         }
 
         const controller = new AbortController();
-        setSignalStatus("loading");
 
         function applyForecastLayer() {
             fetch(apiUrl(`/api/forecast-risk/layer?layer=${encodeURIComponent(activeSignal.forecastLayer)}`), {
@@ -978,8 +986,7 @@ export function MdbBoundaryMap({ embedded = false, activeSignal = null, selected
                             type="button"
                             onClick={() => {
                                 setFilter({ district: "", municipality: "", ward: "" });
-                                setWardOptions([]);
-                                mapRef.current?.fitBounds(SOUTH_AFRICA_BOUNDS, { padding: 32, duration: 650 });
+                                                    mapRef.current?.fitBounds(SOUTH_AFRICA_BOUNDS, { padding: 32, duration: 650 });
                             }}
                         >
                             Clear search & show country

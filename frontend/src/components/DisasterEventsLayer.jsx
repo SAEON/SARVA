@@ -1,5 +1,5 @@
 import {useEffect,useState} from 'react';
-import maplibregl from 'maplibre-gl';
+import maplibregl from '../config/maplibre';
 import {apiUrl} from '../config/api';
 const types={FL:'Floods',TC:'Tropical cyclones',EQ:'Earthquakes',DR:'Droughts',WF:'Wildfires',VO:'Volcanic events',TS:'Tsunamis'};
 const empty={type:'FeatureCollection',features:[]};

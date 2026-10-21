@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const STATUS_OPTIONS = [
     ["unchecked", "Not checked"],
@@ -12,18 +12,13 @@ function keywordsToText(value) {
     return Array.isArray(value) ? value.join(", ") : "";
 }
 
-export default function LibraryEditModal({ kind, record, onClose, onSave }) {
-    const [form, setForm] = useState(null);
-    const [saving, setSaving] = useState(false);
-    const [message, setMessage] = useState("");
+export default function LibraryEditModal(props) {
+    if (!props.record) return null;
+    return <LibraryEditForm key={JSON.stringify(props.record)} {...props} />;
+}
 
-    useEffect(() => {
-        if (!record) {
-            setForm(null);
-            return;
-        }
-
-        setForm({
+function LibraryEditForm({ kind, record, onClose, onSave }) {
+    const [form, setForm] = useState(() => ({
             title: record.title || "",
             url: record.url || "",
             author: record.author || "",
@@ -36,11 +31,9 @@ export default function LibraryEditModal({ kind, record, onClose, onSave }) {
             link_status_code: record.link_status_code || "",
             logo_url: record.logo_url || "",
             admin_notes: record.admin_notes || "",
-        });
-        setMessage("");
-    }, [record]);
-
-    if (!record || !form) return null;
+    }));
+    const [saving, setSaving] = useState(false);
+    const [message, setMessage] = useState("");
 
     function update(field, value) {
         setForm((current) => ({ ...current, [field]: value }));

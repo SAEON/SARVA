@@ -6,27 +6,20 @@ import "../styles/glossary.css";
 
 const EMPTY_ROWS = [];
 
-function GlossaryEditModal({ record, onClose, onSave }) {
-    const [form, setForm] = useState(null);
-    const [saving, setSaving] = useState(false);
-    const [message, setMessage] = useState("");
+function GlossaryEditModal(props) {
+    if (!props.record) return null;
+    return <GlossaryEditForm key={JSON.stringify(props.record)} {...props} />;
+}
 
-    useEffect(() => {
-        if (!record) {
-            setForm(null);
-            return;
-        }
-
-        setForm({
+function GlossaryEditForm({ record, onClose, onSave }) {
+    const [form, setForm] = useState(() => ({
             term: record.term || "",
             definition: record.definition || "",
             category: record.category || "",
             source: record.source || "",
-        });
-        setMessage("");
-    }, [record]);
-
-    if (!record || !form) return null;
+    }));
+    const [saving, setSaving] = useState(false);
+    const [message, setMessage] = useState("");
 
     function update(field, value) {
         setForm((current) => ({ ...current, [field]: value }));
@@ -113,12 +106,12 @@ export default function Glossary() {
         glossaryResponse?.status === "ok" && Array.isArray(glossaryResponse.data)
             ? glossaryResponse.data
             : EMPTY_ROWS;
-    const rows = [
+    const rows = useMemo(() => [
         ...createdRows,
         ...apiRows
             .filter((row) => !deletedIds.has(row.id))
             .map((row) => overrides[row.id] || row),
-    ];
+    ], [createdRows, apiRows, deletedIds, overrides]);
 
     useEffect(() => {
         if (error) console.error(error);
