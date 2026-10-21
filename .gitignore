@@ -47,3 +47,8 @@ data/topography/opentopography-dem-download.json
 
 # macOS resource-fork metadata
 ._*
+
+# Database snapshots belong in protected backup storage, never Git.
+*.dump
+*.sql.gz
+*.backup
