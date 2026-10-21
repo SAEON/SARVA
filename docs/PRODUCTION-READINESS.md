@@ -49,3 +49,13 @@ MapLibre testing caught and corrected its v6 module-worker requirement. Municipa
 Preview configurations, passwords and server deployment remain unchanged. Existing local preview gateway still rejects anonymous pages, APIs, tiles and assets with 401. End-to-end login with the existing preview password could not be repeated because the private local-login note is absent; no password was reset or disclosed. Security tests cover correct/incorrect login, session expiry, origin enforcement, throttling, revocation and permission separation.
 
 Full frontend lint is not clean: 24 errors and 3 warnings, matching the unchanged main baseline under the same installed lint tools. These existing React hook/ref issues require a separate focused cleanup. Final acceptance still includes manual preview sign-in and an image/OS scan before production deployment. No external source's live availability is certified by dependency/unit tests.
+
+## Lint and preview acceptance follow-up, 21 October 2026
+
+Supersedes the earlier open lint/manual-login items above. Full frontend lint now passes with zero errors and zero warnings, both against the mounted candidate and inside its freshly built Node 24 Docker build stage. Production build passed. No lint rules were disabled. Editor forms initialise on record identity, URL-driven state resets are guarded by changed inputs, derived defaults stay derived, and map-layer consumers receive a state-held map instance after load. Request state resets happen when their inputs change rather than through synchronous state-setting effects.
+
+User confirmed that the existing local preview username/password opens SARVA at http://127.0.0.1:5180. The seven preview-security tests passed again. Existing preview configuration and credentials were preserved, and the server was untouched. Municipal search for Cape Town, selected source values, map zoom/colour rendering and URL-driven metric selection were checked on the candidate. This is local acceptance; target-server and OS/image scanning remain separate production checks.
+
+All dependency/lint changes remain local pending the requested GitHub push. Keep the essential-variable feature branch separate.
+
+Final browser checks also confirmed the document URL query (?q=water) populates the search field and returns filtered records, and the municipal planning workspace renders its map without React update-depth/type/reference errors. Full lint and Docker build passed after these refactors. GitHub and the server are unchanged by this follow-up.

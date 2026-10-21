@@ -410,12 +410,6 @@ function indexInputSummary(index) {
     return `${shown}${more}`;
 }
 
-function htmlList(items) {
-    const cleanItems = items.filter(Boolean);
-    if (cleanItems.length === 0) return "<p>Not available.</p>";
-    return `<ul>${cleanItems.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
-}
-
 function pdfSafe(value) {
     return String(value ?? "")
         .normalize("NFKD")
@@ -509,10 +503,6 @@ function buildPdf(actions) {
         });
     }
 
-    function line(x1, y1, x2, y2, color = colors.border, width = 1) {
-        current.push({ type: "line", x1, y1, x2, y2, color, width });
-    }
-
     function sectionTitle(title, eyebrow = "") {
         ensureSpace(52);
         rect(margin, y, pageWidth - margin * 2, 30, { fill: colors.primary });
@@ -565,7 +555,7 @@ function buildPdf(actions) {
         if (y < bottom) newPage();
     }
 
-    actions({ write, gap, newPage, rect, line, sectionTitle, statCard, scoreBar, colors, pageWidth, pageHeight, margin });
+    actions({ write, gap, newPage, rect, sectionTitle, statCard, scoreBar, colors, pageWidth, pageHeight, margin });
     if (current.length > 0) pages.push(current);
 
     const objects = [];
@@ -664,21 +654,29 @@ export default function MunicipalRiskProfiler() {
     const [metadata, setMetadata] = useState(null);
     const [adminStatus, setAdminStatus] = useState(null);
     const [adminMessage, setAdminMessage] = useState("");
-    const [adminForm, setAdminForm] = useState(defaultAdminForm());
+    const [adminFormState, setAdminForm] = useState(defaultAdminForm());
+    const adminForm = { ...adminFormState, municipalityCode: adminFormState.municipalityCode || selected?.code || "" };
     const [adminValues, setAdminValues] = useState([]);
     const [adminValuesLoading, setAdminValuesLoading] = useState(false);
     const [adminRefreshKey, setAdminRefreshKey] = useState(0);
-    const [trendIndicatorKey, setTrendIndicatorKey] = useState("");
+    const [chosenTrendIndicatorKey, setTrendIndicatorKey] = useState("");
+    const defaultTrendRecords = profile?.indicators?.records || EMPTY;
+    const preferredTrend = defaultTrendRecords.find(indicator => ["population_total", "crime_17_serious_total", "hh_conditions_subindex"].includes(indicator.key)) || defaultTrendRecords.find(indicator => /population|crime|household|unemployment/i.test(`${indicator.key} ${indicator.label}`));
+    const trendIndicatorKey = chosenTrendIndicatorKey || preferredTrend?.key || "";
     const [trendData, setTrendData] = useState(null);
     const [trendLoading, setTrendLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState("overview");
-    const [indicatorThemeFilter, setIndicatorThemeFilter] = useState("All themes");
+    const [requestedTab, setActiveTab] = useState("overview");
+    const validTabs = ["overview", "trends", "drivers", "indicators", "observations", ...(isAdmin ? ["admin"] : [])];
+    const activeTab = requestedTab === "sources" ? "observations" : validTabs.includes(requestedTab) ? requestedTab : "overview";
+    const [chosenThemeFilter, setIndicatorThemeFilter] = useState(null);
     const [layerMode, setLayerMode] = useState("guided");
     const [layerThemeFilter, setLayerThemeFilter] = useState("All themes");
     const [layerSearch, setLayerSearch] = useState("");
     const [layerBrowserOpen, setLayerBrowserOpen] = useState(false);
 
-    useEffect(() => {
+    const [previousMetricSearch, setPreviousMetricSearch] = useState(null);
+    if (previousMetricSearch !== location.search) {
+        setPreviousMetricSearch(location.search);
         const params = new URLSearchParams(location.search);
         const metric = resolveMetricDeepLink(params.get("metric"));
         const tab = String(params.get("tab") || "").trim();
@@ -688,7 +686,36 @@ export default function MunicipalRiskProfiler() {
             setLayerMode(metric.startsWith("indicator:") ? "indicators" : "indices");
         }
         if (tab) setActiveTab(tab);
-    }, [location.search]);
+    }
+
+    // Reset request state when its inputs change; effects only perform network IO.
+    const [profileRequest, setProfileRequest] = useState(null);
+    if (profileRequest !== selected) {
+        setProfileRequest(selected);
+        setProfileLoading(Boolean(selected?.gid));
+        setProfileError("");
+    }
+    const metricRequestKey = `${selectedMetric}:${selectedPeriod}`;
+    const [metricRequest, setMetricRequest] = useState(null);
+    if (metricRequest !== metricRequestKey) {
+        setMetricRequest(metricRequestKey);
+        setMetricLoading(true);
+    }
+    const adminRequestKey = `${isAdmin}:${token}:${selected?.gid}:${adminRefreshKey}`;
+    const [adminRequest, setAdminRequest] = useState(null);
+    if (adminRequest !== adminRequestKey) {
+        setAdminRequest(adminRequestKey);
+        setAdminValuesLoading(Boolean(isAdmin && token && selected?.gid));
+        if (!isAdmin || !token) setAdminStatus(null);
+        if (!isAdmin || !token || !selected?.gid) setAdminValues([]);
+    }
+    const trendRequestKey = `${selected?.gid}:${trendIndicatorKey}`;
+    const [trendRequest, setTrendRequest] = useState(null);
+    if (trendRequest !== trendRequestKey) {
+        setTrendRequest(trendRequestKey);
+        setTrendLoading(Boolean(selected?.gid && trendIndicatorKey));
+        if (!selected?.gid || !trendIndicatorKey) setTrendData(null);
+    }
 
     const matchingMunicipalities = useMemo(() => {
         const q = normalise(query);
@@ -770,7 +797,6 @@ export default function MunicipalRiskProfiler() {
 
     useEffect(() => {
         const controller = new AbortController();
-        setMunicipalitiesLoading(true);
         fetch(apiUrl("/api/municipalities"), { signal: controller.signal })
             .then((response) => response.json())
             .then((body) => {
@@ -935,8 +961,6 @@ export default function MunicipalRiskProfiler() {
     useEffect(() => {
         if (!selected?.gid) return undefined;
         const controller = new AbortController();
-        setProfileLoading(true);
-        setProfileError("");
         fetch(apiUrl(`/api/municipalities/${selected.gid}/profile`), { signal: controller.signal })
             .then((response) => response.json())
             .then((body) => {
@@ -962,7 +986,6 @@ export default function MunicipalRiskProfiler() {
 
     useEffect(() => {
         const controller = new AbortController();
-        setMetricLoading(true);
         fetch(apiUrl(`/api/municipalities/metric?metric=${encodeURIComponent(selectedMetric)}${selectedPeriod ? `&period=${encodeURIComponent(selectedPeriod)}` : ""}`), { signal: controller.signal })
             .then((response) => response.json())
             .then((body) => {
@@ -988,10 +1011,7 @@ export default function MunicipalRiskProfiler() {
     }, []);
 
     useEffect(() => {
-        if (!isAdmin || !token) {
-            setAdminStatus(null);
-            return undefined;
-        }
+        if (!isAdmin || !token) return undefined;
         const controller = new AbortController();
         fetch(apiUrl("/api/municipalities/admin/import-status"), {
             signal: controller.signal,
@@ -1006,12 +1026,8 @@ export default function MunicipalRiskProfiler() {
     }, [isAdmin, token]);
 
     useEffect(() => {
-        if (!isAdmin || !token || !selected?.gid) {
-            setAdminValues([]);
-            return undefined;
-        }
+        if (!isAdmin || !token || !selected?.gid) return undefined;
         const controller = new AbortController();
-        setAdminValuesLoading(true);
         fetch(apiUrl(`/api/municipalities/${selected.gid}/admin/indicator-values`), {
             signal: controller.signal,
             headers: { Authorization: `Bearer ${token}` },
@@ -1026,13 +1042,6 @@ export default function MunicipalRiskProfiler() {
         return () => controller.abort();
     }, [isAdmin, token, selected?.gid, adminRefreshKey]);
 
-    useEffect(() => {
-        if (!selected?.code) return;
-        setAdminForm((current) => {
-            if (current.municipalityCode && current.municipalityCode !== selected.code) return current;
-            return { ...current, municipalityCode: selected.code };
-        });
-    }, [selected?.code]);
 
     useEffect(() => {
         const map = mapRef.current;
@@ -1085,12 +1094,8 @@ export default function MunicipalRiskProfiler() {
     }, [municipalities, selected]);
 
     useEffect(() => {
-        if (!selected?.gid || !trendIndicatorKey) {
-            setTrendData(null);
-            return undefined;
-        }
+        if (!selected?.gid || !trendIndicatorKey) return undefined;
         const controller = new AbortController();
-        setTrendLoading(true);
         fetch(apiUrl(`/api/municipalities/${selected.gid}/indicators/${encodeURIComponent(trendIndicatorKey)}/trend`), {
             signal: controller.signal,
         })
@@ -1227,7 +1232,7 @@ export default function MunicipalRiskProfiler() {
             .sort((a, b) => Number(b.adjustedValue) - Number(a.adjustedValue))
             .slice(0, 10);
 
-        const blob = buildPdf(({ write, gap, newPage, rect, line, sectionTitle, statCard, scoreBar, colors, pageWidth, margin }) => {
+        const blob = buildPdf(({ write, gap, newPage, rect, sectionTitle, statCard, scoreBar, colors, pageWidth, margin }) => {
             rect(0, 841.89, pageWidth, 132, { fill: colors.primary });
             write("SARVA Municipal Risk Profile", { font: "F2", size: 20, maxChars: 48, after: 4, color: colors.surface });
             write(title, { font: "F2", size: 28, maxChars: 34, color: colors.surface });
@@ -1363,14 +1368,14 @@ export default function MunicipalRiskProfiler() {
     const drivers = Array.isArray(municipalIndicators.drivers) ? municipalIndicators.drivers : EMPTY;
     const themes = Array.isArray(municipalIndicators.themes) ? municipalIndicators.themes : EMPTY;
     const indicatorRecords = Array.isArray(municipalIndicators.records) ? municipalIndicators.records : EMPTY;
-    const indicatorThemes = ["All themes", ...Array.from(new Set(indicatorRecords.map((indicator) => indicator.theme || "Other"))).sort()];
-
-    useEffect(() => {
-        const params = new URLSearchParams(location.search);
-        const theme = params.get("theme");
-        if (!theme) return;
-        setIndicatorThemeFilter(resolveThemeDeepLink(theme, indicatorThemes));
-    }, [indicatorThemes, location.search]);
+    const indicatorThemes = ["All themes", ...Array.from(new Set(indicatorRecords.map(indicator => indicator.theme || "Other"))).sort()];
+    const requestedTheme = new URLSearchParams(location.search).get("theme");
+    const [previousThemeSearch, setPreviousThemeSearch] = useState(location.search);
+    if (previousThemeSearch !== location.search) {
+        setPreviousThemeSearch(location.search);
+        setIndicatorThemeFilter(null);
+    }
+    const indicatorThemeFilter = chosenThemeFilter ?? (requestedTheme ? resolveThemeDeepLink(requestedTheme, indicatorThemes) : "All themes");
 
     const filteredThemes = themes
         .map((theme) => ({
@@ -1697,23 +1702,6 @@ export default function MunicipalRiskProfiler() {
             explanation: "Fire-weather screening combines cached heat, wind and dry-condition signals. It is an exploratory layer, not an official fire warning.",
         },
     ];
-
-    useEffect(() => {
-        if (trendIndicatorKey || indicatorRecords.length === 0) return;
-        const preferred = indicatorRecords.find((indicator) =>
-            ["population_total", "crime_17_serious_total", "hh_conditions_subindex"].includes(indicator.key)
-        ) || indicatorRecords.find((indicator) => /population|crime|household|unemployment/i.test(`${indicator.key} ${indicator.label}`));
-        if (preferred) setTrendIndicatorKey(preferred.key);
-    }, [indicatorRecords, trendIndicatorKey]);
-
-    useEffect(() => {
-        const validTabs = new Set(["overview", "trends", "drivers", "indicators", "observations", ...(isAdmin ? ["admin"] : [])]);
-        if (activeTab === "sources") {
-            setActiveTab("observations");
-        } else if (!validTabs.has(activeTab)) {
-            setActiveTab("overview");
-        }
-    }, [activeTab, isAdmin]);
 
     const rawMapValues = usableMapRecords(metricData).map(r=>Number(r.rawValue));
     const rawMapScale = municipalMapScale(rawMapValues);
