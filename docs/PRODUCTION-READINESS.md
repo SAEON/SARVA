@@ -59,3 +59,21 @@ User confirmed that the existing local preview username/password opens SARVA at 
 All dependency/lint changes remain local pending the requested GitHub push. Keep the essential-variable feature branch separate.
 
 Final browser checks also confirmed the document URL query (?q=water) populates the search field and returns filtered records, and the municipal planning workspace renders its map without React update-depth/type/reference errors. Full lint and Docker build passed after these refactors. GitHub and the server are unchanged by this follow-up.
+
+## Server update while retaining the internal dev preview
+
+Deploy this reviewed release on the existing development server only; this is not the internet/production cutover. The root host-Nginx route must remain pointed at 127.0.0.1:5180. Do not change it to 8090. Preserve the separate DS Lab locations. Preserve /opt/sarva/.env and /opt/sarva/.local/preview-access/auth; do not run preview-credentials.py set or recreate preview-auth just to update the app. Removing backend/.env from Git does not remove the root Compose .env.
+
+1. SSH as marc@192.168.115.77 and cd /opt/sarva. Check git status and the deployed commit. Inspect preview gateway Compose labels and host-Nginx proxy routes. Verify the existing gateway uses preview/compose.server-internal.yml before applying its command below. Review any server-only changes before pulling.
+2. Back up the database with pg_dump -Fc using the running db service's environment. Store root .env, any backend/.env, the private preview-auth directory and the host Nginx configuration in protected backup storage (umask 077). Preserve runtime spatial data and identify the old image IDs. Do not paste secrets into tickets or Git.
+3. Once the release PR is merged, use the normal deploy/server-update.sh --check-only then deploy/server-update.sh from a clean main checkout. For an explicitly approved branch deployment before merge, use DEPLOY_BRANCH=chore/production-readiness with both commands and record that branch and commit in the deployment log. A check-only fetch does not deploy the branch.
+4. After the app frontend is recreated, refresh only the preview gateway so its Nginx resolves the frontend's new Docker IP:
+
+   sudo docker compose -f preview/compose.server-internal.yml up -d --no-deps --force-recreate preview-gateway
+   sudo docker compose -f preview/compose.server-internal.yml exec -T preview-gateway nginx -t
+
+   Leave preview-auth running so its in-memory sessions are not deliberately reset. The existing credential files stay in place. If the active configuration differs, use its actual Compose file rather than switching configurations blindly.
+5. Verify the root host proxy still points at 5180, anonymous page requests redirect to the preview login and anonymous API requests fail with 401. Test in a private browser window at http://192.168.115.77, sign in with the existing preview credential, then test SARVA admin login, municipal maps, analytics and data health. Check the frontend 8090 binding is loopback only and backend/Martin/database are not publicly exposed. If a gate check fails, do not bypass it by repointing Nginx at the frontend.
+6. Keep previous images and backups until acceptance. Do not run the repository's host-wide container/build-cache prune script automatically on this shared DS Lab host. Review cleanup scope separately after verification; never remove database volumes.
+
+Deployment has not been performed by these instructions. Capture the actual server commit, image IDs, smoke checks and preview-login result after the operator completes them.
