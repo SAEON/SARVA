@@ -1,6 +1,10 @@
 # Production readiness and handover
 
-Prepared 21 October 2026. Status: preparation only; no production deployment completed.
+Current status, 22 October 2026: deployed on the new production host; local HTTPS checks passed. External access, final data reconciliation and acceptance remain pending. See [production deployment record](DEPLOYMENT-2026-10-22.md).
+
+## Historical preparation notes, 21 October 2026
+
+The dated notes below describe earlier stages; the deployment record above supersedes provisioning and deployment status.
 
 IT has confirmed that 192.168.115.77 is a development address and cannot be used for the requested external mapping. No deployment SOP or production destination has been supplied. Confirm the production host, DNS name, TLS certificate, deployment owner, network access and backup/restore responsibilities with IT before cutover.
 
