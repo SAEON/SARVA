@@ -1,7 +1,7 @@
 # Development notices: local review, 23 October 2026
 
-Release branch feature/development-notices, tested locally and prepared for
-GitHub publication. Production deployment and browser acceptance are pending.
+Production release `665d203` (PR #7) is deployed. Operator confirmed the
+banner and disclaimer look good and SARVA dev preview login still works.
 
 Adds the requested development/testing banner above navigation and the agreed
 SARVA disclaimer including SAEON responsibility wording. Home retains its
@@ -34,3 +34,22 @@ preview page 200 and anonymous API 401, then actual preview/SARVA login and
 responsive header/footer. Check DS Lab still opens. For rollback use the saved
 frontend image with an image-only override, then refresh preview-gateway; do
 not reset database contents or preview credentials.
+
+## Production acceptance, 23 October 2026
+
+Both applications were updated on ULWSARVADSL01 (192.168.117.189), one frontend
+at a time. Operator saved rollback frontend images and configuration for both
+before updating. The exact backup timestamp and new image IDs were not supplied
+with this acceptance; use the server's release-backups/before-notices-* records.
+Operator followed the frontend-only build/recreation and preview-gateway
+refresh procedure, then confirmed both sites look good and SARVA dev preview
+login still works. The deployed disclaimer includes the agreed SAEON
+responsibility wording. Preview-auth and private credentials were not part of
+the instructed restart; DS Lab services and host Nginx were not changed by the
+SARVA step. No fresh terminal endpoint transcript was supplied for this step.
+
+No database migration, restore or password reset was required by either release.
+Retain the rollback images and backups; no cleanup following these notice
+releases has been requested or confirmed. Catalogue connectivity and any
+previously pending external-network/data-reconciliation checks remain separate
+from this visual acceptance. No new public-route test evidence is claimed.

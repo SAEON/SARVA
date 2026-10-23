@@ -25,7 +25,7 @@ passwords or private keys belong in this handover or Git.
 
 ## Deployed configuration and data
 
-- Checkout `/opt/sarva`; current application release `34db7be` (PR #6).
+- Checkout `/opt/sarva`; current application release `665d203` (PR #7).
   Initial deployment used `0c2b060` (PR #5).
 - Compose application project `sarva`; database volume `sarva_sarva_db_data`.
 - Development backup `~/sarva-backups/production-transfer-20261022-113122`
@@ -85,3 +85,16 @@ everything is reported working afterwards. The instructed scope was dangling
 images older than 24 hours, preserving tagged rollback images and backups. No
 prune transcript or reclaimed-space figures were supplied. Catalogue connectivity and final migration/network
 acceptance remain separate from this UI fix.
+
+## Development banner and disclaimer deployed, 23 October 2026
+
+Release `665d203` (PR #7) is deployed. The operator confirmed both sites look
+good and SARVA dev preview login still works after the frontend update and
+preview-gateway refresh. Banner, shared disclaimer including SAEON responsibility
+wording, and dynamic header offsets are included. DS Lab's notice/header release
+`66f271c` was deployed and accepted first. Both frontends had rollback images
+and configuration saved beforehand. No database or preview credential change
+was part of the instructed update. Preserve this release's rollback assets;
+the earlier image-cleanup confirmation does not cover these new releases.
+See [notices acceptance](DEVELOPMENT-NOTICES.md). Catalogue/network issues remain
+separate; actual new image IDs and final terminal transcripts were not supplied.

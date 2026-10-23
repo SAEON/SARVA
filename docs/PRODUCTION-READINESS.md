@@ -9,6 +9,12 @@ cleanup is complete per operator confirmation on 23 October, with everything
 reported working afterwards. Preserve tagged rollback images and backups; no
 reclaimed-space total was supplied.
 
+Development-notice release `665d203` (PR #7) is now deployed. Operator confirmed
+both sites look good and SARVA dev login still works. Banners and SAEON footer
+disclaimers are accepted, with DS Lab's header fix accepted in release `66f271c`.
+See [deployment acceptance](DEVELOPMENT-NOTICES.md). Retain the new rollback
+images/backups; no post-notice cleanup has been confirmed.
+
 ## Historical preparation notes, 21 October 2026
 
 The dated notes below describe earlier stages; the deployment record above supersedes provisioning and deployment status.
