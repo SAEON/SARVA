@@ -80,6 +80,8 @@ is bottom-right, SARVA Login works and DS Lab still works. Rollback/configuratio
 backup is `~/sarva-backups/before-preview-layout-20261023-152858`; retain its
 tagged prior frontend image. Preview credentials and server-specific production
 Compose were preserved. See [layout acceptance](PREVIEW-LOGIN-LAYOUT-FIX.md).
-Older-image cleanup is requested, not yet verified; no volumes or rollback
-assets should be removed. Catalogue connectivity and final migration/network
+Older-image cleanup is complete per operator confirmation on 23 October;
+everything is reported working afterwards. The instructed scope was dangling
+images older than 24 hours, preserving tagged rollback images and backups. No
+prune transcript or reclaimed-space figures were supplied. Catalogue connectivity and final migration/network
 acceptance remain separate from this UI fix.

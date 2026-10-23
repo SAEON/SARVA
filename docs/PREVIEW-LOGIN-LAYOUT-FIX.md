@@ -51,10 +51,14 @@ Preview-auth/credentials and DS Lab services were not part of the instructed
 restart. Fresh per-endpoint terminal status output was not supplied for this
 acceptance; do not infer additional production checks from browser confirmation.
 
-Older-image cleanup is requested but not yet confirmed. Retain the tagged
-rollback image and all database/content/configuration backups. Review disk and
-image inventory, then use only dangling-image pruning for images older than
-24 hours (`docker image prune --filter until=24h`). This can affect eligible
-untagged images across the shared host, so inspect the list first. Do not use
-`-a`, system/container/volume pruning, or delete rollback tags. No reclaimed
-space or cleanup completion is claimed until the operator supplies results.
+Older-image cleanup completed on 23 October 2026, as confirmed by the operator,
+who reports everything is still working afterwards. The instructed scope was
+`docker image prune --filter "until=24h"` (eligible dangling images only), with
+the tagged rollback image and database/content/configuration backups designated
+for retention. No image inventory, prune transcript or reclaimed-space total was
+supplied; retention and endpoint results were not independently re-inspected.
+No container, volume or broad `-a` image pruning was part of the instructions.
+
+Status: preview layout fix deployment and subsequent cleanup complete on the
+operator's confirmation. Catalogue connectivity and wider migration/network
+acceptance remain separate outstanding checks; this does not close those items.
