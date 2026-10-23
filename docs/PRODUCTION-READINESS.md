@@ -13,7 +13,9 @@ Development-notice release `665d203` (PR #7) is now deployed. Operator confirmed
 both sites look good and SARVA dev login still works. Banners and SAEON footer
 disclaimers are accepted, with DS Lab's header fix accepted in release `66f271c`.
 See [deployment acceptance](DEVELOPMENT-NOTICES.md). Retain the new rollback
-images/backups; no post-notice cleanup has been confirmed.
+images/backups; post-notice cleanup and all instructed checks are now
+confirmed complete by the operator, with both sites working. See the linked
+notices record for scope and evidence limitations.
 
 ## Historical preparation notes, 21 October 2026
 

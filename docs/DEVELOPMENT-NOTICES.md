@@ -49,7 +49,24 @@ the instructed restart; DS Lab services and host Nginx were not changed by the
 SARVA step. No fresh terminal endpoint transcript was supplied for this step.
 
 No database migration, restore or password reset was required by either release.
-Retain the rollback images and backups; no cleanup following these notice
-releases has been requested or confirmed. Catalogue connectivity and any
+Post-release cleanup is complete per operator confirmation; rollback images
+and backups remain designated for retention. See the cleanup record below. Catalogue connectivity and any
 previously pending external-network/data-reconciliation checks remain separate
 from this visual acceptance. No new public-route test evidence is claimed.
+
+## Post-release cleanup complete, 23 October 2026
+
+Operator confirmed cleanup is complete, all instructed post-cleanup checks
+passed and both sites still work. The instructed cleanup verified saved rollback
+image tags before pruning only dangling images older than 24 hours using
+`docker image prune --filter "until=24h"`. Tagged rollback images and backups
+were designated for retention; no container, database-volume or broad `-a`
+image pruning was part of the instructions.
+
+The operator reported all checks passed, covering the DS Lab runtime checker,
+root/legacy routes, APIs, Fourier, OSM, tiles and intentional Chordata exclusion,
+plus SARVA preview login 200 and anonymous API 401. This is operator confirmation;
+no prune transcript, refreshed image inventory or reclaimed-space figures were
+supplied. No application restart or credential change was required for cleanup.
+Preserve rollback tags and backups for recovery. Catalogue connectivity and
+other previously pending network/data-reconciliation items remain separate.

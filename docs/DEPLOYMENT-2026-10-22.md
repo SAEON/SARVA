@@ -95,6 +95,16 @@ wording, and dynamic header offsets are included. DS Lab's notice/header release
 `66f271c` was deployed and accepted first. Both frontends had rollback images
 and configuration saved beforehand. No database or preview credential change
 was part of the instructed update. Preserve this release's rollback assets;
-the earlier image-cleanup confirmation does not cover these new releases.
+post-release cleanup is now confirmed in the follow-up below.
 See [notices acceptance](DEVELOPMENT-NOTICES.md). Catalogue/network issues remain
 separate; actual new image IDs and final terminal transcripts were not supplied.
+
+## Notice-release cleanup confirmed, 23 October 2026
+
+Operator confirmed cleanup completed, all instructed runtime/smoke and SARVA
+preview checks passed, and both sites still work. Cleanup instructions were
+limited to eligible dangling images older than 24 hours, preserving tagged
+rollback images and backup records. No containers or database volumes were
+included. No reclaimed-space total or detailed prune transcript was supplied.
+See [post-release cleanup record](DEVELOPMENT-NOTICES.md). Catalogue connectivity
+and previously pending migration/network items are not closed by this cleanup.
