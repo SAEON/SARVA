@@ -25,7 +25,8 @@ passwords or private keys belong in this handover or Git.
 
 ## Deployed configuration and data
 
-- Checkout `/opt/sarva`, reviewed main commit `0c2b060` (PR #5 merged).
+- Checkout `/opt/sarva`; current application release `34db7be` (PR #6).
+  Initial deployment used `0c2b060` (PR #5).
 - Compose application project `sarva`; database volume `sarva_sarva_db_data`.
 - Development backup `~/sarva-backups/production-transfer-20261022-113122`
   contains a readable custom-format database dump and configuration/data archive.
@@ -71,3 +72,14 @@ switchover. Do not prune volumes or declare migration complete. Keep essential
 variable feature work outside this release. Server-only preview/host-Nginx files
 are described here; they have not yet been incorporated as reusable source
 configuration by this documentation update.
+
+## Preview layout follow-up, 23 October 2026
+
+Release `34db7be` (PR #6) is deployed. Operator confirmed the preview control
+is bottom-right, SARVA Login works and DS Lab still works. Rollback/configuration
+backup is `~/sarva-backups/before-preview-layout-20261023-152858`; retain its
+tagged prior frontend image. Preview credentials and server-specific production
+Compose were preserved. See [layout acceptance](PREVIEW-LOGIN-LAYOUT-FIX.md).
+Older-image cleanup is requested, not yet verified; no volumes or rollback
+assets should be removed. Catalogue connectivity and final migration/network
+acceptance remain separate from this UI fix.

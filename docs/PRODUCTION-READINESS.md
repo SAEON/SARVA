@@ -1,6 +1,11 @@
 # Production readiness and handover
 
-Current status, 22 October 2026: deployed on the new production host; local HTTPS checks passed. External access, final data reconciliation and acceptance remain pending. See [production deployment record](DEPLOYMENT-2026-10-22.md).
+Current status, 23 October 2026: deployed on the new production host; local HTTPS checks passed. External access, final data reconciliation and acceptance remain pending. See [production deployment record](DEPLOYMENT-2026-10-22.md).
+
+Preview layout release `34db7be` is deployed: operator confirmed bottom-right
+preview controls, working SARVA Login and working DS Lab. See
+[acceptance and cleanup status](PREVIEW-LOGIN-LAYOUT-FIX.md). Cleanup remains
+pending operator verification; preserve tagged rollback images and backups.
 
 ## Historical preparation notes, 21 October 2026
 
