@@ -1,0 +1,20 @@
+.sarva-development-banner {
+  padding: 9px clamp(14px, 4vw, 56px);
+  background: #fff0d3;
+  color: #503a16;
+  border-bottom: 1px solid #e2c591;
+  font: 400 13px/1.5 system-ui, sans-serif;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.sarva-development-banner strong { font-weight: 750; }
+.sarva-siteDisclaimer { margin: 0; font-size: 13px; line-height: 1.65; }
+.sarva-siteFooter {
+  padding: 24px clamp(18px, 4vw, 56px);
+  background: #10261f;
+  color: #fffdf7;
+  border-top: 4px solid #ca6d46;
+  font-family: system-ui, sans-serif;
+}
+.sarva-siteFooter .sarva-siteDisclaimer { max-width: 1400px; margin: 0 auto; }
+html { scroll-padding-top: calc(var(--sarva-header-height, 76px) + 12px); }
