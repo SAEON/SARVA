@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import '../styles/preview-access.css';
 
 export default function PreviewAccess() {
@@ -11,5 +12,6 @@ export default function PreviewAccess() {
       .catch(() => {});
     return () => controller.abort();
   }, []);
-  return active ? <a className="sarva-preview-access" href="/__preview/login"><span>DEV PREVIEW</span>Access / sign out <span aria-hidden="true">↗</span></a> : null;
+  // Keep viewport-fixed controls outside the backdrop-filter header containing block.
+  return active ? createPortal(<a className="sarva-preview-access" href="/__preview/login"><span>DEV PREVIEW</span>Access / sign out <span aria-hidden="true">↗</span></a>, document.body) : null;
 }
