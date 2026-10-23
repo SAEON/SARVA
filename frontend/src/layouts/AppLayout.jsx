@@ -1,3 +1,4 @@
+import SiteDisclaimer from "../components/SiteDisclaimer.jsx";
 // src/layouts/AppLayout.jsx
 import { Outlet } from "react-router-dom";
 import Header from "../components/Header.jsx";
@@ -11,6 +12,7 @@ export default function AppLayout() {
             <main className="sarva-page">
                 <Outlet />
             </main>
+            <footer className="sarva-siteFooter"><SiteDisclaimer /></footer>
         </>
     );
 }

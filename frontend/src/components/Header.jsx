@@ -1,3 +1,4 @@
+import DevelopmentNotice from "./DevelopmentNotice.jsx";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import AnalyticsTracker from "./AnalyticsTracker.jsx";
 import PreviewAccess from "./PreviewAccess.jsx";
@@ -197,6 +198,19 @@ export default function Header() {
         return () => document.removeEventListener("mousedown", onDocMouseDown);
     }, [setOpenKey]);
 
+    // Reserve the actual fixed-header height, including wrapped notice/navigation.
+    useEffect(() => {
+        const header = rootRef.current;
+        if (!header) return undefined;
+        const updateHeight = () => {
+            document.documentElement.style.setProperty("--sarva-header-height", `${header.getBoundingClientRect().height}px`);
+        };
+        updateHeight();
+        const observer = new ResizeObserver(updateHeight);
+        observer.observe(header);
+        return () => observer.disconnect();
+    }, []);
+
     // Close on ESC
     useEffect(() => {
         function onKeyDown(e) {
@@ -212,6 +226,7 @@ export default function Header() {
     return (
         <header className="sarva-header" ref={rootRef}>
             <AnalyticsTracker />
+            <DevelopmentNotice />
             <PreviewAccess />
             <div className="sarva-header__inner">
                 <div className="sarva-brand">

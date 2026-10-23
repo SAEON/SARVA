@@ -1,3 +1,4 @@
+import SiteDisclaimer from "../components/SiteDisclaimer.jsx";
 import { lazy, Suspense, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import LibraryEditModal from "../components/LibraryEditModal";
@@ -1965,11 +1966,7 @@ export default function Home() {
                         <span><b>◌</b> Open by Design <small>Open data, open standards</small></span>
                     </div>
                     <div className="sarva-dash__footerBase">
-                        <p>
-                            Disclaimer: SARVA provides data, model outputs and public source links for exploration and
-                            decision support. Content may be delayed, incomplete or unavailable and does not replace
-                            official warnings, emergency instructions or source-system terms of use.
-                        </p>
+                        <SiteDisclaimer />
                         <div className="sarva-dash__footerLogos" aria-label="SARVA partner logos">
                             <Link to="/" aria-label="SARVA home">
                                 <img src={sarvaLogo} alt="South African Risk and Vulnerability Atlas" />

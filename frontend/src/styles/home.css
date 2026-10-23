@@ -6,7 +6,7 @@ body {
 .sarva-dash {
     min-height: 100vh;
     display: block;
-    padding-top: 72px;
+    padding-top: var(--sarva-header-height, 76px);
     color: var(--text);
     font-family: var(--font-sans);
     background: var(--page-bg);
@@ -2212,7 +2212,7 @@ body {
 /* Public SARVA site-inspired shell */
 .sarva-dash {
     display: block;
-    padding-top: 72px;
+    padding-top: var(--sarva-header-height, 76px);
     background:
         linear-gradient(180deg, rgba(255, 253, 247, 0.94), rgba(243, 240, 232, 0.98) 52%, #ffffff 100%),
         var(--page-bg);
