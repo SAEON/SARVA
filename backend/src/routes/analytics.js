@@ -1,9 +1,12 @@
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
+import { analyticsIdentity, interactionFields } from '../utils/analyticsIdentity.js';
+import { analyticsInsights } from './analyticsInsights.js';
 import { requireAdmin } from '../utils/authSession.js';
 import { pagePattern, sectionFor, audienceFor, cleanLink, cleanReferrer } from '../utils/analyticsAudience.js';
 
 export const analyticsRouter = Router();
+analyticsRouter.use(analyticsInsights);
 let lastWarning = 0;
 export function recordAnalytics(kind, path, sessionId = null, status = null, duration = null) {
   // Recording must never prevent a page or API response from completing.
@@ -27,13 +30,13 @@ export function trackApi(req, res, next) {
   next();
 }
 
-// Bounded anonymous events. IP is used in memory for approximate location only.
+// Bounded browser events. Identity is server-verified; IP is used only in memory for coarse location.
 const buckets = new Map();
 analyticsRouter.post('/analytics/events', async (req, res) => {
   const { path, sessionId, viewId, kind = 'page' } = req.body || {};
   const idPattern = /^[a-zA-Z0-9-]{16,64}$/;
   if (typeof path !== 'string' || !pagePattern.test(path) || typeof sessionId !== 'string' || !idPattern.test(sessionId)
-    || !['page','click','engagement'].includes(kind) || typeof viewId !== 'string' || !idPattern.test(viewId)) return res.sendStatus(400);
+    || !['page','click','engagement','interaction'].includes(kind) || typeof viewId !== 'string' || !idPattern.test(viewId)) return res.sendStatus(400);
   const now = Date.now();
   const key = req.socket.remoteAddress || 'local';
   if (buckets.size > 10000) buckets.clear();
@@ -42,22 +45,25 @@ analyticsRouter.post('/analytics/events', async (req, res) => {
   buckets.set(key, next);
   if (next.count > 600) return res.sendStatus(429);
   try {
+    const identity = await analyticsIdentity(req, pool);
     if (kind === 'engagement') {
       const { activeMs, scrollDepth } = req.body;
       if (!Number.isInteger(activeMs) || activeMs < 0 || activeMs > 86400000 || !Number.isInteger(scrollDepth) || scrollDepth < 0 || scrollDepth > 100) return res.sendStatus(400);
       await pool.query(`UPDATE sarva.analytics_event SET duration_ms=greatest(coalesce(duration_ms,0),$1),scroll_depth=greatest(coalesce(scroll_depth,0),$2)
-        WHERE kind='page' AND view_id=$3 AND session_id=$4 AND path=$5`, [activeMs,scrollDepth,viewId,sessionId,path]);
+        WHERE kind='page' AND view_id=$3 AND session_id=$4 AND path=$5 AND user_id IS NOT DISTINCT FROM $6::bigint`, [activeMs,scrollDepth,viewId,sessionId,path,identity.userId]);
     } else {
       const audience = audienceFor(req);
+      const interaction = kind === 'interaction' ? interactionFields(req.body) : null;
+      if (kind === 'interaction' && !interaction) return res.sendStatus(400);
       const target = kind === 'click' ? cleanLink(req.body.targetUrl) : null;
       const linkType = kind === 'click' ? req.body.linkType : null;
       if (kind === 'click' && (!target || !['internal','outbound','download'].includes(linkType))) return res.sendStatus(400);
       const label = kind === 'click' && typeof req.body.linkLabel === 'string' ? req.body.linkLabel.replace(/[\x00-\x1f]/g,'').slice(0,120) : null;
       await pool.query(`INSERT INTO sarva.analytics_event
-        (kind,path,session_id,view_id,section,country,region,city,location_source,device,browser,referrer_domain,target_url,link_label,link_type,duration_ms)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) ON CONFLICT DO NOTHING`,
+        (kind,path,session_id,view_id,section,country,region,city,location_source,device,browser,referrer_domain,target_url,link_label,link_type,duration_ms,user_id,audience_type,latitude,longitude,action,subject)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) ON CONFLICT DO NOTHING`,
       [kind,path,sessionId,viewId,sectionFor(path),audience.country,audience.region,audience.city,audience.locationSource,audience.device,audience.browser,
-        cleanReferrer(req.body.referrer),target,label,linkType,kind === 'page' ? 0 : null]);
+        cleanReferrer(req.body.referrer),target,label,linkType,kind === 'page' ? 0 : null,identity.userId,identity.audienceType,audience.latitude,audience.longitude,interaction?.action,interaction?.subject]);
     }
     res.sendStatus(202);
   } catch { res.status(503).json({ message: 'Analytics recording unavailable' }); }

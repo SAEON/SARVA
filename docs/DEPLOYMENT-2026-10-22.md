@@ -108,3 +108,19 @@ rollback images and backup records. No containers or database volumes were
 included. No reclaimed-space total or detailed prune transcript was supplied.
 See [post-release cleanup record](DEVELOPMENT-NOTICES.md). Catalogue connectivity
 and previously pending migration/network items are not closed by this cleanup.
+
+
+## Analytics audience explorer rollout, 26 October 2026
+
+Operator approved publication, production deployment and subsequent safe image
+cleanup. Local acceptance: 30 backend tests, 3 frontend tests, ESLint, Docker
+builds, synthetic browser map/device/user tracking checks and existing preview/
+DS Lab smoke checks passed. See ANALYTICS-AUDIENCE-EXPLORER.md.
+
+Status: production execution and acceptance pending. Back up database, private
+configuration and current backend/frontend images before pulling. Apply migration
+057 before starting the new backend/frontend. Preserve preview/compose.production.yml,
+preview credentials and trusted proxy CIDRs. Refresh frontend and preview gateway
+Nginx resolution after recreation. Check authenticated analytics, preview login,
+anonymous API protection and DS Lab before any image deletion. Preserve tagged
+rollback images, backups and all container-used images; never prune volumes.

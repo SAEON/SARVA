@@ -1,3 +1,4 @@
+import {trackInteraction} from '../config/analyticsInteraction';
 import DevelopmentNotice from "./DevelopmentNotice.jsx";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import AnalyticsTracker from "./AnalyticsTracker.jsx";
@@ -162,6 +163,7 @@ export default function Header() {
             return;
         }
         setSuggestionsOpen(false);
+        trackInteraction('catalogue_search');
         navigate(`/search?q=${encodeURIComponent(query)}`);
     }
 

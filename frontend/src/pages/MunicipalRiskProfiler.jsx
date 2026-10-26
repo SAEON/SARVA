@@ -1,3 +1,4 @@
+import {trackInteraction} from '../config/analyticsInteraction';
 import {municipalMapScale} from "../config/municipalMapScale";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
@@ -792,6 +793,7 @@ export default function MunicipalRiskProfiler() {
         if (match) {
             mapViewModeRef.current = "municipality";
             setSelected(match);
+            trackInteraction('municipality', String(match.gid));
         }
     }
 
@@ -926,6 +928,7 @@ export default function MunicipalRiskProfiler() {
             const gid = Number(feature?.properties?.gid ?? feature?.id);
             if (!Number.isFinite(gid)) return;
             const match = municipalitiesRef.current.find((item) => Number(item.gid) === gid);
+            trackInteraction('municipality', String(gid));
             mapViewModeRef.current = "municipality";
             setSelected(match || {
                 gid,

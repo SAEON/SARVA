@@ -1,7 +1,7 @@
 import geoip from 'geoip-lite';
 import { isIP } from 'node:net';
 
-export const pagePattern = /^\/(?:|explore|overview|about|glossary|resources|search|national-policy-and-legislation|municipal-risk-profiler|municipal-planning-workspace|mdb-2026-boundaries|themes\/[a-z0-9-]+)$/;
+export const pagePattern = /^\/(?:|explore|overview|about|glossary|resources|search|national-policy-and-legislation|municipal-risk-profiler|municipal-planning-workspace|accessibility-workspace|essential-variables|mdb-2026-boundaries|themes\/[a-z0-9-]+)$/;
 export function sectionFor(path) {
   if (path === '/') return 'Home';
   if (path.startsWith('/themes/')) return 'Environmental themes';
@@ -16,7 +16,7 @@ export function locationFor(ip) {
   if (/^(127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.)/.test(address) || /^(::1$|::$|f[cd]|fe[89ab])/i.test(address)) return { locationSource: 'local/private network' };
   const result = geoip.lookup(address);
   if (!result?.country) return { locationSource: 'unknown' };
-  return { country: result.country, region: result.region || null, city: result.city || null, locationSource: 'approximate IP location' };
+  return { country: result.country, region: result.region || null, city: result.city || null, latitude: Number.isFinite(result.ll?.[0]) ? Math.round(result.ll[0]) : null, longitude: Number.isFinite(result.ll?.[1]) ? Math.round(result.ll[1]) : null, locationSource: 'approximate IP location' };
 }
 
 export function audienceFor(req) {

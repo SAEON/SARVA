@@ -1,3 +1,4 @@
+import {trackInteraction} from '../config/analyticsInteraction';
 import { useState } from "react";
 
 const STATUS_OPTIONS = [
@@ -50,6 +51,8 @@ function LibraryEditForm({ kind, record, onClose, onSave }) {
                 keywords: form.keywords,
                 link_status_code: form.link_status_code === "" ? null : form.link_status_code,
             });
+            trackInteraction(record.id ? 'content_edit' : 'content_create', kind);
+            if (form.link_status !== record.link_status) trackInteraction('content_review', kind);
             onClose();
         } catch (error) {
             setMessage(error.message);

@@ -4,7 +4,7 @@ function authSecret() {
   return process.env.AUTH_SECRET || process.env.DB_PASSWORD || "sarva-dev-auth-secret";
 }
 
-function verifyToken(token) {
+export function verifyToken(token) {
   const [encoded, signature] = String(token || "").split(".");
   if (!encoded || !signature) return null;
 
