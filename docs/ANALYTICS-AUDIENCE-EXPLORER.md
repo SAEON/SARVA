@@ -1,6 +1,6 @@
 # SARVA audience explorer — local candidate, 26 October 2026
 
-Status: local feature branch only; not pushed or deployed. Existing production
+Status: locally accepted and approved for GitHub publication and production rollout on 26 October 2026. Deployment and post-deployment cleanup are pending operator execution. Existing production
 SARVA preview and DS Lab stacks are untouched.
 
 ## Features
@@ -78,5 +78,5 @@ Local acceptance completed:
 
 Review in the already signed-in in-app browser tab. Existing local SARVA accounts
 are not copied into this test database. The private synthetic demo account is
-for this isolated candidate only. No GitHub push or production deployment was
-performed for this change.
+for this isolated candidate only. GitHub publication is part of the approved rollout; production deployment and
+cleanup must be confirmed separately before marking this release deployed.
