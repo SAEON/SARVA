@@ -3968,3 +3968,5 @@ body {
 .sarva-disasterLegend button { padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--text);cursor:pointer; }
 
 .sarva-dash__hero .sarva-dash__privacyLink{display:inline-flex;align-items:center;gap:8px;color:#fffdf7;font-size:14px;font-weight:700;text-decoration:underline;text-underline-offset:4px;margin:0 0 18px;padding:6px 0}.sarva-dash__hero .sarva-dash__privacyLink:focus-visible{outline:3px solid #edc27b;outline-offset:4px}
+
+.sarva-dash__heroHighlightGrid .sarva-forecastDate { font-weight: 700; font-size: 14px; color: #fffdf7; }
