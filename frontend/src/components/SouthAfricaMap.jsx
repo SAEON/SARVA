@@ -1,3 +1,4 @@
+import ForecastNotice from "./ForecastNotice";
 import DisasterEventsLayer from "./DisasterEventsLayer";
 import MapLayerPicker from "./MapLayerPicker";
 import FireDetectionsLayer from "./FireDetectionsLayer";
@@ -191,15 +192,16 @@ function renderStationPopup(properties, { expanded = false } = {}) {
 }
 
 function renderForecastRiskPopup(properties, { expanded = false } = {}) {
-    const rainfall = Number(properties?.rainfallMm);
-    const metricValue = Number(properties?.metricValue);
-    const riskIndex = Number(properties?.riskIndex);
-    const riskScore = Number(properties?.riskScore);
+    const modelNumber = value => value == null || value === "" ? NaN : Number(value);
+    const rainfall = modelNumber(properties?.rainfallMm);
+    const metricValue = modelNumber(properties?.metricValue);
+    const riskIndex = modelNumber(properties?.riskIndex);
+    const riskScore = modelNumber(properties?.riskScore);
     const layer = properties?.layer || "rainfall";
     const layerLabel = properties?.layerLabel || "ECMWF rainfall screening";
     const layerUnits = properties?.layerUnits || (layer === "rainfall" ? "mm/day" : "0-100");
-    const temperature = Number(properties?.temperatureMaxC);
-    const wind = Number(properties?.windMaxKmh);
+    const temperature = modelNumber(properties?.temperatureMaxC);
+    const wind = modelNumber(properties?.windMaxKmh);
     const forecastDate = properties?.forecastDate
         ? new Date(properties.forecastDate).toLocaleDateString("en-ZA", {
               year: "numeric",
@@ -218,7 +220,9 @@ function renderForecastRiskPopup(properties, { expanded = false } = {}) {
     const updatedAt = formatSastDateTime(properties?.updatedAt);
 
     return `<div class="sarva-map__forecastPopup">
-        <strong>${escapeHtml(layerLabel)}: ${escapeHtml(properties?.riskLabel || "Unknown")}</strong>
+        <strong>${escapeHtml(layerLabel)}</strong>
+        <p>Experimental model output, not an official warning.</p>
+        <a href="https://www.weathersa.co.za/warnings" target="_blank" rel="noopener noreferrer">Check official SAWS warnings</a>
         <span>${escapeHtml(forecastDate)} | ${
             Number.isFinite(metricValue)
                 ? `${metricValue.toFixed(layer === "rainfall" || layer === "heat" || layer === "wind" ? 1 : 0)} ${escapeHtml(layerUnits)}`
@@ -227,11 +231,11 @@ function renderForecastRiskPopup(properties, { expanded = false } = {}) {
         <span>${
             layer === "rainfall"
                 ? Number.isFinite(riskScore)
-                    ? `Risk score ${riskScore}/4`
-                    : "Risk score unavailable"
+                    ? `Experimental rainfall band ${riskScore}/4; not a warning level`
+                    : "Experimental band unavailable"
                 : Number.isFinite(riskIndex)
-                  ? `Risk index ${riskIndex.toFixed(0)}/100 | Class ${Number.isFinite(riskScore) ? `${riskScore}/4` : "unavailable"}`
-                  : "Risk index unavailable"
+                  ? `Experimental SARVA index ${riskIndex.toFixed(0)}/100 | Model band ${Number.isFinite(riskScore) ? `${riskScore}/4` : "unavailable"}`
+                  : "Experimental index unavailable"
         } | 0.25 degree grid</span>
         ${
             expanded
@@ -240,8 +244,8 @@ function renderForecastRiskPopup(properties, { expanded = false } = {}) {
                   } | Wind: ${Number.isFinite(wind) ? `${wind.toFixed(1)} km/h max` : "n/a"}</p>
                    <p>${
                        layer === "rainfall"
-                           ? "Daily forecast rainfall is classified as: Minimal 0 mm, Low >0-10 mm, Moderate 10-25 mm, High 25-50 mm, Very high 50+ mm."
-                           : "Index classes use 0-100 SARVA development scores: Very low 0-20, Low 20-40, Moderate 40-60, High 60-80, Very high 80-100."
+                           ? "Experimental rainfall display bands: 0 mm, >0–<10 mm, 10–<25 mm, 25–<50 mm and 50+ mm/day. These are model-value bands, not flood risk or official warning thresholds."
+                           : "Experimental index bands divide SARVA scores at 20, 40, 60 and 80 out of 100. They are not probabilities, impact estimates or official warning categories."
                    }</p>
                    <small>${escapeHtml(fallbackNote)}</small>
                    ${updatedAt ? `<small>Updated: ${escapeHtml(updatedAt)}</small>` : ""}
@@ -959,7 +963,7 @@ export default function SouthAfricaMap({ activeMode, onModeChange, focusHighligh
             <FireDetectionsLayer map={layerMap} ready={ready} visible={activeMode === "satellite-fires"} />
             {forecastRiskVisible && (
                 <div className="sarva-map__legend sarva-map__legend--forecast" aria-label={`${forecastLayerMeta.label} legend`}>
-                    <p className="sarva-map__authorityNotice">SARVA screening of <a href="https://www.ecmwf.int/en/forecasts/datasets/open-data" target="_blank" rel="noreferrer">ECMWF Open Data ↗</a>. Not an official forecast or warning. <a href="https://www.weathersa.co.za/warnings" target="_blank" rel="noreferrer">Official forecasts &amp; warnings: SAWS ↗</a></p>
+                    <ForecastNotice compact />
                     <div className="sarva-map__legendHeader">
                         <strong>{forecastLayerMeta.label}</strong>
                         <button
@@ -985,11 +989,11 @@ export default function SouthAfricaMap({ activeMode, onModeChange, focusHighligh
                             </div>
                             {forecastDateRange && <span>Date range: {forecastDateRange}</span>}
                             {forecastUpdatedAt && <span>Updated: {forecastUpdatedAt}</span>}
-                            <p>{forecastLayerMeta.description} This is a SARVA development layer for screening and exploration, not formal warnings.</p>
+                            <p>{forecastLayerMeta.description} Experimental model output for exploration, not an official forecast, warning or emergency instruction.</p>
                             <p>
                                 {forecastLayer === "rainfall"
-                                    ? "Thresholds are indicative: 10 mm marks a wet day, 25 mm flags meaningful daily accumulation, and 50+ mm/day is treated as high screening risk. Local flood risk depends on exposure, drainage, terrain and antecedent wetness."
-                                    : "The map colours the selected ECMWF forecast metric. Popups also show the SARVA development risk index from 0-100; heat uses daily maximum 2 m temperature, wind uses daily maximum 10 m wind speed, and the fire-weather proxy combines heat, wind and forecast dryness."}
+                                    ? "Colours show modelled rainfall amounts; 10, 25 and 50 mm/day are display breakpoints, not flood or warning thresholds. Flood risk requires local hydrology, terrain, drainage, antecedent wetness and exposure information."
+                                    : "The map colours the selected ECMWF forecast metric. Popups also show an experimental SARVA index from 0-100, not a probability or official warning level; heat uses daily maximum 2 m temperature, wind uses daily maximum 10 m wind speed, and the fire-weather proxy combines heat, wind and forecast dryness."}
                             </p>
                             <p>{forecastRiskLayer?.attribution || "ECMWF Open Data forecast environmental risk cache."}</p>
                             <div className="sarva-map__infoLinks">

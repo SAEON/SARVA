@@ -1,3 +1,4 @@
+import ForecastNotice from "../components/ForecastNotice";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import AccessibilityWorkspace from "./AccessibilityWorkspace";
 import StormwaterReadiness from "../components/StormwaterReadiness";
@@ -32,52 +33,52 @@ const forecastSignalOptions = [
         key: "rainfall",
         label: "Rainfall",
         category: "Water",
-        title: "Forecast rainfall risk signal",
-        source: "SARVA forecast rainfall risk layer from cached ECMWF Open Data",
-        detail: "5-day rainfall watch layer for flooding, drainage and stormwater planning.",
+        title: "Experimental model rainfall estimate",
+        source: "SARVA experimental rainfall estimates from cached ECMWF model data",
+        detail: "Cached model rainfall for exploration. Not a flood assessment or warning; check source dates and local conditions.",
     },
     {
         key: "heat",
         label: "Heat",
         category: "Health and social support",
-        title: "Forecast heat risk signal",
-        source: "SARVA forecast heat risk layer from cached ECMWF Open Data",
-        detail: "5-day heat watch layer for exposed people, facilities, workforces and response planning.",
+        title: "Experimental model temperature estimate",
+        source: "SARVA experimental temperature estimates from cached ECMWF model data",
+        detail: "Cached model temperature for exploration. Not a heat warning or assessment of exposed people.",
     },
     {
         key: "wind",
         label: "Wind",
         category: "Disaster management",
-        title: "Forecast wind risk signal",
-        source: "SARVA forecast wind risk layer from cached ECMWF Open Data",
-        detail: "5-day wind watch layer for exposed infrastructure, roads, settlements and service planning.",
+        title: "Experimental model wind estimate",
+        source: "SARVA experimental wind estimates from cached ECMWF model data",
+        detail: "Cached model wind speed for exploration. Not a wind warning or infrastructure-impact assessment.",
     },
     {
         key: "fire",
         label: "Fire-weather",
         category: "Environment",
-        title: "Forecast fire-weather proxy signal",
-        source: "SARVA forecast fire-weather proxy from cached ECMWF Open Data",
-        detail: "5-day fire-weather screening proxy for dry, hot and windy conditions. Not a formal fire danger index.",
+        title: "Experimental fire-weather indicator",
+        source: "SARVA experimental fire-weather indicator from cached ECMWF model data",
+        detail: "Experimental heat, wind and dryness indicator. Not an official fire-danger rating or fire prediction.",
     },
     {
         key: "overall",
         label: "Combined",
         category: "Disaster management",
-        title: "Combined environmental forecast risk signal",
-        source: "SARVA combined forecast risk index from cached ECMWF Open Data",
-        detail: "Combined 5-day screening layer across rainfall, heat, wind and fire-weather proxy signals.",
+        title: "Experimental combined model index",
+        source: "SARVA experimental combined index from cached ECMWF model data",
+        detail: "Experimental combination of cached model fields. Not a probability of harm, warning or emergency instruction.",
     },
 ];
 
 const riskSignalChannels = [
     {
-        name: "SARVA forecast risk layers",
+        name: "SARVA experimental weather model outputs",
         status: "Live in SARVA",
         category: "Disaster management",
         source: "SARVA forecast rainfall, heat, wind and fire-weather risk layers",
-        title: "SARVA forecast risk signal",
-        detail: "Use the existing SARVA 5-day signals as the first watch layer, then add local vulnerability and response constraints.",
+        title: "SARVA experimental model context",
+        detail: "Explore cached model estimates as research context. Check official SAWS warnings separately; model values do not establish hazard-specific exposure or impacts.",
         forecastLayer: "rainfall",
         options: forecastSignalOptions,
         to: "/#risk-map",
@@ -559,7 +560,7 @@ export default function MunicipalPlanningWorkspace() {
             <AccessibilityWorkspace />
             <details className="planning-advanced"><summary>Optional: local evidence and stormwater brief</summary>
             <StormwaterReadiness workspace={workspace} setWorkspace={setWorkspace}
-                onDownload={() => download("stormwater-readiness-brief.md", "# Stormwater readiness: draft for team review\n\nCurrent official warnings must be checked before operational use. Hazard-specific exposure and flood risk are not assessed.\n\n" + brief, "text/markdown")}
+                onDownload={() => download("stormwater-readiness-brief.md", "# Stormwater readiness: draft for team review\n\nExperimental model outputs are not official warnings or emergency instructions. Check current SAWS warnings at https://www.weathersa.co.za/warnings before operational use. Hazard-specific exposure and flood risk are not assessed. The fire-weather indicator is not an official fire-danger rating.\n\n" + brief, "text/markdown")}
                 onTerrain={() => {setActiveMapSignal({name:"Terrain context",topographyLayer:"topography",detail:"Explore slope and elevation where available."}); setNotice("Terrain selected. Return to Choose area to view the map.");}}
                 onWeather={() => {setActiveMapSignal({name:"Cached rainfall",forecastLayer:"rainfall",detail:"Cached rainfall screening; verify dates before use."}); setNotice("Rainfall selected. Return to Choose area to view the map.");}}>
                     <section className="planning-panel planning-panel--boundaries" id="boundaries" ref={boundariesRef}>
@@ -611,6 +612,7 @@ export default function MunicipalPlanningWorkspace() {
                             </div>
                             <small>One overlay at a time · showing a layer does not save evidence</small>
                         </div>
+                        <ForecastNotice />
                         <div className="planning-feed-grid">
                             {riskSignalChannels.filter(feed => feed.forecastLayer || feed.topographyLayer).map((feed) => (
                                 <article key={feed.name}>

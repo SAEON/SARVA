@@ -1,0 +1,4 @@
+.sarva-forecastNotice{margin:12px 0;padding:12px 14px;border:1px solid #b7c9c4;border-radius:10px;background:#f2f7f5;color:#173b35;font-size:13px;line-height:1.5}.sarva-forecastNotice strong{display:block;font-size:14px}.sarva-forecastNotice p{margin:6px 0}.sarva-forecastNotice a{color:inherit;text-decoration:underline;font-weight:600}.sarva-forecastNotice small{display:block;margin-top:8px;font-size:11px;line-height:1.45}
+.sarva-forecastNotice.is-compact{padding:8px;margin:0 0 8px;font-size:11px}.sarva-forecastNotice.is-compact strong{font-size:12px}.sarva-forecastNotice.is-compact small{font-size:10px}.sarva-forecastNotice details{margin-top:6px}.sarva-forecastNotice summary{cursor:pointer;font-size:11px}
+
+.sarva-dash__hero .sarva-dash__heroHighlights .sarva-forecastNotice p{color:#173b35;font-size:13px;line-height:1.5;margin:6px 0;max-width:none}.sarva-map__legend .sarva-forecastNotice p{color:#173b35;font-size:11px;line-height:1.45}
