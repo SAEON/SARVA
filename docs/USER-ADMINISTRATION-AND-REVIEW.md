@@ -145,3 +145,18 @@ admin reply, resolution and non-admin reply-privacy acceptance; those workflows
 were verified locally with synthetic accounts. No real role changes are required
 solely for deployment testing. Cleanup instructions preserve this release's
 backend/frontend rollback tags and database dump; completion remains pending.
+
+
+## Rollback retention after cleanup, 27 October 2026
+
+Operator terminal output confirms the subsequent account-menu cleanup completed,
+with both user-administration rollback tags still present:
+sarva-backend:rollback-user-admin-20261027-132424 and
+sarva-frontend:rollback-user-admin-20261027-132424. The account-menu frontend
+rollback tag was also retained. Dangling-image pruning older than 24 hours
+reclaimed 0 B; no volumes, tagged images, private backups or build cache were
+designated for removal. Supplied post-cleanup checks returned SARVA homepage/API
+200, anonymous account administration 403, anonymous issue tracker 401 and
+DS Lab 200. Nginx validation passed. This supersedes the pending cleanup status
+above; production issue-workflow acceptance remains distinct from these endpoint
+checks, as documented in the rollout evidence.

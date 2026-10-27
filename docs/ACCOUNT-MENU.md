@@ -1,7 +1,7 @@
 # SARVA account menu and header fit
 
 Deployed to production on 27 October 2026; operator accepted the account menu,
-normal SARVA login and DS Lab. Post-deployment image cleanup remains pending. This frontend-only change follows the user administration and
+normal SARVA login and DS Lab. Post-deployment image cleanup is complete; rollback images are retained. This frontend-only change follows the user administration and
 testing tracker release; it does not change roles, credentials or database schema.
 
 The signed-in account menu now includes an identity section, role badges, grouped
@@ -59,3 +59,27 @@ saved rollback tag records for both the account-menu and user-administration
 releases, prune only dangling images older than 24 hours, then recheck the tags
 and both sites. No -a image pruning, volume pruning, container removal or private
 backup deletion is included. Record cleanup completion only after operator output.
+
+
+## Post-deployment cleanup complete, 27 October 2026
+
+Supersedes the pending cleanup status above. Supplied production terminal output
+confirms dangling-image pruning with the instructed 24-hour filter completed and
+reclaimed 0 B. All three recorded rollback tags were verified after cleanup:
+
+- sarva-frontend:rollback-account-menu-20261027-134437
+- sarva-backend:rollback-user-admin-20261027-132424
+- sarva-frontend:rollback-user-admin-20261027-132424
+
+Nginx configuration validation passed. Server-local HTTPS checks using the real
+hostnames returned SARVA homepage 200, SARVA health API 200, anonymous user
+management 403, anonymous tracker 401 and DS Lab homepage 200. The cleanup script
+completed successfully. These results complement the prior operator confirmation
+that the account menu looks good, normal SARVA login works and DS Lab still works.
+
+Before/after Docker usage figures were unchanged: 38 images (18 active), 9.683 GB
+image usage; 18 containers (16 active); five volumes, all active, 1.207 GB; and
+10.35 GB build cache. Reclaimable figures do not mean those images or cache were
+removed. No broad image, build-cache, container or volume pruning was performed.
+Tagged rollback images, database dump and private configuration backups remain
+designated for retention. No further cleanup is required for this release.
