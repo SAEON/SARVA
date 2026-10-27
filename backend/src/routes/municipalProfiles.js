@@ -63,7 +63,8 @@ function presentIndex(row) {
   };
 }
 
-function scoreLabel(score) {
+export function scoreLabel(score) {
+  if (score == null || score === "") return "Insufficient verified data";
   const value = Number(score);
   if (!Number.isFinite(value)) return "Unknown";
   if (value >= 80) return "Very high";
@@ -73,7 +74,8 @@ function scoreLabel(score) {
   return "Very low";
 }
 
-function numberOrNull(value, digits = 1) {
+export function numberOrNull(value, digits = 1) {
+  if (value == null || value === "") return null;
   const number = Number(value);
   return Number.isFinite(number) ? Number(number.toFixed(digits)) : null;
 }
@@ -111,13 +113,25 @@ function normaliseIndicator(row) {
   };
 }
 
+// Public municipal outputs must never fall back to deterministic test values.
+// Proxy rows remain in storage for development and administrative inspection.
+export function eligibleMunicipalValueSql(value = "v", definition = "d") {
+  return `NOT ${definition}.is_proxy
+    AND ${value}.confidence IS NOT NULL AND lower(${value}.confidence) <> 'proxy'
+    AND ${value}.scenario IS NOT NULL AND lower(${value}.scenario) NOT LIKE '%proxy%'
+    AND COALESCE(${value}.notes, '') NOT ILIKE '%Deterministic seed value%'
+    AND COALESCE(${value}.source_label, '') NOT ILIKE '%generated baseline proxy%'`;
+}
+
 function latestIndicatorValuesSql(whereSql = "") {
   return `
     WITH latest_values AS (
       SELECT DISTINCT ON (v.municipality_gid, v.indicator_key)
         v.*
       FROM sarva.municipal_indicator_value v
-      ${whereSql}
+      JOIN sarva.municipal_indicator_definition eligibility ON eligibility.key = v.indicator_key
+      ${whereSql || "WHERE true"}
+        AND ${eligibleMunicipalValueSql("v", "eligibility")}
       ORDER BY
         v.municipality_gid,
         v.indicator_key,
@@ -347,7 +361,7 @@ municipalProfilesRouter.get("/municipalities/metric", async (req, res) => {
             idx.label,
             idx.theme,
             CASE
-              WHEN sum(ii.weight) FILTER (WHERE i.adjusted_value IS NOT NULL) > 0 THEN
+              WHEN NOT idx.is_proxy AND sum(ii.weight) FILTER (WHERE i.adjusted_value IS NOT NULL) > 0 THEN
                 sum(i.adjusted_value * ii.weight) FILTER (WHERE i.adjusted_value IS NOT NULL)
                 / sum(ii.weight) FILTER (WHERE i.adjusted_value IS NOT NULL)
               ELSE NULL
@@ -356,12 +370,12 @@ municipalProfilesRouter.get("/municipalities/metric", async (req, res) => {
           CROSS JOIN sarva.municipal_index_definition idx
           JOIN sarva.municipal_index_indicator ii ON ii.index_key = idx.key
           LEFT JOIN indicators i ON i.municipality_gid = mb.gid AND i.key = ii.indicator_key
+            AND EXISTS (SELECT 1 FROM sarva.municipal_indicator_definition d WHERE d.key = i.key AND d.direction <> 'context')
           WHERE idx.key = $1
           GROUP BY mb.gid, municipality, idx.key, idx.label, idx.theme
         )
         SELECT *
         FROM scores
-        WHERE score IS NOT NULL
         ORDER BY municipality
       `,
       [key]
@@ -379,7 +393,9 @@ municipalProfilesRouter.get("/municipalities/metric", async (req, res) => {
           normalizedValue: numberOrNull(row.score, 1),
           displayValue: numberOrNull(row.score, 1),
           displayUnit: "0-100 score",
-          confidence: "calculated",
+          confidence: row.score == null ? "insufficient_verified_data" : "calculated",
+          availability: row.score == null ? "insufficient_verified_data" : "available",
+          riskLabel: scoreLabel(row.score),
         })),
       },
     });
@@ -408,7 +424,8 @@ municipalProfilesRouter.get("/municipalities/metadata", async (req, res) => {
         count(DISTINCT v.municipality_gid) FILTER (WHERE v.raw_value IS NOT NULL AND v.confidence IS DISTINCT FROM 'proxy')::int AS "rawMunicipalities",
         max(v.updated_at) AS "updatedAt"
       FROM sarva.municipal_indicator_definition d
-      LEFT JOIN sarva.municipal_indicator_value v ON v.indicator_key = d.key
+      LEFT JOIN sarva.municipal_indicator_value v ON v.indicator_key = d.key AND ${eligibleMunicipalValueSql()}
+      WHERE NOT d.is_proxy
       GROUP BY d.key
       ORDER BY d.sort_order, d.label
     `);
@@ -433,7 +450,7 @@ municipalProfilesRouter.get("/municipalities/metadata", async (req, res) => {
               'sourceName', d.source_name
             )
             ORDER BY ii.sort_order, d.label
-          ) FILTER (WHERE ii.indicator_key IS NOT NULL),
+          ) FILTER (WHERE ii.indicator_key IS NOT NULL AND NOT d.is_proxy AND NOT idx.is_proxy),
           '[]'::jsonb
         ) AS components
       FROM sarva.municipal_index_definition idx
@@ -499,6 +516,7 @@ municipalProfilesRouter.get("/municipalities/:gid/indicators/:indicatorKey/trend
         JOIN sarva.municipal_indicator_definition d ON d.key = v.indicator_key
         WHERE v.municipality_gid = $1
           AND v.indicator_key = $2
+          AND ${eligibleMunicipalValueSql()}
         ORDER BY
           CASE WHEN v.period ~ '^\\d+$' THEN v.period::int ELSE NULL END NULLS LAST,
           v.period,
@@ -879,6 +897,8 @@ municipalProfilesRouter.get("/municipalities/:gid/profile", async (req, res) => 
             v.*
           FROM sarva.municipal_indicator_value v
           WHERE v.municipality_gid = $1
+            AND EXISTS (SELECT 1 FROM sarva.municipal_indicator_definition eligible
+              WHERE eligible.key = v.indicator_key AND ${eligibleMunicipalValueSql("v", "eligible")})
           ORDER BY
             v.indicator_key,
             (v.confidence <> 'proxy') DESC,
@@ -922,7 +942,7 @@ municipalProfilesRouter.get("/municipalities/:gid/profile", async (req, res) => 
             idx.is_proxy,
             idx.sort_order,
             CASE
-              WHEN sum(ii.weight) FILTER (WHERE i.adjusted_value IS NOT NULL) > 0 THEN
+              WHEN NOT idx.is_proxy AND sum(ii.weight) FILTER (WHERE i.adjusted_value IS NOT NULL) > 0 THEN
                 sum(i.adjusted_value * ii.weight) FILTER (WHERE i.adjusted_value IS NOT NULL)
                 / sum(ii.weight) FILTER (WHERE i.adjusted_value IS NOT NULL)
               ELSE NULL
@@ -970,7 +990,7 @@ municipalProfilesRouter.get("/municipalities/:gid/profile", async (req, res) => 
           FROM sarva.municipal_index_definition idx
           JOIN sarva.municipal_index_indicator ii ON ii.index_key = idx.key
           JOIN sarva.municipal_indicator_definition d ON d.key = ii.indicator_key
-          LEFT JOIN indicators i ON i.key = ii.indicator_key
+          LEFT JOIN indicators i ON i.key = ii.indicator_key AND i.direction <> 'context' AND NOT idx.is_proxy
           GROUP BY idx.key, idx.label, idx.theme, idx.description, idx.source_name, idx.source_url, idx.is_proxy, idx.sort_order
         ),
         drivers AS (
@@ -994,7 +1014,8 @@ municipalProfilesRouter.get("/municipalities/:gid/profile", async (req, res) => 
             ii.weight::double precision AS weight,
             (i.adjusted_value * ii.weight)::double precision AS contribution
           FROM sarva.municipal_index_indicator ii
-          JOIN indicators i ON i.key = ii.indicator_key
+          JOIN indicators i ON i.key = ii.indicator_key AND i.direction <> 'context'
+          JOIN sarva.municipal_index_definition idx ON idx.key = ii.index_key AND NOT idx.is_proxy
         ),
         driver_source AS (
           SELECT
@@ -1042,6 +1063,7 @@ municipalProfilesRouter.get("/municipalities/:gid/profile", async (req, res) => 
           sourceUrl: item.source_url,
           isProxy: Boolean(item.is_proxy),
           score: numberOrNull(item.score, 1),
+          availability: item.score == null ? "insufficient_verified_data" : "available",
           riskLabel: scoreLabel(item.score),
           indicatorCount,
           expectedIndicatorCount,
@@ -1146,7 +1168,7 @@ municipalProfilesRouter.get("/municipalities/:gid/profile", async (req, res) => 
           windRiskScore: numberOrNull(risk.wind_risk_score, 0),
           fireRiskScore: numberOrNull(risk.fire_risk_score, 0),
           overallRiskScore: numberOrNull(risk.overall_risk_score, 0),
-          overallRiskLabel: scoreLabel(Number(risk.overall_risk_score)),
+          overallRiskLabel: scoreLabel(risk.overall_risk_score),
         },
         observationSites: Array.isArray(row.observation_sites)
           ? row.observation_sites.map((site) => ({
@@ -1165,7 +1187,7 @@ municipalProfilesRouter.get("/municipalities/:gid/profile", async (req, res) => 
         indicators: {
           status: indicators.length > 0 ? "available" : "empty",
           caveat:
-            "Municipal indicators are stored in the SARVA Docker database. Imported values show their source and period. Values marked as proxy are deterministic fallback placeholders and should not be used as official statistics.",
+            "Municipal indicators are stored in the SARVA Docker database. Imported values show their source and period. Synthetic placeholders are excluded from public indicators and scores. Missing scores indicate insufficient verified data; available scores may have partial coverage.",
           indices,
           drivers,
           themes: Object.entries(indicatorThemes).map(([theme, records]) => ({ theme, records })),
