@@ -8,7 +8,7 @@ import dataScienceLabLogo from "../assets/logos/lab_logo.png";
 import saeonLogo from "../assets/logos/SAEON-NRF-LOGO-alpha.png";
 import sarvaLogo from "../assets/logos/SARVA_final-logo-01b.png";
 import { apiUrl } from "../config/api";
-import { isExpiredForecast } from "../config/forecastFreshness";
+import { visibleHomeForecasts, formatForecastDate } from "../config/homeForecast";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import { useJsonResource } from "../hooks/useJsonResource";
 import "../styles/home.css";
@@ -856,7 +856,7 @@ export default function Home() {
     const heroImage = hero?.image_path ? apiUrl(hero.image_path) : null;
     const heroHighlights =
         siteStatsResponse?.status === "ok" && Array.isArray(siteStatsResponse.data?.highlights)
-            ? siteStatsResponse.data.highlights
+            ? visibleHomeForecasts(siteStatsResponse.data.highlights)
             : [];
     const atAGlanceFacts =
         siteStatsResponse?.status === "ok" && Array.isArray(siteStatsResponse.data?.atAGlance)
@@ -1323,13 +1323,11 @@ export default function Home() {
                                         </small>
                                         <strong>{highlight.value}</strong>
                                         {highlight.explainer && <i>{highlight.explainer}</i>}
-                                        <p>{highlight.detail}</p>
+                                        <p>{highlight.location}</p>
+                                        <p className="sarva-forecastDate">Forecast for: {formatForecastDate(highlight.forecastDate)} (SAST)</p>
                                         <span>{highlight.source}</span>
                                         <em>
-                                            {isExpiredForecast(highlight.forecastDate)
-                                                ? "Past forecast — historical context only"
-                                                : highlight.freshness}
-                                            {highlight.updatedAtLabel ? ` | ${highlight.updatedAtLabel}` : ""}
+                                            {highlight.updatedAtLabel ? `Data refreshed: ${highlight.updatedAtLabel}` : "Data refresh time unavailable"}
                                         </em>
                                         <span className="sarva-highlightAction">View on map <b aria-hidden="true">→</b></span>
                                     </button>
