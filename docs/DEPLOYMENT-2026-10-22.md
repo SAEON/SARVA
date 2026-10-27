@@ -1,5 +1,13 @@
 # SARVA production deployment, 22 October 2026
 
+## Combined risk weather summary production acceptance 27 October 2026
+
+PR #24 (merge `18e4c27eb565954f5ace97d6ab8f0bf979581475`) is deployed and operator-accepted. The main card is titled Combined risk and shows maximum temperature, daily rainfall and maximum wind speed together for one selected forecast location/date, without a combined numerical score. Forecast date and refresh time are separate. The experimental notice and official SAWS link remain. This supersedes the main-signal-only presentation of PR #23. Internal screening still selects the location; this is not a national summary or a newly validated risk assessment.
+
+Operator terminal output verified Mnquma EC, forecast 27 October 2026: maximum temperature 16.8 °C, rainfall 73.2 mm/day, maximum wind 21.7 km/h, data refreshed 27 October 19:39 SAST. The combined summary and passkeys-enabled checks passed. Nginx validation succeeded; public homepage, health, privacy and passkey page returned 200, anonymous passkey listing returned 401, anonymous administration/analytics returned 403, and DS Lab returned 200. The initial frontend startup connection reset was followed by successful readiness checks.
+
+The operator confirmed the card looks good, both password and passkey browser login work, and DS Lab still works. Only SARVA backend/frontend were updated; no migration or authentication setting changes. A before-combined-weather rollback backup/pair was operator-confirmed saved; its exact timestamp has not yet been supplied. **Cleanup is pending operator execution and verification.** Verify that pair before removing older SARVA rollback tags; retain current running images, all database volumes and backups, and all DS Lab images/services. Do not restart the retired preview gateway. This is operator-reported acceptance, not an independently executed production audit.
+
 ## Privacy notice production acceptance 27 October 2026
 
 PR #21 (merge `4ac19d1e6ba2f9693e85d3b99a225c11bfb1033e`) is deployed and operator-accepted. The homepage banner, introduction and footer expose the public /privacy notice and browser analytics choices. Registration, login, passkey setup and feedback also link to the notice. The notice remains explicitly under review; publication does not constitute final legal approval or confirmation of retention rules.
