@@ -159,3 +159,17 @@ DS Lab's own catalogue integration is a separate check and remains pending its
 production container/source/status evidence. Do not infer a DS Lab refresh solely
 from SARVA's successful run or assume its dataset-only directory must contain all
 5,096 catalogue record types.
+
+
+## Issues and feedback deployed and accepted, 27 October 2026
+
+PR #17 merged as 3ee417f. The operator applied migrations 062–064 and recreated
+SARVA backend/frontend after saving the rollback at
+/home/marc/sarva-backups/before-feedback-20261027-152120.
+Production checks passed: Nginx valid; SARVA home/API 200; anonymous review API
+401 and users/analytics APIs 403; DS Lab home 200. Browser acceptance confirms
+Issues & feedback, assignment and resolution work, and normal SARVA login and
+DS Lab remain working. See [acceptance and rollback details](ISSUES-FEEDBACK-MANAGEMENT.md).
+Cleanup of older SARVA backend/frontend rollback tags is authorized but pending;
+retain the latest rollback-feedback-20261027-152120 pair and current images.
+No DS Lab deployment or host Nginx change was part of this release.

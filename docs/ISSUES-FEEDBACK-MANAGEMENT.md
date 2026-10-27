@@ -1,7 +1,8 @@
-# Issues and feedback: local follow-up
+# Issues and feedback: production acceptance
 
-Locally implemented and tested on 27 October 2026 and prepared for GitHub
-publication. Production deployment and acceptance are pending.
+Deployed and accepted on production on 27 October 2026 after PR #17 merged
+into main (3ee417f). The operator confirmed Issues & feedback, assignment,
+resolution, normal SARVA login and DS Lab work.
 This follows the issue-reporting and unique-IP release in PR #16.
 
 ## User flow
@@ -57,3 +58,36 @@ and DS Lab root both returned 200. Production was not accessed or changed.
 Deployment requires backup and backend/frontend images, then migrations 062,
 063 and 064 before recreating the backend. No new packages, DS Lab changes or
 host Nginx changes are required. Keep rollback images and preserve report data.
+
+## Production acceptance, 27 October 2026
+
+Before deployment the operator saved verified database/configuration backups and
+tagged backend/frontend rollback images under:
+/home/marc/sarva-backups/before-feedback-20261027-152120
+
+The supplied terminal output confirms migrations 062_review_issue_management.sql,
+063_review_issue_assignment.sql and 064_review_feedback_contacts.sql applied.
+Backend/frontend were recreated. Backend became healthy; an initial frontend
+connection reset during startup was followed by successful readiness checks.
+Host Nginx syntax passed and hostname-validating local HTTPS checks returned:
+
+- SARVA homepage and /api/health: 200.
+- Anonymous /api/review/issues: 401.
+- Anonymous /api/admin/users and /api/analytics/insights: 403.
+- DS Lab homepage: 200.
+
+The operator subsequently confirmed everything works, specifically Issues &
+feedback, assignment, resolving, normal SARVA login and DS Lab. This records
+operator-supplied production evidence, not an independently executed remote audit.
+
+Post-release image cleanup is authorized but execution/verification is pending.
+Retain the current running images and the latest pre-release rollback pair:
+
+- sarva-backend:rollback-feedback-20261027-152120
+- sarva-frontend:rollback-feedback-20261027-152120
+
+Only older rollback tags in the sarva-backend and sarva-frontend repositories
+are eligible for the planned removal. Never force-remove images, remove volumes,
+or use docker system prune -a. Preserve DS Lab images, backup files and current
+container images. Do not mark cleanup complete until removal and both-site
+checks are reported by the operator.
