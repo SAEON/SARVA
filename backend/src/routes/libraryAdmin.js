@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { checkLibraryLinks } from "../services/linkChecker.js";
-import { requireAdmin } from "../utils/authSession.js";
+import { requireCurrentAdmin as requireAdmin } from "../utils/currentAdmin.js";
 
 export const libraryAdminRouter = Router();
 
