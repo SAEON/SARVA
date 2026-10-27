@@ -197,7 +197,7 @@ export default function AuthPanel() {
                             {roleLabels && <div className="sarva-accountRoles" aria-label="Your roles">{user.roles.map(role => <span key={role.name}>{role.label || role.name}</span>)}</div>}
                             <nav aria-label="Account shortcuts">
                                 <p className="sarva-accountGroup">Workspace</p>
-                                <AccountLink to="/testing" kind="testing" title="Testing & issues" description="Report a problem or follow a review" onClick={() => setOpen(false)}/>
+                                <AccountLink to="/testing" kind="testing" title="Issues & feedback" description="Ask a question, report a problem or follow a reply" onClick={() => setOpen(false)}/>
                                 {user.roles?.some(role => role.name === 'admin') && <>
                                     <p className="sarva-accountGroup">Administration</p>
                                     <AccountLink to="/admin/users" kind="users" title="Users & roles" description="Manage accounts and permissions" onClick={() => setOpen(false)}/>

@@ -6,5 +6,6 @@ export default function DevelopmentNotice() {
     This platform is undergoing review and testing until mid-November before its final release.
     {' '}Some features are not yet implemented. Features may be added, changed or removed during this process.
     {' '}Expect disruptions as development continues.
+    {' '}For issues, questions or feedback, please register or sign in, then click your account icon and choose Issues &amp; feedback.
   </aside>;
 }
