@@ -1,6 +1,6 @@
 # Local SARVA user administration and testing review
 
-Status: implemented locally on 27 October 2026. Not pushed to GitHub or deployed.
+Status: locally tested release prepared for GitHub on 27 October 2026. Production deployment is pending operator execution and acceptance.
 The candidate at http://localhost:8095 uses a dedicated synthetic database and
 synthetic accounts. No production accounts, passwords or issue reports were copied.
 Passkeys remain excluded. The experimental release banner and normal password
@@ -90,3 +90,39 @@ notes; ordinary reporter sees only their own report and Reply from Admin, with n
 administrator name or review controls. Local sample issues are explicitly synthetic,
 not verified defects or fixes in production. Local spatial feeds are empty fixtures;
 this review does not establish production map or external-feed availability.
+
+
+Final local checks passed: 52 backend tests and 4 frontend tests, frontend lint,
+Docker builds and browser workflows. Anonymous user management returned 403,
+anonymous issue tracker returned 401, local API health passed and DS Lab returned
+200. This is synthetic local evidence; production acceptance remains pending.
+
+## Production deployment sequence
+
+1. Verify hostname ulwsarvadsl01 and a clean tracked checkout in /opt/sarva.
+   Preserve the server-specific untracked preview/compose.production.yml.
+2. Save a PostgreSQL custom-format dump and validate it with pg_restore --list.
+   Back up available private .env files, Compose files and host Nginx; tag both
+   currently running frontend/backend image IDs and record the tags and commit.
+3. Pull main with --ff-only, build backend/frontend only, and run
+   docker compose run --rm --no-deps backend npm run migrate. Expect additive
+   059_user_administration.sql and 060_testing_review_tracker.sql; existing users,
+   roles and credential hashes are preserved. Never restore the synthetic DB.
+4. Recreate backend/frontend with --no-deps, keeping the current production env,
+   data mounts and database. Refresh frontend Nginx upstream DNS after the API
+   is healthy (validate nginx -t, then signal the verified Nginx PID 1 if needed).
+   Host Nginx should continue proxying SARVA directly to port 8090; do not restart
+   the stopped preview services or change DS Lab's stack or virtual host.
+5. Verify SARVA homepage/API 200, anonymous user administration/analytics 403,
+   anonymous tracker 401, and DS Lab 200. Operator signs in with their existing
+   production SARVA account, opens Users & roles and Testing & issues, and checks
+   a report/reply/review. Admins should see author names; ordinary reporters
+   should see Reply from Admin and only their own reports. Do not change real
+   account roles solely for deployment testing.
+6. Record production acceptance before cleanup. Retain rollback tags, database
+   dump, private configuration and data volumes. No pruning is part of migration.
+
+Code rollback can restore the saved frontend/backend images while retaining these
+additive schema tables. Access changes made through the deployed tool persist in
+the database; a code rollback does not reverse them. Database restore is a separate
+recovery decision and must account for new user activity since the backup.
