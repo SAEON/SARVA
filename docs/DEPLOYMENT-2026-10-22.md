@@ -170,6 +170,9 @@ Production checks passed: Nginx valid; SARVA home/API 200; anonymous review API
 401 and users/analytics APIs 403; DS Lab home 200. Browser acceptance confirms
 Issues & feedback, assignment and resolution work, and normal SARVA login and
 DS Lab remain working. See [acceptance and rollback details](ISSUES-FEEDBACK-MANAGEMENT.md).
-Cleanup of older SARVA backend/frontend rollback tags is authorized but pending;
-retain the latest rollback-feedback-20261027-152120 pair and current images.
+Cleanup of older SARVA backend/frontend rollback tags is complete. The operator
+confirmed the latest rollback-feedback-20261027-152120 pair and current images
+were retained, Nginx validation passed, SARVA home/API and DS Lab returned 200,
+and anonymous issue/users/analytics access remained correctly denied (401/403).
+Backup files and database volumes were preserved; build cache was not pruned.
 No DS Lab deployment or host Nginx change was part of this release.

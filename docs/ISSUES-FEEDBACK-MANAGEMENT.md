@@ -80,14 +80,33 @@ The operator subsequently confirmed everything works, specifically Issues &
 feedback, assignment, resolving, normal SARVA login and DS Lab. This records
 operator-supplied production evidence, not an independently executed remote audit.
 
-Post-release image cleanup is authorized but execution/verification is pending.
+Post-release image cleanup completed and passed verification on 27 October 2026.
 Retain the current running images and the latest pre-release rollback pair:
 
 - sarva-backend:rollback-feedback-20261027-152120
 - sarva-frontend:rollback-feedback-20261027-152120
 
-Only older rollback tags in the sarva-backend and sarva-frontend repositories
-are eligible for the planned removal. Never force-remove images, remove volumes,
+The cleanup was scoped to older rollback tags in the sarva-backend and
+sarva-frontend repositories. Never force-remove images, remove volumes,
 or use docker system prune -a. Preserve DS Lab images, backup files and current
-container images. Do not mark cleanup complete until removal and both-site
-checks are reported by the operator.
+container images. The operator supplied successful removal and post-cleanup checks as recorded below.
+
+## Cleanup completed, 27 October 2026
+
+Operator output confirms older SARVA rollback tags/images were removed and the
+cleanup script completed with the latest rollback pair retained. The script
+also verified the current backend/frontend container image IDs were unchanged
+and both retained rollback tags still existed. Backup files were preserved;
+DS Lab image repositories, containers, database volumes and build cache were
+outside the removal scope. No forced image removal or volume pruning was used.
+
+Post-cleanup Nginx configuration validation passed. Hostname-validating local
+HTTPS returned SARVA homepage/API 200, anonymous issue API 401, anonymous user
+management/analytics APIs 403, and DS Lab homepage 200. These checks follow the
+earlier operator browser acceptance of login, feedback, assignment and resolving;
+no additional post-cleanup browser session is claimed.
+
+Reported Docker disk summary after cleanup: 34 images (18 active), 9.663 GB;
+18 containers (16 active); five volumes, all active, 1.198 GB; build cache
+10.39 GB. Reclaimable totals do not mean those assets are approved for deletion.
+No precise reclaimed-space total was supplied.
