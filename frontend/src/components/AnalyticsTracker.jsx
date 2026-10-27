@@ -1,3 +1,4 @@
+import { browserAnalyticsEnabled, ANALYTICS_PREF_KEY, ANALYTICS_PREF_CHANGED } from "../config/analyticsPrivacy.js";
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { apiUrl } from '../config/api';
@@ -8,6 +9,7 @@ let currentView = null;
 function currentToken() {try{return localStorage.getItem(AUTH_TOKEN_KEY);}catch{return null;}}
 function authHeaders(token) {return token ? {Authorization:'Bearer '+token}:{};}
 function send(body, token=currentToken()) {
+  if (!browserAnalyticsEnabled()) return;
   fetch(apiUrl('/api/analytics/events'), {
     method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
     body: JSON.stringify(body), keepalive: true,
@@ -17,9 +19,9 @@ function send(body, token=currentToken()) {
 export default function AnalyticsTracker() {
   const { pathname, key } = useLocation();
   const [authRevision,setAuthRevision]=useState(0);
-  useEffect(()=>{const changed=event=>{if(event.type==='storage'&&event.key!==AUTH_TOKEN_KEY)return;currentView=null;setAuthRevision(n=>n+1);};window.addEventListener(AUTH_CHANGED_EVENT,changed);window.addEventListener('storage',changed);return()=>{window.removeEventListener(AUTH_CHANGED_EVENT,changed);window.removeEventListener('storage',changed);};},[]);
+  useEffect(()=>{const changed=event=>{if(event.type==='storage'&&event.key!==AUTH_TOKEN_KEY&&event.key!==ANALYTICS_PREF_KEY)return;currentView=null;setAuthRevision(n=>n+1);};window.addEventListener(ANALYTICS_PREF_CHANGED,changed);window.addEventListener(AUTH_CHANGED_EVENT,changed);window.addEventListener('storage',changed);return()=>{window.removeEventListener(ANALYTICS_PREF_CHANGED,changed);window.removeEventListener(AUTH_CHANGED_EVENT,changed);window.removeEventListener('storage',changed);};},[]);
   useEffect(() => {
-    if (['/analytics', '/data-health'].includes(pathname) || navigator.globalPrivacyControl || navigator.doNotTrack === '1') return;
+    if (['/analytics', '/data-health', '/privacy'].includes(pathname) || !browserAnalyticsEnabled()) return;
     let view;
     try {
       const now = Date.now();

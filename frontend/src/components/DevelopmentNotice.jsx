@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import '../styles/development-notice.css';
 
 export default function DevelopmentNotice() {
@@ -7,5 +8,6 @@ export default function DevelopmentNotice() {
     {' '}Some features are not yet implemented. Features may be added, changed or removed during this process.
     {' '}Expect disruptions as development continues.
     {' '}For issues, questions or feedback, please register or sign in, then click your account icon and choose Issues &amp; feedback.
+    {" "}<Link to="/privacy">Privacy &amp; analytics choices</Link>.
   </aside>;
 }

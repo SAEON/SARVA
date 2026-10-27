@@ -1258,6 +1258,7 @@ export default function Home() {
                         </span>
                         <h1>{hero?.title || "South African Risk & Vulnerability Atlas"}</h1>
                         <p>{hero?.description || "An open access platform linking datasets, indicators, and tools."}</p>
+                        <Link to="/privacy" className="sarva-dash__privacyLink">Privacy &amp; analytics choices <span aria-hidden="true">↗</span></Link>
                         <a href={DATA_SCIENCE_LAB_PATH} className="sarva-dash__labCallout" aria-label="Open Environmental Data Science Lab">
                             <span className="sarva-dash__labLogo">
                                 <img src={dataScienceLabLogo} alt="Environmental Data Science Lab" />

@@ -1,4 +1,4 @@
-// Analytics identifiers are anonymous labels, never authentication credentials.
+// Analytics identifiers are pseudonymous labels, never authentication credentials.
 // getRandomValues remains available on HTTP intranet pages where randomUUID is absent.
 export function analyticsId(cryptoApi = globalThis.crypto) {
   if (typeof cryptoApi?.randomUUID === 'function') return cryptoApi.randomUUID();
