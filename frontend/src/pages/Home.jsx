@@ -1321,7 +1321,16 @@ export default function Home() {
                                             <b className={`is-${highlight.severityKey || "unknown"}`}>{highlight.tag || highlight.severity}</b>
                                             {highlight.label}
                                         </small>
-                                        <strong>{highlight.value}</strong>
+                                        {highlight.combinedWeatherSummary && Array.isArray(highlight.measurements) ? (
+                                            <span className="sarva-combinedWeatherValues">
+                                                {highlight.measurements.map(measurement => (
+                                                    <span key={measurement.label}>
+                                                        <span>{measurement.label}</span>
+                                                        <strong>{measurement.value}</strong>
+                                                    </span>
+                                                ))}
+                                            </span>
+                                        ) : <strong>{highlight.value}</strong>}
                                         {highlight.explainer && <i>{highlight.explainer}</i>}
                                         <p>{highlight.location}</p>
                                         <p className="sarva-forecastDate">Forecast for: {formatForecastDate(highlight.forecastDate)} (SAST)</p>

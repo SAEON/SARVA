@@ -3970,3 +3970,17 @@ body {
 .sarva-dash__hero .sarva-dash__privacyLink{display:inline-flex;align-items:center;gap:8px;color:#fffdf7;font-size:14px;font-weight:700;text-decoration:underline;text-underline-offset:4px;margin:0 0 18px;padding:6px 0}.sarva-dash__hero .sarva-dash__privacyLink:focus-visible{outline:3px solid #edc27b;outline-offset:4px}
 
 .sarva-dash__heroHighlightGrid .sarva-forecastDate { font-weight: 700; font-size: 14px; color: #fffdf7; }
+
+.sarva-dash__heroHighlightGrid button > .sarva-combinedWeatherValues {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: 12px 0;
+    color: inherit;
+}
+.sarva-combinedWeatherValues > span { display: flex; flex-direction: column; gap: 5px; }
+.sarva-combinedWeatherValues > span > span { font-size: 12px; font-weight: 600; }
+.sarva-dash__heroHighlightGrid .sarva-combinedWeatherValues strong { font-size: clamp(20px, 2vw, 28px); line-height: 1.2; }
+@media (max-width: 480px) {
+    .sarva-dash__heroHighlightGrid button > .sarva-combinedWeatherValues { grid-template-columns: 1fr; }
+}
