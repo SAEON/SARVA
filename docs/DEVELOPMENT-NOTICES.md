@@ -96,3 +96,36 @@ before deployment. After the switch, verify public home/API, protected admin
 access, normal account login, DS Lab, and HTTPS. Stop unused preview services only
 after acceptance. Preserve rollback images, private configuration and data volumes;
 cleanup should only prune dangling images older than 24 hours, without -a or volumes.
+
+
+## Production public access deployed and cleanup complete, 27 October 2026
+
+Supersedes the pending deployment status above. Operator output confirms the
+frontend rebuild and direct frontend HTTP 200. Host Nginx's SARVA virtual host
+was switched from the preview gateway at 127.0.0.1:5180 to the frontend at
+127.0.0.1:8090. The shared preview authentication gate and injected preview
+control are no longer in the public request path. Normal SARVA account login
+and administrator authorization remain in the application; passkeys were not
+included in this release.
+
+Production HTTPS checks using the real hostnames resolved locally to the server
+returned SARVA homepage 200, public API health 200, and DS Lab homepage 200.
+Anonymous /api/analytics/insights returned 403, confirming administrator
+analytics was not exposed by removing the preview gate. Operator reported the
+site appeared to work. A separate explicit successful normal-account sign-in
+confirmation was not supplied for this release. These local HTTPS checks do not
+constitute an independent external-network connectivity test.
+
+Rollback backup: /home/marc/sarva-backups/before-public-access-20261027-114153,
+including commit, configuration archive and rollback-image tag record. The
+earlier backup attempt stopped on a missing backend/.env before deployment;
+the successful backup included the available configuration instead.
+
+Operator cleanup output confirms both preview-gateway and preview-auth services
+stopped, but retained for rollback. Dangling image pruning with the instructed
+24-hour age filter reclaimed 0 B. Nginx configuration validation passed; SARVA
+and DS Lab still returned 200 after cleanup, and the saved frontend rollback
+image remained present. No database volumes, tagged rollback images or private
+credential files were designated for deletion. This records supplied operator
+evidence, not a direct remote inspection. Data-feed connectivity remains a
+separate operational concern.
