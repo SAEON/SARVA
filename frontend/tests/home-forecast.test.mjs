@@ -28,3 +28,8 @@ test("main fire-weather card preserves physical measurements instead of becoming
  const item={mapMode:"fire-risk",mainWeatherSignal:true,value:"35 °C · 45 km/h wind · 0 mm/day rain",label:"Main weather signal: Fire-weather conditions"};
  assert.deepEqual(explainHomeForecast(item),item);
 });
+
+test("combined summary survives frontend formatting with all physical values",()=>{
+ const item={mapMode:"environmental-risk",mainWeatherSignal:true,combinedWeatherSummary:true,label:"Combined risk",value:"Maximum temperature: 28 °C · Daily rainfall: 73.2 mm/day · Maximum wind speed: 12 km/h"};
+ assert.deepEqual(explainHomeForecast(item),item);
+});

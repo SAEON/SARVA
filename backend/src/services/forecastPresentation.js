@@ -35,23 +35,18 @@ export function presentMainWeatherSignal(item) {
  const fields = item.weatherValues || {};
  const number = value => value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value))
   ? new Intl.NumberFormat("en-GB", {maximumFractionDigits:1}).format(Number(value)) : null;
- const rain = number(fields.rainfallMm), heat = number(fields.temperatureMaxC), wind = number(fields.windMaxKmh);
- const definitions = {
-  "Rain / flood proxy": ["Rainfall", rain && `${rain} mm/day`, "forecast-risk"],
-  "Heat": ["Heat", heat && `${heat} °C`, "heat-risk"],
-  "Wind": ["Wind", wind && `${wind} km/h`, "wind-risk"],
-  "Fire-weather proxy": ["Fire-weather conditions", [heat && `${heat} °C`, wind && `${wind} km/h wind`, rain && `${rain} mm/day rain`].filter(Boolean).join(" · "), "fire-risk"],
- };
- const signal = definitions[item.dominantHazard];
- const available = signal && signal[1];
- return { ...item, mainWeatherSignal:true, experimental:true, officialWarning:false,
-  label: available ? `Main weather signal: ${signal[0]}` : "Main weather signal unavailable",
-  value: available ? signal[1] : "Forecast measurements unavailable",
-  mapMode: available ? signal[2] : item.mapMode,
+ const measurements = [
+  {label:"Maximum temperature", value:number(fields.temperatureMaxC), unit:"°C"},
+  {label:"Daily rainfall", value:number(fields.rainfallMm), unit:"mm/day"},
+  {label:"Maximum wind speed", value:number(fields.windMaxKmh), unit:"km/h"},
+ ].map(measurement => ({...measurement, value:measurement.value === null ? "Unavailable" : `${measurement.value} ${measurement.unit}`}));
+ return { ...item, mainWeatherSignal:true, combinedWeatherSummary:true, experimental:true, officialWarning:false,
+  label:"Combined risk",
+  value:measurements.map(measurement => `${measurement.label}: ${measurement.value}`).join(" · "),
+  measurements,
+  mapMode:"environmental-risk",
   tag:"Experimental", severity:"Experimental", severityKey:"experimental",
-  explainer: available
-   ? "Selected using SARVA's experimental screening calculation. These are model estimates for this location and date, not an official warning or a prediction of harm."
-   : "No matching forecast measurements are available. No risk score is shown.",
+  explainer:"Experimental weather summary for one location and forecast date, not an official warning or a prediction of harm. The location is selected using SARVA's internal screening calculation.",
   detail:[item.location,item.forecastDate].filter(Boolean).join(" | "),
   source:"ECMWF model data · SARVA interpretation",
  };
