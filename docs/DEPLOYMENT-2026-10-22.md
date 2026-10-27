@@ -1,5 +1,9 @@
 # SARVA production deployment, 22 October 2026
 
+Latest catalogue update (27 October 2026): production connectivity is fixed and
+all 5,096 records refreshed successfully. See the catalogue recovery record below;
+it supersedes earlier catalogue connectivity/sync blockers in this historical log.
+
 Status: deployed on the new production host and locally verified over HTTPS;
 external access and final acceptance remain pending. Evidence below is from
 operator-supplied terminal output, not an independently executed server audit.
@@ -124,3 +128,34 @@ preview credentials and trusted proxy CIDRs. Refresh frontend and preview gatewa
 Nginx resolution after recreation. Check authenticated analytics, preview login,
 anonymous API protection and DS Lab before any image deletion. Preserve tagged
 rollback images, backups and all container-used images; never prune volumes.
+
+
+## Catalogue connection fixed and production refresh verified, 27 October 2026
+
+IT supplied a successful HTTPS GraphQL POST using the catalogue's internal address
+192.168.117.57. The operator then tested from the running SARVA backend container
+on ULWSARVADSL01 using its configured endpoint, normal certificate validation and
+the application's Node fetch runtime. HTTP 200 returned
+{"data":{"__typename":"Query"}}. The production hostname remains
+https://catalogue.saeon.ac.za/graphql; forcing the public IP is not required.
+
+The operator's direct frontend /api/catalogue/status response confirmed:
+
+- Latest sync run ID: 141, status success, no error_message.
+- Started: 2026-10-27 11:33:32.684 UTC / 13:33:32.684 SAST.
+- Finished: 2026-10-27 11:34:37.239 UTC / 13:34:37.239 SAST.
+- total_count = processed_count = cached records = live totalCount = 5,096.
+- Cached keywords: 53,487; cached creators: 8,042.
+- live.available = true for the configured GraphQL endpoint.
+
+The earlier connection timeout and catalogue refresh blocker are resolved for
+SARVA production. A successful complete refresh had already finished, so no
+additional manual refresh was necessary. No certificate bypass or forced public-IP
+hosts entry was used in this verification. This records supplied production
+terminal evidence; it is not an independently executed remote audit and does not
+guarantee future scheduled runs or other external data feeds.
+
+DS Lab's own catalogue integration is a separate check and remains pending its
+production container/source/status evidence. Do not infer a DS Lab refresh solely
+from SARVA's successful run or assume its dataset-only directory must contain all
+5,096 catalogue record types.
