@@ -1,6 +1,6 @@
 # Municipal source data correction
 
-Status: deployed and operator-accepted on production, 27 October 2026, via PR #19 (merge 325e3ba). Cleanup pending.
+Status: deployed and operator-accepted on production, 27 October 2026, via PR #19 (merge 325e3ba). Production cleanup complete.
 
 Public municipality profiles, map metrics, historical trends and indicator metadata exclude rows marked as proxy by their definition, confidence, scenario or known deterministic-seed markers. Selection applies eligibility before choosing the latest value. Context inputs and legacy proxy index definitions cannot contribute to public indices. No stored records are deleted and no migration is needed.
 
@@ -24,4 +24,4 @@ Do not prune rollback images until production browser acceptance is recorded.
 
 ## Production acceptance
 
-The operator confirmed all deployment checks passed and the simpler profiler, source-only PDF, password login, passkey login and DS Lab work. Rollback is saved under /home/marc/sarva-backups/before-profiler-20261027-163143. Keep the corresponding rollback-profiler backend/frontend pair and current running images. Removal of older SARVA rollback tags is pending; do not report cleanup complete until the operator supplies its successful checks.
+The operator confirmed all deployment checks passed and the simpler profiler, source-only PDF, password login, passkey login and DS Lab work. Rollback is saved under /home/marc/sarva-backups/before-profiler-20261027-163143. Keep the corresponding rollback-profiler backend/frontend pair and current running images. The operator confirmed cleanup of older SARVA rollback tags is complete and all post-cleanup checks passed. The latest rollback-profiler backend/frontend pair and running images are retained; SARVA password and passkey login and DS Lab remain working. This is operator-reported acceptance, not an independently executed server audit.
