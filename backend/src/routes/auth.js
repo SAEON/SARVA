@@ -1,3 +1,4 @@
+import {createPasskeyRouter} from './passkeys.js';
 import crypto from "crypto";
 import { Router } from "express";
 import { pool } from "../db/pool.js";
@@ -99,14 +100,14 @@ async function getUserById(userId) {
   return result.rows[0] || null;
 }
 
-function tokenFor(user) {
+function tokenFor(user, ttlSeconds = TOKEN_TTL_SECONDS) {
   const now = Math.floor(Date.now() / 1000);
   return signPayload({
     sub: String(user.id),
     email: user.email,
     roles: user.roles.map((role) => role.name),
     iat: now,
-    exp: now + TOKEN_TTL_SECONDS,
+    exp: now + ttlSeconds,
   });
 }
 
@@ -244,3 +245,6 @@ authRouter.get("/auth/me", async (req, res) => {
     res.status(401).json({ status: "error", message: "Not authenticated" });
   }
 });
+
+// Optional account passkeys preserve the existing SARVA password sign-in.
+authRouter.use(createPasskeyRouter({db:pool,getUserById,publicUser,tokenFor,verifyPassword}));
