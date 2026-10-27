@@ -1,6 +1,6 @@
 # SARVA privacy notice local review
 
-Status: deployed and operator-accepted on production 27 October 2026 via PR #21 (merge 4ac19d1). All deployment checks passed; the operator confirmed the privacy notice, password login, passkey login and DS Lab work. Cleanup is pending operator execution. The notice remains under review and is not approved as a final legal notice.
+Status: deployed and operator-accepted on production 27 October 2026 via PR #21 (merge 4ac19d1). All deployment checks passed; the operator confirmed the privacy notice, password login, passkey login and DS Lab work. Older SARVA rollback cleanup is complete, confirmed by operator terminal output; post-cleanup site and access-control checks passed. The latest privacy rollback pair (20261027-173036), running images, backups and database volumes were retained. DS Lab remains working. The notice remains under review and is not approved as a final legal notice.
 
 Sources checked: NRF Privacy Policy (https://www.nrf.ac.za/privacy-policy/), NRF PAIA Information (https://www.nrf.ac.za/paia-information/), and Information Regulator complaints (https://inforegulator.org.za/complaints/). NRF's published general notice email is info@nrf.ac.za, postal address NRF, PO Box 2600, Pretoria 0001. The PAIA page links Information Officer/deputy details; do not copy names from an older manual as current appointments without verification. The public policy did not establish a SARVA-specific retention schedule.
 
