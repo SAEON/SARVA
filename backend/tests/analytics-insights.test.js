@@ -97,3 +97,12 @@ test('unique IP totals deduplicate visits and exclude historical missing identif
  assert.ok(!JSON.stringify(report).includes(hash1));
  await pool.query('DELETE FROM sarva.analytics_event WHERE section=$1',[section]);
 });
+
+test('browser GPC and DNT headers skip analytics storage even for signed-in events',async()=>{
+ for(const privacyHeader of ['Sec-GPC','DNT']){
+  const id=crypto.randomUUID();
+  const r=await fetch(base+'/analytics/events',{method:'POST',headers:{'Content-Type':'application/json',[privacyHeader]:'1',Authorization:'Bearer '+token(user)},body:JSON.stringify({path:'/',sessionId:id,viewId:id,kind:'page'})});
+  assert.equal(r.status,204);
+  assert.equal((await pool.query('SELECT count(*)::int AS count FROM sarva.analytics_event WHERE view_id=$1',[id])).rows[0].count,0);
+ }
+});

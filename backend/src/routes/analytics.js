@@ -34,6 +34,7 @@ export function trackApi(req, res, next) {
 // Bounded browser events. Identity is server-verified; Raw IPs stay in memory; only a keyed hash is saved for aggregate counts.
 const buckets = new Map();
 analyticsRouter.post('/analytics/events', async (req, res) => {
+  if (req.get('Sec-GPC') === '1' || req.get('DNT') === '1') return res.sendStatus(204);
   const { path, sessionId, viewId, kind = 'page' } = req.body || {};
   const idPattern = /^[a-zA-Z0-9-]{16,64}$/;
   if (typeof path !== 'string' || !pagePattern.test(path) || typeof sessionId !== 'string' || !idPattern.test(sessionId)

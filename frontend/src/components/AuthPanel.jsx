@@ -299,6 +299,7 @@ export default function AuthPanel() {
                                 </div>
                             </label>
 
+                            <p className="sarva-auth__privacy" data-analytics-ignore>{mode === "register" ? "We use your name and email to manage your account. Optional usage analytics can be linked to your account when signed in; you can turn them off without affecting login." : "Your sign-in information is used to verify access. You can control optional account-linked usage analytics separately."} <Link to="/privacy" onClick={() => setOpen(false)}>Read privacy notice and analytics choices</Link>.</p>
                             {message && <p className="sarva-auth__message">{message}</p>}
 
                             <button className="sarva-auth__submit" type="submit" disabled={loading}>
