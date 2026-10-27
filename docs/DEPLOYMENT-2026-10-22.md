@@ -1,5 +1,15 @@
 # SARVA production deployment, 22 October 2026
 
+## Latest production acceptance 27 October 2026
+
+The operator confirmed PR #19 (merge `325e3ba271f074deb174f08f597e61a4c1131218`) is deployed. Public municipal outputs exclude synthetic test inputs; missing scores remain null and report insufficient verified data. The public profiler uses the simpler raw-source map and tables, and the downloaded source PDF excludes composite scores and forecasts. The operator confirmed that the simpler view and PDF look correct, normal SARVA password and passkey sign-in both work, and DS Lab still works.
+
+Deployment terminal checks passed: SARVA homepage, health, profiler and account/passkeys returned 200; anonymous passkey listing and review returned 401; anonymous user management and analytics returned 403; DS Lab returned 200; passkeys are enabled; the public municipality profile excludes synthetic inputs and unsupported scores. Only backend/frontend were updated; no migration, seed deletion, volume recreation or authentication setting changes were required.
+
+Rollback backup: `/home/marc/sarva-backups/before-profiler-20261027-163143`, including readable database dump, private configuration, Nginx configuration, commit and rollback-image manifest. Retain `sarva-backend:rollback-profiler-20261027-163143` and `sarva-frontend:rollback-profiler-20261027-163143` alongside the images used by running containers. Cleanup of older SARVA rollback tags is authorised but **pending operator execution and verification**. Keep all database volumes and backup files, and leave DS Lab images and services untouched.
+
+This current acceptance supersedes historical preview-gate and initial access-pending descriptions below. SARVA is publicly served directly through frontend port 8090; do not restart the retired preview gateway. Historical entries remain as the deployment record. Evidence is operator-supplied terminal output and browser acceptance, not an independent production audit.
+
 Latest catalogue update (27 October 2026): production connectivity is fixed and
 all 5,096 records refreshed successfully. See the catalogue recovery record below;
 it supersedes earlier catalogue connectivity/sync blockers in this historical log.
