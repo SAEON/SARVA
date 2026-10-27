@@ -1,7 +1,7 @@
 # SARVA account menu and header fit
 
-Prepared for production on 27 October 2026. Deployment and operator acceptance
-are pending. This frontend-only change follows the user administration and
+Deployed to production on 27 October 2026; operator accepted the account menu,
+normal SARVA login and DS Lab. Post-deployment image cleanup remains pending. This frontend-only change follows the user administration and
 testing tracker release; it does not change roles, credentials or database schema.
 
 The signed-in account menu now includes an identity section, role badges, grouped
@@ -37,3 +37,25 @@ ESLint and all four existing frontend tests passed. No dependencies were added.
 Rollback restores the saved frontend image and recreates frontend only; retain
 the existing production environment. Backend/database/account changes from the
 previous release are independent of this layout fix.
+
+
+## Production acceptance, 27 October 2026
+
+Release: main merge 3335c16 (PR #12). Operator confirmed all instructed checks
+passed, the account menu looks good, normal SARVA login works and DS Lab still
+works. The instructed checks covered direct frontend readiness, frontend Nginx
+validation, public SARVA homepage/API and DS Lab HTTPS. This is operator-reported
+acceptance, not an independent remote inspection or a new data-feed test.
+
+Rollback backup confirmed before deployment:
+/home/marc/sarva-backups/before-account-menu-20261027-134437
+(commit.txt, configuration.tgz and rollback-image.txt). The running frontend
+image was tagged before replacement. No database migration or credential change
+was required for this menu release. The stopped preview services remain outside
+the public request path; host Nginx continues routing SARVA directly to 8090.
+
+Cleanup is authorized but not yet confirmed. The instructed cleanup will verify
+saved rollback tag records for both the account-menu and user-administration
+releases, prune only dangling images older than 24 hours, then recheck the tags
+and both sites. No -a image pruning, volume pruning, container removal or private
+backup deletion is included. Record cleanup completion only after operator output.
