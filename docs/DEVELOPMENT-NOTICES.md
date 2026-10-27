@@ -70,3 +70,29 @@ no prune transcript, refreshed image inventory or reclaimed-space figures were
 supplied. No application restart or credential change was required for cleanup.
 Preserve rollback tags and backups for recovery. Catalogue connectivity and
 other previously pending network/data-reconciliation items remain separate.
+
+
+## Experimental public access prepared, 27 October 2026
+
+The locally reviewed banner identifies SARVA 4 as experimental, with review and
+testing until mid-November. Some features are not yet implemented; features may
+be added, changed or removed, and disruptions are expected as development continues.
+
+The intended production entry point is host Nginx directly to the existing
+loopback frontend at 127.0.0.1:8090, replacing the preview gateway at 5180.
+This removes the shared preview login and injected floating preview control.
+Normal SARVA account authentication and administrator authorization remain.
+DS Lab's separate virtual host and services are unchanged. The passkey experiment
+is excluded from this branch. No database migration is needed for this change.
+
+Local frontend/backend builds passed; browser review confirmed the warning and
+normal Login button without the preview gate. Local API health passed and
+anonymous administrator analytics access was denied (403). The local review uses
+synthetic data and does not establish production data-feed availability.
+
+Production deployment and cleanup are pending operator execution and acceptance.
+Back up the SARVA host Nginx configuration and tag its current frontend image
+before deployment. After the switch, verify public home/API, protected admin
+access, normal account login, DS Lab, and HTTPS. Stop unused preview services only
+after acceptance. Preserve rollback images, private configuration and data volumes;
+cleanup should only prune dangling images older than 24 hours, without -a or volumes.
