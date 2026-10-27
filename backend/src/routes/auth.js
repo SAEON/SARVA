@@ -100,14 +100,14 @@ async function getUserById(userId) {
   return result.rows[0] || null;
 }
 
-function tokenFor(user) {
+function tokenFor(user, ttlSeconds = TOKEN_TTL_SECONDS) {
   const now = Math.floor(Date.now() / 1000);
   return signPayload({
     sub: String(user.id),
     email: user.email,
     roles: user.roles.map((role) => role.name),
     iat: now,
-    exp: now + TOKEN_TTL_SECONDS,
+    exp: now + ttlSeconds,
   });
 }
 

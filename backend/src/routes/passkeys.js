@@ -116,7 +116,7 @@ export function createPasskeyRouter({db,getUserById,publicUser,tokenFor,verifyPa
   }catch{await client.query('ROLLBACK');return res.status(401).json({message:'Passkey sign-in failed. Start again or use your password.'});}finally{client.release();}
   const user=await getUserById(userId);if(!user)return res.sendStatus(401);
   await db.query('UPDATE sarva.app_user SET last_login_at=now() WHERE id=$1',[user.id]);
-  res.json({status:'ok',data:{user:publicUser(user),token:tokenFor(user)}});
+  res.json({status:'ok',data:{user:publicUser(user),token:tokenFor(user,60*60*24*30)}});
  }));
  router.post('/auth/passkeys/remove',safe(async(req,res)=>{
   const user=await actor(req);if(!user)return res.sendStatus(401);

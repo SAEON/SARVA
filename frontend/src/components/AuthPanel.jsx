@@ -251,7 +251,7 @@ export default function AuthPanel() {
                                 </button>
                             </div>
 
-                            {mode==='login'&&passkeysEnabled&&window.isSecureContext&&browserSupportsWebAuthn()&&<><button type="button" className="sarva-auth__passkey" disabled={loading} onClick={signInWithPasskey}>Sign in with a passkey</button><p className="sarva-auth__passwordFallback">Already enabled? Use your device PIN, fingerprint or face recognition. Otherwise, sign in with your password below.</p></>}
+                            {mode==='login'&&passkeysEnabled&&window.isSecureContext&&browserSupportsWebAuthn()&&<><button type="button" className="sarva-auth__passkey" disabled={loading} onClick={signInWithPasskey}>Sign in with a passkey</button><p className="sarva-auth__passwordFallback">Already enabled? Use your device PIN, fingerprint or face recognition and stay signed in for up to 30 days. Otherwise, sign in with your password below.</p></>}
 
                             {mode === "register" && (
                                 <label>

@@ -94,6 +94,7 @@ test('registers a cryptographically valid passkey and exposes metadata only',asy
 test('login verifies signature, account binding and roles, and blocks replay',async()=>{
  const ceremony=await options('login');const response=await request('/passkeys/login/verify',{credential:assertion(ceremony.options.challenge)},null,ceremony.cookie);assert.equal(response.status,200);
  const body=await response.json();assert.equal(String(body.data.user.id),String(actor.id));assert.deepEqual(body.data.user.roles.map(role=>role.name),['viewer']);assert.ok(body.data.token);
+ const session=JSON.parse(Buffer.from(body.data.token.split('.')[0],'base64url'));assert.equal(session.exp-session.iat,30*24*60*60);
  assert.equal((await request('/passkeys/login/verify',{credential:assertion(ceremony.options.challenge,2)},null,ceremony.cookie)).status,401);
 });
 test('wrong origin/RP/challenge, tampered signature, missing UV, mismatched handle and stale counter are rejected',async()=>{
@@ -115,7 +116,8 @@ test('only the owner with current password can remove a key; password fallback s
  assert.equal((await(await request('/passkeys',null,access)).json()).data.length,1);
  assert.equal((await request('/passkeys/remove',{id:credentialId,password},access)).status,204);
  assert.equal((await(await request('/passkeys',null,access)).json()).data.length,0);
- assert.equal((await request('/login',{email:actor.email,password})).status,200);
+ const fallback=await request('/login',{email:actor.email,password});assert.equal(fallback.status,200);
+ const fallbackBody=await fallback.json();const session=JSON.parse(Buffer.from(fallbackBody.data.token.split('.')[0],'base64url'));assert.equal(session.exp-session.iat,12*60*60);
 });
 
 test('passkeys remain disabled without explicit configuration',async()=>{

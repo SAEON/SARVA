@@ -1,6 +1,7 @@
 # SARVA device passkeys: local candidate
 
-Implemented locally on 27 October 2026. Not pushed or deployed. Password login
+Implemented and tested locally on 27 October 2026; prepared for GitHub
+publication at the operator’s request. Production deployment is pending. Password login
 and DS Lab remain available. This replaces the earlier abandoned local passkey
 experiment with a device-focused flow based on the current main branch.
 
@@ -16,8 +17,11 @@ existing SARVA account password; device PIN/biometrics never go to the server.
 Logged-out Login has Sign in with a passkey independently of the password form;
 it does not require typing an email. The user chooses an account in the device
 prompt. Normal password login remains, including if setup is cancelled or a
-device is unavailable. This does not add a password-reset email service or extend
-normal session lifetime. Removing a passkey stops later use of that credential,
+device is unavailable. This does not add a password-reset email service. Passkey sign-in issues a
+30-day session token, as requested by the operator. Ordinary password sessions
+remain 12 hours. Signing out or clearing browser storage ends local sign-in.
+Passkeys themselves stay registered until removed, independently of session
+expiry. Privileged routes continue checking current active accounts/roles. Removing a passkey stops later use of that credential,
 but does not revoke sessions that were already issued.
 
 ## Device preference and QR limitations
@@ -72,10 +76,13 @@ regressions. Frontend lint/build passed. Both npm audits reported zero
 vulnerabilities. Local SARVA health returned 200; full existing DS Lab smoke
 checks passed, including legacy links and excluded Chordata 503.
 
-Browser inspected the signed-in setup page with existing synthetic account and
-no enrolled keys. Actual device enrollment, passkey sign-in, cancellation and
-password fallback in the real browser remain pending human testing. Do not mark
-hardware compatibility or production readiness accepted without that result.
+Browser inspected the signed-in setup page with the existing synthetic account.
+The operator subsequently confirmed passkey sign-in works locally. The exact
+device/provider prompt was not reported. Password fallback and owner-scoped
+removal passed automated tests; separate human cancellation/removal acceptance
+was not supplied. The 30-day token lifetime and unchanged 12-hour password token
+lifetime are asserted by backend tests; this does not claim 30 elapsed days of
+observation or production acceptance.
 
 The candidate containers serve localhost:8095 and use only the existing
 synthetic local database. Private synthetic credentials are under
@@ -87,7 +94,11 @@ confirmation and enrollment; sign out, use Sign in with a passkey and confirm
 correct account/roles; then test password login and verify key removal blocks
 new passkey login. Check ordinary issue/feedback access and DS Lab again.
 Do not drive a personal PIN, biometric prompt or credential creation through
-automation. No push, merge, production migration or cleanup is part of this task.
+automation. Publication is authorized; production migration and browser
+acceptance remain pending. Do not copy localhost passkeys or synthetic accounts
+to production. Users enable a fresh passkey on https://sarva.saeon.ac.za after
+rollout. Keep the latest backend/frontend rollback images and private configuration
+before applying migration 065 and recreating only SARVA backend/frontend.
 
 References:
 https://simplewebauthn.dev/docs/packages/server
