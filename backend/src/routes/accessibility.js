@@ -1,6 +1,6 @@
 import {Router} from 'express';
 import {pool} from '../db/pool.js';
-import {requireAdmin} from '../utils/authSession.js';
+import {requireCurrentAdmin as requireAdmin} from '../utils/currentAdmin.js';
 export const accessibilityRouter=Router();
 accessibilityRouter.get('/accessibility/status',async(req,res)=>{
  try {const r=await pool.query('SELECT kind,category,count(*)::int AS count,max(imported_at) AS imported_at FROM sarva.access_features GROUP BY kind,category ORDER BY kind,category');res.json({status:'ok',data:r.rows});}catch{res.status(503).json({message:'Accessibility data unavailable.'});}

@@ -1,9 +1,13 @@
-export const API_BASE = (
-    import.meta.env.VITE_API_BASE || "/api"
-).replace(/\/+$/, "");
+export function normalizeApiBase(value) {
+    const base = String(value || "/api").replace(/\/+$/, "");
+    // A dot means this origin, never the current nested route directory.
+    return base === "." ? "" : base;
+}
+
+export const API_BASE = normalizeApiBase(import.meta.env?.VITE_API_BASE);
 
 export const MARTIN_BASE = (
-    import.meta.env.VITE_MARTIN_BASE || "/tiles"
+    import.meta.env?.VITE_MARTIN_BASE || "/tiles"
 ).replace(/\/+$/, "");
 
 function absoluteBrowserBase(base) {

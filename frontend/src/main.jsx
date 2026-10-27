@@ -20,6 +20,8 @@ const NationalPolicy = lazy(() => import("./pages/NationalPolicy.jsx"));
 const SearchRoute = lazy(() => import("./routes/SearchRoute.jsx"));
 const About = lazy(() => import("./pages/About.jsx"));
 const Analytics = lazy(() => import("./pages/Analytics.jsx"));
+const TestingReview = lazy(() => import("./pages/TestingReview.jsx"));
+const UserAdmin = lazy(() => import("./pages/UserAdmin.jsx"));
 const DataHealth = lazy(() => import("./pages/DataHealth.jsx"));
 const MunicipalRiskProfiler = lazy(() => import("./pages/MunicipalRiskProfiler.jsx"));
 const MunicipalPlanningWorkspace = lazy(() => import("./pages/MunicipalPlanningWorkspace.jsx"));
@@ -44,6 +46,8 @@ const router = createBrowserRouter([
         element: <AppLayout />,
         errorElement: <RouteError />,
         children: [
+            { path: "/testing", element: <Suspense fallback={<PageLoading />}><TestingReview /></Suspense> },
+            { path: "/admin/users", element: <Suspense fallback={<PageLoading />}><UserAdmin /></Suspense> },
             { path: "/analytics", element: <Suspense fallback={<PageLoading />}><Analytics /></Suspense> },
             { path: "/data-health", element: <Suspense fallback={<PageLoading />}><DataHealth /></Suspense> },
             {

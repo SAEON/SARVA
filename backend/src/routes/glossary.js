@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { pool } from "../db/pool.js";
-import { requireAdmin } from "../utils/authSession.js";
+import { requireCurrentAdmin as requireAdmin } from "../utils/currentAdmin.js";
 
 export const glossaryRouter = Router();
 

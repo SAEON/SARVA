@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { pool } from "../db/pool.js";
 import { checkUrl, updateLinkStatus } from "../services/linkChecker.js";
-import { requireAdmin } from "../utils/authSession.js";
+import { requireCurrentAdmin as requireAdmin } from "../utils/currentAdmin.js";
 
 export const nationalPolicyRouter = Router();
 
