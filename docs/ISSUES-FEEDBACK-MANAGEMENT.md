@@ -1,6 +1,7 @@
 # Issues and feedback: local follow-up
 
-Locally implemented and tested on 27 October 2026. Not pushed or deployed.
+Locally implemented and tested on 27 October 2026 and prepared for GitHub
+publication. Production deployment and acceptance are pending.
 This follows the issue-reporting and unique-IP release in PR #16.
 
 ## User flow
