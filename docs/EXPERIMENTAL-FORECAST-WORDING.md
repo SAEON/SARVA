@@ -1,6 +1,6 @@
 # Experimental forecast presentation
 
-Status: locally accepted 27 October 2026; production deployment pending.
+Status: deployed and operator-accepted on production, 27 October 2026, via PR #20 (merge 7abeffb). Cleanup pending.
 
 The main-page highlights, map labels/popups, planning context and public forecast API identify SARVA outputs as experimental interpretations of ECMWF model data rather than official forecasts, warnings or emergency advice. Home severity headlines are replaced by model values and explicitly labelled experimental indices. Cached home payloads are normalised on read so old High/Very high screening-signal wording cannot reappear. Values, locations, dates and model calculations are preserved.
 
@@ -15,3 +15,7 @@ Save the current database, configuration, Git commit and tagged backend/frontend
 Verify public SARVA/DS Lab health, protected endpoint responses, passkey enablement, experimental API metadata and forecast highlight labels. In the browser check the homepage, map popups and official SAWS link, then password and passkey login and DS Lab. Retain rollback images until acceptance; record cleanup separately after successful checks.
 
 References: https://www.weathersa.co.za/warnings and https://www.ecmwf.int/en/forecasts/datasets/open-data .
+
+## Production acceptance
+
+All deployment checks passed and the operator confirmed the live forecast wording, password login, passkey login and DS Lab work. Rollback is saved at /home/marc/sarva-backups/before-forecast-wording-20261027-165810. Preserve the corresponding backend/frontend rollback-forecast-wording pair and current running images. Cleanup of older SARVA rollback tags is pending; record completion only after operator verification. No database migration, model refresh or authentication change was performed for this release.

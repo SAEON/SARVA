@@ -1,5 +1,15 @@
 # SARVA production deployment, 22 October 2026
 
+## Forecast wording production acceptance 27 October 2026
+
+PR #20 (merge `7abeffb346a46f53d103d4ac0ad02b647dc9b44a`) is deployed and operator-accepted. Main-page highlights, forecast maps/popups, planning context and forecast API metadata identify SARVA outputs as experimental model interpretations, not official warnings. Model-value headlines replace warning-like severity descriptions; notices link to SAWS, explain rainfall/flood and fire-danger limitations, and include ECMWF source/licence information. Numeric model outputs and calculations are unchanged.
+
+The operator confirmed all deployment checks passed, the forecast wording looks good, normal password and passkey login work, and DS Lab still works. Terminal verification included public site/health checks, protected endpoint responses, experimental forecast metadata, homepage highlights and passkeys enabled. Only SARVA backend/frontend were recreated; no migration, forecast refresh or authentication setting changes were needed.
+
+Rollback saved at `/home/marc/sarva-backups/before-forecast-wording-20261027-165810`. Retain current running images and the latest pair `sarva-backend:rollback-forecast-wording-20261027-165810` and `sarva-frontend:rollback-forecast-wording-20261027-165810`. Removal of older SARVA rollback tags is authorised but **pending operator execution and verification**. Preserve database volumes, backup files and DS Lab services/images. Do not restart the retired preview gateway.
+
+This acceptance is based on operator-supplied terminal results and browser confirmation. Scientific validation of the derived indices and any legal approval are separate from this presentation change.
+
 ## Latest production acceptance 27 October 2026
 
 The operator confirmed PR #19 (merge `325e3ba271f074deb174f08f597e61a4c1131218`) is deployed. Public municipal outputs exclude synthetic test inputs; missing scores remain null and report insufficient verified data. The public profiler uses the simpler raw-source map and tables, and the downloaded source PDF excludes composite scores and forecasts. The operator confirmed that the simpler view and PDF look correct, normal SARVA password and passkey sign-in both work, and DS Lab still works.
