@@ -84,3 +84,16 @@ test('anonymous requests cannot alter signed-in engagement',async()=>{
  await event({kind:'engagement',viewId:id,sessionId:id,activeMs:1000,scrollDepth:10},token(user));
  assert.equal((await pool.query('SELECT duration_ms FROM sarva.analytics_event WHERE view_id=$1',[id])).rows[0].duration_ms,1000);
 });
+
+test('unique IP totals deduplicate visits and exclude historical missing identifiers',async()=>{
+ const section='unique-ip-test-'+crypto.randomUUID();
+ const hash1='1'.repeat(64),hash2='2'.repeat(64);
+ for(const [ip,kind] of [[hash1,'page'],[hash1,'page'],[hash2,'page'],[null,'page'],['3'.repeat(64),'interaction']]) {
+  await pool.query(`INSERT INTO sarva.analytics_event(kind,path,section,session_id,visitor_ip_hash) VALUES($1,'/',$2,$3,$4)`,[kind,section,crypto.randomUUID(),ip]);
+ }
+ const response=await insights(token(admin,['admin']),'&section='+section);
+ assert.equal(response.status,200);const report=await response.json();
+ assert.equal(report.data.totals[0].unique_ips,2);assert.equal(report.data.totals[0].ip_unavailable_views,1);
+ assert.ok(!JSON.stringify(report).includes(hash1));
+ await pool.query('DELETE FROM sarva.analytics_event WHERE section=$1',[section]);
+});

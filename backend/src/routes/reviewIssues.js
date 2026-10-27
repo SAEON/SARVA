@@ -1,5 +1,6 @@
 import {Router} from 'express';
 import {pool} from '../db/pool.js';
+import {reviewPage} from '../utils/reviewPage.js';
 import {currentAccount} from '../utils/currentAccount.js';
 
 const kinds=['bug','update','comment'],statuses=['open','in-review','resolved'],priorities=['low','normal','high'];
@@ -49,13 +50,14 @@ export function createReviewIssuesRouter(db=pool){
  });
  router.post('/review/issues',limit,async(req,res)=>{
   const b=req.body||{};
+  let pagePath;
+  try { pagePath=reviewPage(b.pagePath); } catch { return res.status(400).json({message:'Leave the affected page blank, enter a page path, or paste a SARVA page URL.'}); }
   if(!validText(b.title,3,180)||!validText(b.description,10,10000)||!kinds.includes(b.kind)||!priorities.includes(b.priority)||
-   typeof b.pagePath!=='string'||(b.pagePath!==''&&!/^\/(?!\/)[^?#\s]{0,200}$/.test(b.pagePath))||
-   Object.keys(b).some(k=>!['title','description','kind','priority','pagePath'].includes(k)))return res.status(400).json({message:'Enter a title, description, type and priority. Page paths must start with / and omit query strings.'});
+   Object.keys(b).some(k=>!['title','description','kind','priority','pagePath'].includes(k)))return res.status(400).json({message:'Enter a title (3–180 characters), description (10–10,000 characters), type and priority. The affected page is optional.'});
   const client=await db.connect();
   try{
    await client.query('BEGIN');const actor=await freshActor(client,req.reviewUser.id);
-   const issue=(await client.query(`INSERT INTO sarva.review_issue(title,description,kind,priority,page_path,created_by) VALUES($1,$2,$3,$4,$5,$6) RETURNING id`,[b.title.trim(),b.description.trim(),b.kind,b.priority,b.pagePath,actor.id])).rows[0];
+   const issue=(await client.query(`INSERT INTO sarva.review_issue(title,description,kind,priority,page_path,created_by) VALUES($1,$2,$3,$4,$5,$6) RETURNING id`,[b.title.trim(),b.description.trim(),b.kind,b.priority,pagePath,actor.id])).rows[0];
    await client.query(`INSERT INTO sarva.review_issue_event(issue_id,actor_user_id,event_type,note) VALUES($1,$2,'created','Issue reported')`,[issue.id,actor.id]);
    await client.query('COMMIT');res.status(201).json({data:issue,message:'Issue reported'});
   }catch(error){await client.query('ROLLBACK');res.status(error.status||500).json({message:error.status?error.message:'Unable to report issue'});}finally{client.release();}

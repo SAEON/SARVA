@@ -86,7 +86,7 @@ test('review, resolution and reopening preserve earlier fixes and comments',asyn
  assert.ok(data.events.some(e=>e.note==='Fixed the layer path and verified map loading.'));assert.equal(data.events.filter(e=>['comment','reply'].includes(e.event_type)).length,2);
 });
 test('invalid input and private query-string page paths are rejected',async()=>{
- for(const change of [{title:'x'},{description:'short'},{kind:'admin'},{priority:'urgent'},{pagePath:'https://example.invalid/'},{pagePath:'/search?password=secret'},{pagePath:'//example.invalid'}])assert.equal((await call('/api/review/issues',token(reporter),{...report(),...change})).status,400);
+ for(const change of [{title:'x'},{description:'short'},{kind:'admin'},{priority:'urgent'},{pagePath:'https://example.invalid/'},{pagePath:'//example.invalid'}])assert.equal((await call('/api/review/issues',token(reporter),{...report(),...change})).status,400);
  assert.equal((await call('/api/review/issues?page=-1',token(admin))).status,400);
  assert.equal((await call('/api/review/issues?status=deleted',token(admin))).status,400);
  assert.equal((await call('/api/review/issues/'+issue,token(admin),await review('resolved',{note:''}),'PATCH')).status,400);
@@ -100,4 +100,18 @@ test('an audit failure rolls back both issue creation and a review change',async
  assert.equal((await call('/failure/review/issues',token(reporter),report())).status,500);
  assert.equal((await pool.query('SELECT count(*) FROM sarva.review_issue WHERE created_by=$1',[reporter])).rows[0].count,old);
  const before=(await detail()).issue;assert.equal((await call('/failure/review/issues/'+issue,token(admin),await review('resolved'),'PATCH')).status,500);assert.deepEqual((await detail()).issue,before);
+});
+
+test('optional affected page accepts blanks and normalizes SARVA URLs and paths',async()=>{
+ for (const [input,expected] of [[undefined,''],[null,''],['   ',''],['explore','/explore'],['/search?token=private#result','/search'],['https://sarva.saeon.ac.za/explore?token=private#layer','/explore']]) {
+  const response=await call('/api/review/issues',token(reporter),{...report(),pagePath:input});
+  assert.equal(response.status,201);
+  const id=(await response.json()).data.id;
+  const result=await detail(id,token(reporter));assert.equal(result.issue.page_path,expected);
+ }
+});
+test('affected page rejects unsafe values and external URLs',async()=>{
+ for(const pagePath of ['//evil.invalid','javascript:alert(1)','https://sarva.saeon.ac.za.evil.invalid/','https://u:p@sarva.saeon.ac.za/','/bad\\path',{},'/'+ 'x'.repeat(201)]) {
+  assert.equal((await call('/api/review/issues',token(reporter),{...report(),pagePath})).status,400);
+ }
 });

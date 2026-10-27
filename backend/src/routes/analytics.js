@@ -1,3 +1,4 @@
+import { visitorIpHash } from '../utils/analyticsVisitor.js';
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
 import { analyticsIdentity, interactionFields } from '../utils/analyticsIdentity.js';
@@ -30,7 +31,7 @@ export function trackApi(req, res, next) {
   next();
 }
 
-// Bounded browser events. Identity is server-verified; IP is used only in memory for coarse location.
+// Bounded browser events. Identity is server-verified; Raw IPs stay in memory; only a keyed hash is saved for aggregate counts.
 const buckets = new Map();
 analyticsRouter.post('/analytics/events', async (req, res) => {
   const { path, sessionId, viewId, kind = 'page' } = req.body || {};
@@ -60,10 +61,10 @@ analyticsRouter.post('/analytics/events', async (req, res) => {
       if (kind === 'click' && (!target || !['internal','outbound','download'].includes(linkType))) return res.sendStatus(400);
       const label = kind === 'click' && typeof req.body.linkLabel === 'string' ? req.body.linkLabel.replace(/[\x00-\x1f]/g,'').slice(0,120) : null;
       await pool.query(`INSERT INTO sarva.analytics_event
-        (kind,path,session_id,view_id,section,country,region,city,location_source,device,browser,referrer_domain,target_url,link_label,link_type,duration_ms,user_id,audience_type,latitude,longitude,action,subject)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) ON CONFLICT DO NOTHING`,
+        (kind,path,session_id,view_id,section,country,region,city,location_source,device,browser,referrer_domain,target_url,link_label,link_type,duration_ms,user_id,audience_type,latitude,longitude,action,subject,visitor_ip_hash)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) ON CONFLICT DO NOTHING`,
       [kind,path,sessionId,viewId,sectionFor(path),audience.country,audience.region,audience.city,audience.locationSource,audience.device,audience.browser,
-        cleanReferrer(req.body.referrer),target,label,linkType,kind === 'page' ? 0 : null,identity.userId,identity.audienceType,audience.latitude,audience.longitude,interaction?.action,interaction?.subject]);
+        cleanReferrer(req.body.referrer),target,label,linkType,kind === 'page' ? 0 : null,identity.userId,identity.audienceType,audience.latitude,audience.longitude,interaction?.action,interaction?.subject,visitorIpHash(req)]);
     }
     res.sendStatus(202);
   } catch { res.status(503).json({ message: 'Analytics recording unavailable' }); }
@@ -97,6 +98,9 @@ analyticsRouter.get('/analytics/summary', (req, res, next) => {
     const queries = {
       usage: [`SELECT count(*) FILTER (WHERE kind='page')::int AS views,
         count(DISTINCT session_id) FILTER (WHERE kind='page')::int AS sessions,
+        count(DISTINCT visitor_ip_hash) FILTER (WHERE kind='page')::int AS unique_ips,
+        count(*) FILTER (WHERE kind='page' AND visitor_ip_hash IS NULL)::int AS ip_unavailable_views,
+        min(created_at) FILTER (WHERE kind='page' AND visitor_ip_hash IS NOT NULL) AS ip_tracking_since,
         count(*) FILTER (WHERE kind='api')::int AS requests,
         count(*) FILTER (WHERE kind='api' AND status_code>=500)::int AS errors,
         count(*) FILTER (WHERE kind='click')::int AS clicks,
