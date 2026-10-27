@@ -1,6 +1,6 @@
 # Experimental forecast presentation
 
-Status: deployed and operator-accepted on production, 27 October 2026, via PR #20 (merge 7abeffb). Cleanup pending.
+Status: deployed and operator-accepted on production, 27 October 2026, via PR #20 (merge 7abeffb). Production cleanup complete.
 
 The main-page highlights, map labels/popups, planning context and public forecast API identify SARVA outputs as experimental interpretations of ECMWF model data rather than official forecasts, warnings or emergency advice. Home severity headlines are replaced by model values and explicitly labelled experimental indices. Cached home payloads are normalised on read so old High/Very high screening-signal wording cannot reappear. Values, locations, dates and model calculations are preserved.
 
@@ -18,4 +18,4 @@ References: https://www.weathersa.co.za/warnings and https://www.ecmwf.int/en/fo
 
 ## Production acceptance
 
-All deployment checks passed and the operator confirmed the live forecast wording, password login, passkey login and DS Lab work. Rollback is saved at /home/marc/sarva-backups/before-forecast-wording-20261027-165810. Preserve the corresponding backend/frontend rollback-forecast-wording pair and current running images. Cleanup of older SARVA rollback tags is pending; record completion only after operator verification. No database migration, model refresh or authentication change was performed for this release.
+All deployment checks passed and the operator confirmed the live forecast wording, password login, passkey login and DS Lab work. Rollback is saved at /home/marc/sarva-backups/before-forecast-wording-20261027-165810. Preserve the corresponding backend/frontend rollback-forecast-wording pair and current running images. The operator confirmed cleanup of older SARVA rollback tags is complete and all post-cleanup checks passed. Current running images and the latest forecast rollback pair are retained; password login, passkey login and DS Lab remain working. This is operator-reported acceptance, not an independently executed server audit. No database migration, model refresh or authentication change was performed for this release.
