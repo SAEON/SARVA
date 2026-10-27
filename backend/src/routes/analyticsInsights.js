@@ -34,6 +34,8 @@ analyticsInsights.get('/analytics/insights', (req,res,next) => {
    const {where,args}=filter;
    const queries={
     totals:`SELECT count(*) FILTER(WHERE e.kind='page')::int AS views, count(DISTINCT e.session_id)::int AS sessions,
+      count(DISTINCT e.visitor_ip_hash) FILTER(WHERE e.kind='page')::int AS unique_ips,
+      count(*) FILTER(WHERE e.kind='page' AND e.visitor_ip_hash IS NULL)::int AS ip_unavailable_views,
       count(*) FILTER(WHERE e.kind='interaction')::int AS interactions,
       count(*) FILTER(WHERE e.kind='page' AND (e.latitude IS NULL OR e.longitude IS NULL))::int AS unmapped
       FROM sarva.analytics_event e WHERE ${where}`,
@@ -45,7 +47,9 @@ analyticsInsights.get('/analytics/insights', (req,res,next) => {
     actions:`SELECT e.action,count(*)::int AS count,count(DISTINCT e.session_id)::int AS sessions
       FROM sarva.analytics_event e WHERE ${where} AND e.kind='interaction' GROUP BY e.action ORDER BY count DESC LIMIT 50`,
     users:`SELECT e.user_id,u.display_name AS name,e.audience_type,count(*) FILTER(WHERE e.kind='page')::int AS views,
-      count(*) FILTER(WHERE e.kind='click')::int AS clicks,count(*) FILTER(WHERE e.kind='interaction')::int AS interactions,
+      count(*) FILTER(WHERE e.kind='click')::int AS clicks,count(DISTINCT e.visitor_ip_hash) FILTER(WHERE e.kind='page')::int AS unique_ips,
+      count(*) FILTER(WHERE e.kind='page' AND e.visitor_ip_hash IS NULL)::int AS ip_unavailable_views,
+      count(*) FILTER(WHERE e.kind='interaction')::int AS interactions,
       max(e.created_at) AS last_seen FROM sarva.analytics_event e LEFT JOIN sarva.app_user u ON u.id=e.user_id
       WHERE ${where} AND e.user_id IS NOT NULL GROUP BY e.user_id,u.display_name,e.audience_type ORDER BY last_seen DESC LIMIT 100`,
     activity:`SELECT e.created_at,e.user_id,u.display_name AS name,e.audience_type,e.kind,e.path,e.action,e.subject,e.device,e.country
@@ -58,5 +62,5 @@ analyticsInsights.get('/analytics/insights', (req,res,next) => {
    const data={};
    await Promise.all(Object.entries(queries).map(async([key,sql])=> { data[key]=(await pool.query(sql,['sections','countries'].includes(key)?args.slice(0,2):args)).rows; }));
    res.json({data,from:req.query.from,to:req.query.to,limits:{locations:1000,users:100,activity:100}});
- } catch { res.status(503).json({message:'Audience insights unavailable. Check migration 057 and database connectivity.'}); }
+ } catch { res.status(503).json({message:'Audience insights unavailable. Check migrations 057 and 061 and database connectivity.'}); }
 });

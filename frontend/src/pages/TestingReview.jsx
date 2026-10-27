@@ -1,3 +1,4 @@
+import {useLocation} from 'react-router-dom';
 import {useEffect,useRef,useState} from 'react';
 import {useCurrentUser} from '../hooks/useCurrentUser';
 import {apiUrl} from '../config/api';
@@ -22,9 +23,11 @@ export default function TestingReview(){
  {user&&token?<Tracker token={token} isAdmin={isAdmin}/>:<section className="ua-panel"><h2>Sign in to report an issue</h2><p>Use SARVA’s Login button. Registered users can report issues and comment on their own reports. Administrators can review every report.</p></section>}</div>;
 }
 function Tracker({token,isAdmin}){
+ const location=useLocation();
+ const reportPage=location.state?.reportPage || '';
  const [data,setData]=useState(null),[loading,setLoading]=useState(true),[error,setError]=useState(''),[notice,setNotice]=useState('');
  const [search,setSearch]=useState(''),[query,setQuery]=useState(''),[status,setStatus]=useState(''),[kind,setKind]=useState(''),[page,setPage]=useState(1),[reload,setReload]=useState(0);
- const [selected,setSelected]=useState(null),[showNew,setShowNew]=useState(false);
+ const [selected,setSelected]=useState(null),[showNew,setShowNew]=useState(Boolean(reportPage));
  const formRef=useRef(null);
  useEffect(()=>{if(showNew)formRef.current?.scrollIntoView({block:'start'});},[showNew]);
  useEffect(()=>{
@@ -42,7 +45,7 @@ function Tracker({token,isAdmin}){
  <div className="tr-stats">{Object.entries(statuses).map(([key,label])=><div key={key}><strong>{count(key)}</strong><span>{label}</span></div>)}</div>
  <div className="tr-actions"><button className="ua-primary" onClick={()=>{setShowNew(true);setSelected(null);}}>Report an issue</button><button onClick={()=>setReload(n=>n+1)}>Refresh issues</button></div>
  {notice&&<div role="status" className="ua-success">{notice}</div>}{error&&<div role="alert" className="ua-error">{error}</div>}
- {showNew&&<section ref={formRef} className="ua-panel tr-new"><NewIssue token={token} onCancel={()=>setShowNew(false)} onCreated={id=>{setShowNew(false);setSelected(id);setNotice('Issue #'+id+' reported.');setReload(n=>n+1);}}/></section>}
+ {showNew&&<section ref={formRef} className="ua-panel tr-new"><NewIssue token={token} initialPage={reportPage} onCancel={()=>setShowNew(false)} onCreated={id=>{setShowNew(false);setSelected(id);setNotice('Issue #'+id+' reported.');setReload(n=>n+1);}}/></section>}
  <section className="ua-panel"><div className="tr-filters"><form onSubmit={e=>{e.preventDefault();setPage(1);setQuery(search.trim());}}><label className="ua-field">Find an issue<div className="ua-search"><input value={search} maxLength={150} onChange={e=>setSearch(e.target.value)} placeholder="Search title or description"/><button>Search</button></div></label></form><Pick label="Status" value={status} onChange={value=>{setPage(1);setStatus(value);}} options={{'':'All statuses',...statuses}}/><Pick label="Type" value={kind} onChange={value=>{setPage(1);setKind(value);}} options={{'':'All types',...kinds}}/></div>
  <h2 className="tr-list-heading">{isAdmin?'All reports':'My reports'} <small>{loading?'Loading…':`${data?.total ?? 0} matching`}</small></h2>
  <div className="tr-list" aria-busy={loading}>{!loading&&data?.issues.map(issue=><button className={'tr-issue '+(selected===issue.id?'selected':'')} key={issue.id} onClick={()=>{setSelected(issue.id);setShowNew(false);}}><span className="tr-issue-top"><span>#{issue.id} · {kinds[issue.kind]}</span><span className={'tr-badge '+issue.status}>{statuses[issue.status]}</span></span><strong>{issue.title}</strong><span className="tr-issue-meta">{priorities[issue.priority]} priority · {issue.reporter_name} · {date(issue.updated_at)}</span></button>)}</div>
@@ -51,11 +54,11 @@ function Tracker({token,isAdmin}){
  {selected&&<IssueDetail key={selected} id={selected} token={token} onClose={()=>setSelected(null)} onChanged={()=>setReload(n=>n+1)}/>}
  </>;
 }
-function NewIssue({token,onCancel,onCreated}){
- const [draft,setDraft]=useState({title:'',description:'',kind:'bug',priority:'normal',pagePath:''}),[busy,setBusy]=useState(false),[error,setError]=useState('');
+function NewIssue({token,initialPage,onCancel,onCreated}){
+ const [draft,setDraft]=useState({title:'',description:'',kind:'bug',priority:'normal',pagePath:initialPage || ''}),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const field=(key,value)=>setDraft(d=>({...d,[key]:value}));
  async function submit(e){e.preventDefault();setBusy(true);setError('');try{const result=await request('',token,{method:'POST',body:JSON.stringify(draft)});onCreated(result.data.id);}catch(e){setError(e.message);}finally{setBusy(false);}}
- return <form onSubmit={submit}><div className="ua-editor-heading"><h2>Report an issue</h2><button type="button" disabled={busy} onClick={onCancel}>Cancel report</button></div>{error&&<p role="alert" className="ua-error">{error}</p>}<fieldset disabled={busy} className="tr-fieldset"><label className="ua-field">Title<input required minLength={3} maxLength={180} value={draft.title} onChange={e=>field('title',e.target.value)} placeholder="Briefly describe the issue"/></label><div className="tr-form-row"><Pick label="Issue type" value={draft.kind} onChange={value=>field('kind',value)} options={kinds}/><Pick label="Priority" value={draft.priority} onChange={value=>field('priority',value)} options={priorities}/></div><label className="ua-field">Affected page (optional)<input value={draft.pagePath} maxLength={201} onChange={e=>field('pagePath',e.target.value)} placeholder="For example /municipal-risk-profiler"/></label><label className="ua-field">Description and steps to reproduce<textarea required minLength={10} maxLength={10000} value={draft.description} onChange={e=>field('description',e.target.value)} placeholder="What did you try? What happened, and what did you expect?"/></label><p className="ua-note">Reports are stored in SARVA’s database. You and platform administrators can read this report.</p><button className="ua-primary">{busy?'Submitting…':'Submit issue'}</button></fieldset></form>;
+ return <form onSubmit={submit}><div className="ua-editor-heading"><h2>Report an issue</h2><button type="button" disabled={busy} onClick={onCancel}>Cancel report</button></div>{error&&<p role="alert" className="ua-error">{error}</p>}<fieldset disabled={busy} className="tr-fieldset"><label className="ua-field">Title<input required minLength={3} maxLength={180} value={draft.title} onChange={e=>field('title',e.target.value)} placeholder="For example: Open risk map button on the Home page does not work"/></label><div className="tr-form-row"><Pick label="Issue type" value={draft.kind} onChange={value=>field('kind',value)} options={kinds}/><Pick label="Priority" value={draft.priority} onChange={value=>field('priority',value)} options={priorities}/></div><label className="ua-field">Affected page (optional)<input value={draft.pagePath} maxLength={2048} onChange={e=>field('pagePath',e.target.value)} placeholder="Leave blank, enter a page name, or paste its SARVA URL" aria-describedby="report-page-help"/></label><p id="report-page-help" className="ua-note">You can leave this blank. Page paths and SARVA URLs are accepted; query strings and fragments are removed.</p><label className="ua-field">Description and steps to reproduce<textarea required minLength={10} maxLength={10000} value={draft.description} onChange={e=>field('description',e.target.value)} placeholder="Which card, button or feature did you use? What happened, and what did you expect?"/></label><p className="ua-note">Reports are stored in SARVA’s database. You and platform administrators can read this report.</p><button className="ua-primary">{busy?'Submitting…':'Submit issue'}</button></fieldset></form>;
 }
 function IssueDetail({id,token,onClose,onChanged}){
  const [data,setData]=useState(null),[error,setError]=useState(''),[notice,setNotice]=useState(''),[loading,setLoading]=useState(true),[reload,setReload]=useState(0),[historyPage,setHistoryPage]=useState(1);
