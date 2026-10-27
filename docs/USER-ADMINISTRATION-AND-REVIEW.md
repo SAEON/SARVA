@@ -126,3 +126,22 @@ Code rollback can restore the saved frontend/backend images while retaining thes
 additive schema tables. Access changes made through the deployed tool persist in
 the database; a code rollback does not reverse them. Database restore is a separate
 recovery decision and must account for new user activity since the backup.
+
+
+## Production rollout evidence, 27 October 2026
+
+Operator confirmed database/image/configuration backup at
+/home/marc/sarva-backups/before-user-admin-20261027-132424, followed by successful
+frontend/backend builds and application of 059_user_administration.sql and
+060_testing_review_tracker.sql. Supplied production output showed frontend Nginx
+validation passed, SARVA homepage/API 200, anonymous user management 403,
+anonymous tracker 401, and DS Lab 200. The operator subsequently viewed the live
+authenticated Testing & issues page. After the separate account-menu release,
+the operator confirmed normal SARVA login, the new menu and DS Lab work.
+
+These records supersede the pending technical deployment status above. They do
+not establish a production role-change test or an explicit end-to-end report,
+admin reply, resolution and non-admin reply-privacy acceptance; those workflows
+were verified locally with synthetic accounts. No real role changes are required
+solely for deployment testing. Cleanup instructions preserve this release's
+backend/frontend rollback tags and database dump; completion remains pending.
