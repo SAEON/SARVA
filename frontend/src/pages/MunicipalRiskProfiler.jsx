@@ -1,416 +1,29 @@
-import {trackInteraction} from '../config/analyticsInteraction';
-import {municipalMapScale} from "../config/municipalMapScale";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { trackInteraction } from "../config/analyticsInteraction";
+import { municipalMapScale } from "../config/municipalMapScale";
+import { hasRawEvidence } from "../config/rawIndicatorTotals";
 import maplibregl from "../config/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { apiUrl, martinUrl } from "../config/api";
-import { isExpiredForecast } from "../config/forecastFreshness";
 import MapIndicatorControls from "../components/MapIndicatorControls";
 import RawMunicipalIndicators from "../components/RawMunicipalIndicators";
-import MunicipalEvidenceSummary from "../components/MunicipalEvidenceSummary";
-import { useCurrentUser } from "../hooks/useCurrentUser";
 import "../styles/municipal-risk-profiler.css";
 
-function usableMapRecords(data) {
-    return (data?.records || []).filter(r => r.rawValue != null && Number.isFinite(Number(r.rawValue)) && !r.isProxy && r.confidence !== "proxy" && r.period === data.metric?.period && r.displayUnit === data.metric?.unit && r.scenario === data.metric?.scenario);
-}
-const MUNICIPAL_TILE_URL = martinUrl("/municipal_boundaries/{z}/{x}/{y}");
-const SOUTH_AFRICA_BOUNDS = [
-    [16.45, -34.84],
-    [32.95, -22.13],
-];
-const SOUTH_AFRICA_CENTER = [24.7, -29.1];
-
 const EMPTY = [];
-const DEFAULT_METRIC = "index:imported_composite_risk";
-const DEFAULT_METRIC_LABEL = "Relative indicator pressure";
-const METRIC_DEEPLINKS = {
-    governance: "index:imported_governance_risk",
-    governance_audit: "index:governance_audit_compliance_imported",
-    governance_finance: "index:governance_financial_resilience_imported",
-    governance_infrastructure: "index:governance_infrastructure_investment_imported",
-    governance_capacity: "index:governance_institutional_capacity_imported",
-    safety: "index:crime_safety_imported",
-    safety_violent: "index:safety_violent_contact_imported",
-    safety_property: "index:safety_property_economic_imported",
-    safety_gender: "index:safety_gender_violence_imported",
-    safety_public_order: "index:safety_public_order_imported",
-    services: "index:service_access_imported",
-    people: "index:stats_sa_vulnerability_imported",
-};
-const LAYER_MODE_OPTIONS = [
-    { key: "guided", label: "Start here", detail: "Best first layers" },
-    { key: "indices", label: "Grouped scores", detail: "Combined inputs" },
-    { key: "indicators", label: "Single indicators", detail: "Raw catalogue" },
-];
-const GUIDED_LAYER_KEYS = [
-    {
-        key: "imported_composite_risk",
-        label: "Municipal risk overview",
-        detail: "Balanced starting point",
-    },
-    {
-        key: "imported_governance_risk",
-        label: "Governance and finance",
-        detail: "Audit, finance and delivery capacity",
-    },
-    {
-        key: "crime_safety_imported",
-        label: "Safety pressure",
-        detail: "Combined SAPS safety context",
-    },
-    {
-        key: "service_access_imported",
-        label: "Basic service pressure",
-        detail: "Water, sanitation, electricity and refuse",
-    },
-    {
-        key: "stats_sa_vulnerability_imported",
-        label: "People and vulnerability",
-        detail: "Demographic and socio-economic context",
-    },
-];
-
-const profilerStartCards = [
-    {
-        title: "1. Choose a layer",
-        detail: "Start with the municipal risk overview, then switch to governance, safety, services or any individual indicator.",
-    },
-    {
-        title: "2. Pick a municipality",
-        detail: "Search by name/code or click the map. The side panel explains scores, raw values, sources and gaps.",
-    },
-    {
-        title: "3. Read drivers first",
-        detail: "Risk drivers show what is pushing the score up, so clients can see the practical story behind the map colour.",
-    },
-];
-
-const plannedProfilerFeatures = [
-    {
-        title: "Client brief mode",
-        detail: "A simplified one-page view for decision-makers with headline risks, confidence and recommended next questions.",
-    },
-    {
-        title: "Scenario comparison",
-        detail: "Compare baseline, forecast, climate-stress and intervention scenarios when scenario datasets are available.",
-    },
-    {
-        title: "Layer gap audit",
-        detail: "A national view showing which municipalities lack finance, governance, service, safety or vulnerability inputs.",
-    },
-    {
-        title: "Lab tutorials",
-        detail: "Data Science Lab walkthroughs explaining how each index is built and how to reproduce the analysis.",
-    },
-];
-
+const MUNICIPAL_TILE_URL = martinUrl("/municipal_boundaries/{z}/{x}/{y}");
+const SOUTH_AFRICA_CENTER = [24.7, -29.1];
 function formatNumber(value, digits = 1, fallback = "n/a") {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return fallback;
-    return number.toLocaleString("en-ZA", {
-        maximumFractionDigits: digits,
-        minimumFractionDigits: digits,
-    });
+    if (value == null || value === "" || !Number.isFinite(Number(value))) return fallback;
+    return Number(value).toLocaleString("en-ZA", { minimumFractionDigits: digits, maximumFractionDigits: digits });
 }
-
-function formatIndicatorValue(value, unit = "", fallback = "n/a") {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return fallback;
-    const cleanUnit = String(unit || "").toLowerCase();
-    const digits = /count|cases|people|household|persons/.test(cleanUnit) ? 0 : 1;
-    const formatted = number.toLocaleString("en-ZA", {
-        maximumFractionDigits: digits,
-        minimumFractionDigits: 0,
-    });
-    if (!unit || unit === "value") return formatted;
-    if (/^%|percent/.test(cleanUnit)) return `${formatted}%`;
-    return `${formatted} ${unit}`;
-}
-
-function formatDate(value) {
-    if (!value) return "Not available";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "Not available";
-    return new Intl.DateTimeFormat("en-ZA", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-    }).format(date);
-}
-
-function trendDelta(records) {
-    const values = records
-        .map((record) => Number(record.rawValue ?? record.normalizedValue))
-        .filter(Number.isFinite);
-    if (values.length < 2) return null;
-    return values[values.length - 1] - values[0];
-}
-
-function riskTone(score) {
-    const value = Number(score);
-    if (!Number.isFinite(value)) return "unknown";
-    if (value >= 80) return "very-high";
-    if (value >= 60) return "high";
-    if (value >= 40) return "moderate";
-    if (value >= 20) return "low";
-    return "very-low";
-}
-
-function scoreWidth(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) return "0%";
-    return `${Math.max(0, Math.min(100, number))}%`;
-}
-
+function formatIndicatorValue(value, unit) { return value == null ? "Insufficient verified data" : `${Number(value).toLocaleString("en-ZA", { maximumFractionDigits: 3 })} ${unit || ""}`.trim(); }
+function normalise(value) { return String(value || "").trim().toLowerCase(); }
 function escapeHtml(value) {
-    return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    return String(value ?? "").replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
 }
-
-function normalise(value) {
-    return String(value || "").toLowerCase().replace(/\s+/g, " ").trim();
+function eligibleSource(item) {
+    return !item.isProxy && item.confidence !== "proxy" && !/proxy/i.test(item.scenario || "") && !/Deterministic seed value/i.test(item.notes || "");
 }
-
-function slugText(value) {
-    return normalise(value)
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-}
-
-function resolveMetricDeepLink(value) {
-    const raw = String(value || "").trim();
-    if (!raw) return "";
-    if (raw.includes(":")) return raw;
-    return METRIC_DEEPLINKS[raw] || METRIC_DEEPLINKS[slugText(raw).replace(/-/g, "_")] || "";
-}
-
-function resolveThemeDeepLink(value, themes) {
-    const raw = String(value || "").trim();
-    if (!raw || raw === "All themes") return "All themes";
-    const target = slugText(raw);
-    return themes.find((theme) => slugText(theme) === target)
-        || themes.find((theme) => slugText(theme).startsWith(target))
-        || themes.find((theme) => slugText(theme).includes(target))
-        || "All themes";
-}
-
-function textMatchesQuery(query, ...values) {
-    const q = normalise(query);
-    if (!q) return true;
-    return values.some((value) => normalise(value).includes(q));
-}
-
-function defaultAdminForm(municipalityCode = "") {
-    return {
-        municipalityCode,
-        indicatorKey: "",
-        label: "",
-        theme: "",
-        unit: "",
-        direction: "higher_risk",
-        period: "",
-        scenario: "admin import",
-        rawValue: "",
-        value_0_100: "",
-        sourceName: "",
-        sourceUrl: "",
-        notes: "",
-    };
-}
-
-function directionLabel(direction) {
-    if (direction === "higher_resilience") return "Higher values reduce risk pressure";
-    if (direction === "context") return "Context only, not used in risk pressure";
-    return "Higher values increase risk pressure";
-}
-
-function directionExplanation(direction) {
-    if (direction === "higher_resilience") {
-        return "This is a resilience indicator. A higher source value is generally better, so SARVA inverts the normalized score before using it in a risk index. In plain terms: low access, low capacity or low attainment becomes higher risk pressure.";
-    }
-    if (direction === "context") {
-        return "This is a context indicator. It helps describe the municipality but is not included in the composite risk calculation.";
-    }
-    return "This is a pressure indicator. A higher source value is treated as higher risk pressure after normalization.";
-}
-
-function scenarioLabel(value) {
-    const text = String(value || "").trim();
-    if (!text) return "";
-    if (text === "baseline_proxy") return "screening baseline";
-    if (text === "admin import") return "admin-entered value";
-    return text.replace(/_/g, " ");
-}
-
-function confidenceLabel(value) {
-    if (value === "proxy") return "screening proxy";
-    if (value === "imported") return "imported dataset";
-    if (value === "admin") return "admin-entered";
-    return value || "";
-}
-
-function scoreExplanation(score, riskLabel = "") {
-    const formatted = Number.isFinite(Number(score)) ? `${formatNumber(score, 1)} out of 100` : "Not available";
-    return `${formatted}${riskLabel ? `, classified here as ${riskLabel}` : ""}. This is a normalized comparison score for comparing municipalities, not a raw count and not a percentage unless the source indicator unit says percent.`;
-}
-
-function sourceValueExplanation(component) {
-    const rawLooksLikePlaceholder = component?.confidence === "proxy" && Number(component?.rawValue) === 0 && /0-100/i.test(component?.displayUnit || component?.unit || "");
-    if (rawLooksLikePlaceholder) return "This record currently has a screening comparison score only; no separate raw source value is loaded yet.";
-    const raw = formatIndicatorValue(component?.displayValue ?? component?.rawValue, component?.displayUnit ?? component?.unit);
-    if (!raw || raw === "n/a") return "The raw source value is not available for this record, so the visible 0-100 comparison score is the usable value.";
-    return `The source value for this municipality is ${raw}.`;
-}
-
-function riskInputExplanation(component) {
-    const normalizedSource = component?.normalizedValue ?? component?.value ?? component?.adjustedValue;
-    const normalizedText = Number.isFinite(Number(normalizedSource)) ? `${formatNumber(normalizedSource, 1)} / 100` : "not available";
-    const adjustedText = Number.isFinite(Number(component?.adjustedValue)) ? `${formatNumber(component.adjustedValue, 1)} / 100` : "not available";
-    if (component?.direction === "higher_resilience") {
-        return `${sourceValueExplanation(component)} SARVA first converts it to a ${normalizedText} comparison score, then flips it because higher values mean more resilience. The risk-pressure input used in the index is therefore ${adjustedText}.`;
-    }
-    if (component?.direction === "context") {
-        return `${sourceValueExplanation(component)} It may have a ${normalizedText} comparison score for mapping, but it is not used as a risk-pressure input.`;
-    }
-    return `${sourceValueExplanation(component)} SARVA converts it to a ${normalizedText} comparison score. Because higher values mean more pressure, the risk-pressure input used in the index is ${adjustedText}.`;
-}
-
-function weightExplanation(component) {
-    const weight = Number(component?.weight);
-    if (!Number.isFinite(weight)) return "No explicit composite weight is listed for this indicator.";
-    const contribution = componentContribution(component);
-    return `This indicator has a ${formatNumber(weight * 100, 0)}% weight in the selected composite. Its weighted contribution is ${formatNumber(contribution, 1)} points before SARVA divides by the total available weight. Low-weight indicators can highlight an issue, but they move the final score less than higher-weight drivers.`;
-}
-
-function sourceExplanation(component) {
-    const source = sourceLabel(component);
-    if (!source) return "Source metadata is not listed for this record.";
-    const url = component?.sourceUrl ? ` URL: ${component.sourceUrl}` : "";
-    const proxyNote = component?.confidence === "proxy" || component?.isProxy ? " This is a screening/proxy value and should be replaced with official imported data where available." : "";
-    return `${source}.${url}${proxyNote}`;
-}
-
-function rawValueLabel(component) {
-    const raw = formatIndicatorValue(component?.rawValue, component?.displayUnit ?? component?.unit);
-    return raw && raw !== "n/a" ? raw : "";
-}
-
-function metricCoverageLabel(coverage) {
-    if (!coverage || coverage.total === 0) return "Coverage not available";
-    const missing = coverage.total - coverage.available;
-    const percent = coverage.total > 0 ? (coverage.available / coverage.total) * 100 : 0;
-    return `${coverage.available}/${coverage.total} municipalities mapped (${formatNumber(percent, 0)}%)${missing > 0 ? ` | ${missing} missing` : ""}`;
-}
-
-function componentContribution(component) {
-    const score = Number(component.adjustedValue);
-    const weight = Number(component.weight);
-    if (!Number.isFinite(score) || !Number.isFinite(weight)) return 0;
-    return score * weight;
-}
-
-function sourceLabel(component) {
-    return [component.sourceName, component.period, scenarioLabel(component.scenario), confidenceLabel(component.confidence)]
-        .filter(Boolean)
-        .join(" | ");
-}
-
-function componentSummary(component) {
-    const score = Number.isFinite(Number(component.adjustedValue))
-        ? `${formatNumber(component.adjustedValue, 1)} / 100`
-        : "no score";
-    const weight = Number.isFinite(Number(component.weight)) ? `${formatNumber(Number(component.weight) * 100, 0)}% weight` : "no weighting";
-    const source = sourceLabel(component) || "source not listed";
-    const rawLooksLikePlaceholder = component.confidence === "proxy" && Number(component.rawValue) === 0 && /0-100/i.test(component.displayUnit || "");
-    const raw = rawLooksLikePlaceholder
-        ? "screening score only"
-        : `raw value ${formatIndicatorValue(component.rawValue, component.displayUnit)}`;
-    return `${component.label}: ${score}, ${weight}, ${raw}. ${source}.`;
-}
-
-function sourceList(components = []) {
-    const sources = Array.from(new Set(
-        components
-            .map((component) => {
-                const label = sourceLabel(component);
-                if (!label) return "";
-                return component.sourceUrl ? `${label} (${component.sourceUrl})` : label;
-            })
-            .filter(Boolean)
-    ));
-    if (sources.length === 0) return "Underlying component sources are not listed for this index.";
-    const shown = sources.slice(0, 6).join("; ");
-    const more = sources.length > 6 ? `; plus ${sources.length - 6} more source groups` : "";
-    return `${shown}${more}.`;
-}
-
-function forecastWindowLabel(forecast = {}) {
-    const start = formatDate(forecast.forecastStart);
-    const end = formatDate(forecast.forecastEnd);
-    if (start === "Not available" && end === "Not available") return "Forecast dates not available";
-    return `${start} to ${end}`;
-}
-
-function forecastSourceLabel(forecast = {}) {
-    return [
-        forecast.latestRun?.source || "SARVA cached forecast risk layer",
-        forecastWindowLabel(forecast),
-        forecast.latestRun?.finishedAt ? `updated ${formatDate(forecast.latestRun.finishedAt)}` : "",
-    ].filter(Boolean).join(" | ");
-}
-
-function indexCoverageLabel(index = {}) {
-    const available = Number(index.indicatorCount);
-    const expected = Number(index.expectedIndicatorCount);
-    if (!Number.isFinite(expected) || expected <= 0) return "Coverage not listed";
-    const percent = Number.isFinite(Number(index.coveragePercent))
-        ? `${formatNumber(index.coveragePercent, 0)}%`
-        : `${formatNumber((available / expected) * 100, 0)}%`;
-    return `${Number.isFinite(available) ? available : 0}/${expected} inputs available (${percent})`;
-}
-
-function missingInputSummary(index = {}) {
-    const missing = Array.isArray(index.missingComponents) ? index.missingComponents : EMPTY;
-    if (missing.length === 0) return "No missing inputs listed for this index in the current profile.";
-    const shown = missing.slice(0, 4).map((component) => component.label || component.key).join(", ");
-    const more = missing.length > 4 ? `, plus ${missing.length - 4} more` : "";
-    return `${shown}${more}`;
-}
-
-function findIndicator(records = [], patterns = []) {
-    return records.find((indicator) => {
-        const text = `${indicator.key || ""} ${indicator.label || ""} ${indicator.theme || ""}`.toLowerCase();
-        return patterns.some((pattern) => pattern.test(text));
-    }) || null;
-}
-
-function indexFormula(index) {
-    const components = Array.isArray(index.components) ? index.components : EMPTY;
-    const valid = components.filter((component) => Number.isFinite(Number(component.adjustedValue)) && Number.isFinite(Number(component.weight)));
-    if (valid.length === 0) {
-        return "No component scores are available, so this index cannot be recalculated from visible inputs.";
-    }
-    const totalWeight = valid.reduce((sum, component) => sum + Number(component.weight), 0);
-    const totalContribution = valid.reduce((sum, component) => sum + componentContribution(component), 0);
-    const top = [...valid].sort((a, b) => componentContribution(b) - componentContribution(a)).slice(0, 3);
-    return `The index combines ${valid.length} component indicators. Each component is converted to a 0-100 comparison score, adjusted so higher means more risk pressure, multiplied by its weight, then averaged. For this municipality the weighted total is ${formatNumber(totalContribution, 1)} divided by total weight ${formatNumber(totalWeight, 2)}, giving ${formatNumber(index.score, 1)} out of 100. Largest contributors: ${top.map((component) => `${component.label} (${formatNumber(componentContribution(component), 1)} weighted points)`).join(", ")}.`;
-}
-
-function indexInputSummary(index) {
-    const components = Array.isArray(index.components) ? index.components : EMPTY;
-    if (components.length === 0) return "Component details are not available.";
-    const sorted = [...components].sort((a, b) => componentContribution(b) - componentContribution(a));
-    const shown = sorted.slice(0, 6).map(componentSummary).join(" ");
-    const more = sorted.length > 6 ? ` ${sorted.length - 6} further inputs are included in the full indicator catalogue and PDF export.` : "";
-    return `${shown}${more}`;
-}
-
 function pdfSafe(value) {
     return String(value ?? "")
         .normalize("NFKD")
@@ -538,6 +151,11 @@ function buildPdf(actions) {
     }
 
     function scoreBar(label, score, detail = "", options = {}) {
+        if (score == null || score === "" || !Number.isFinite(Number(score))) {
+            write(`${label}: Insufficient verified data`, { font: "F2", size: 9, indent: options.indent || 0 });
+            if (detail) write(detail, { size: 7, indent: options.indent || 0, maxChars: 105 });
+            return;
+        }
         ensureSpace(36);
         const value = Math.max(0, Math.min(100, Number(score) || 0));
         const x = margin + (options.indent || 0);
@@ -556,7 +174,7 @@ function buildPdf(actions) {
         if (y < bottom) newPage();
     }
 
-    actions({ write, gap, newPage, rect, sectionTitle, statCard, scoreBar, colors, pageWidth, pageHeight, margin });
+    actions({ write, gap, newPage, rect, sectionTitle, statCard, scoreBar, colors, pageWidth, pageHeight, margin, ensureSpace });
     if (current.length > 0) pages.push(current);
 
     const objects = [];
@@ -591,7 +209,7 @@ function buildPdf(actions) {
                         `${margin.toFixed(2)} 32.00 m ${(pageWidth - margin).toFixed(2)} 32.00 l S`,
                         "BT",
                         colorCommand("rg", colors.muted),
-                        `/F1 7 Tf 1 0 0 1 ${margin.toFixed(2)} 20.00 Tm (${pdfEscape("SARVA v4 municipal risk screening profile - not an official warning")}) Tj`,
+                        `/F1 7 Tf 1 0 0 1 ${margin.toFixed(2)} 20.00 Tm (${pdfEscape("SARVA municipal source profile - verify original data before use")}) Tj`,
                         `/F1 7 Tf 1 0 0 1 ${(pageWidth - margin - 54).toFixed(2)} 20.00 Tm (${pdfEscape(`Page ${item.pageNumber} of ${item.pageCount}`)}) Tj`,
                         "ET",
                     ];
@@ -628,191 +246,63 @@ function buildPdf(actions) {
 }
 
 export default function MunicipalRiskProfiler() {
-    const location = useLocation();
-    const { token, isAdmin } = useCurrentUser();
-    const mapContainerRef = useRef(null);
-    const mapRef = useRef(null);
-    const popupRef = useRef(null);
-    const metricRecordsRef = useRef(new Map());
-    const metricLabelRef = useRef("Selected layer");
-    const mapViewModeRef = useRef("country");
-    const municipalitiesRef = useRef([]);
+    const mapContainerRef = useRef(null), mapRef = useRef(null), popupRef = useRef(null);
+    const metricRecordsRef = useRef(new Map()), metricLabelRef = useRef("Selected layer");
+    const municipalitiesRef = useRef([]), mapViewModeRef = useRef("country");
     const [municipalities, setMunicipalities] = useState([]);
     const [municipalitiesLoading, setMunicipalitiesLoading] = useState(true);
     const [municipalitiesError, setMunicipalitiesError] = useState("");
-    const [query, setQuery] = useState("");
-    const [selected, setSelected] = useState(null);
-    const [profile, setProfile] = useState(null);
-    const [profileLoading, setProfileLoading] = useState(false);
-    const [profileError, setProfileError] = useState("");
-    const [selectedPeriod, setSelectedPeriod] = useState("");
+    const [query, setQuery] = useState(""), [selected, setSelected] = useState(null);
+    const [profile, setProfile] = useState(null), [profileError, setProfileError] = useState("");
+    const [loadedGid, setLoadedGid] = useState(null), [mapReady, setMapReady] = useState(false);
     const [selectedMetric, setSelectedMetric] = useState("indicator:crime_murder");
-    const [metricData, setMetricData] = useState(null);
-    const [metricLoading, setMetricLoading] = useState(false);
-    const [mapReady, setMapReady] = useState(false);
+    const [selectedPeriod, setSelectedPeriod] = useState("");
+    const [metricData, setMetricData] = useState(null), [metricError, setMetricError] = useState("");
     const [infoOpen, setInfoOpen] = useState(false);
-    const [detailInfo, setDetailInfo] = useState(null);
-    const [metadata, setMetadata] = useState(null);
-    const [adminStatus, setAdminStatus] = useState(null);
-    const [adminMessage, setAdminMessage] = useState("");
-    const [adminFormState, setAdminForm] = useState(defaultAdminForm());
-    const adminForm = { ...adminFormState, municipalityCode: adminFormState.municipalityCode || selected?.code || "" };
-    const [adminValues, setAdminValues] = useState([]);
-    const [adminValuesLoading, setAdminValuesLoading] = useState(false);
-    const [adminRefreshKey, setAdminRefreshKey] = useState(0);
-    const [chosenTrendIndicatorKey, setTrendIndicatorKey] = useState("");
-    const defaultTrendRecords = profile?.indicators?.records || EMPTY;
-    const preferredTrend = defaultTrendRecords.find(indicator => ["population_total", "crime_17_serious_total", "hh_conditions_subindex"].includes(indicator.key)) || defaultTrendRecords.find(indicator => /population|crime|household|unemployment/i.test(`${indicator.key} ${indicator.label}`));
-    const trendIndicatorKey = chosenTrendIndicatorKey || preferredTrend?.key || "";
-    const [trendData, setTrendData] = useState(null);
-    const [trendLoading, setTrendLoading] = useState(false);
-    const [requestedTab, setActiveTab] = useState("overview");
-    const validTabs = ["overview", "trends", "drivers", "indicators", "observations", ...(isAdmin ? ["admin"] : [])];
-    const activeTab = requestedTab === "sources" ? "observations" : validTabs.includes(requestedTab) ? requestedTab : "overview";
-    const [chosenThemeFilter, setIndicatorThemeFilter] = useState(null);
-    const [layerMode, setLayerMode] = useState("guided");
-    const [layerThemeFilter, setLayerThemeFilter] = useState("All themes");
-    const [layerSearch, setLayerSearch] = useState("");
-    const [layerBrowserOpen, setLayerBrowserOpen] = useState(false);
+    const profileLoading = Boolean(selected && loadedGid !== selected.gid);
+    const visibleProfile = profile?.municipality?.gid === selected?.gid ? profile : null;
+    const matches = municipalities.filter(item => [item.municipality, item.code, item.district, item.province].some(value => normalise(value).includes(normalise(query))));
 
-    const [previousMetricSearch, setPreviousMetricSearch] = useState(null);
-    if (previousMetricSearch !== location.search) {
-        setPreviousMetricSearch(location.search);
-        const params = new URLSearchParams(location.search);
-        const metric = resolveMetricDeepLink(params.get("metric"));
-        const tab = String(params.get("tab") || "").trim();
-
-        if (metric) {
-            setSelectedMetric(metric);
-            setLayerMode(metric.startsWith("indicator:") ? "indicators" : "indices");
-        }
-        if (tab) setActiveTab(tab);
-    }
-
-    // Reset request state when its inputs change; effects only perform network IO.
-    const [profileRequest, setProfileRequest] = useState(null);
-    if (profileRequest !== selected) {
-        setProfileRequest(selected);
-        setProfileLoading(Boolean(selected?.gid));
-        setProfileError("");
-    }
-    const metricRequestKey = `${selectedMetric}:${selectedPeriod}`;
-    const [metricRequest, setMetricRequest] = useState(null);
-    if (metricRequest !== metricRequestKey) {
-        setMetricRequest(metricRequestKey);
-        setMetricLoading(true);
-    }
-    const adminRequestKey = `${isAdmin}:${token}:${selected?.gid}:${adminRefreshKey}`;
-    const [adminRequest, setAdminRequest] = useState(null);
-    if (adminRequest !== adminRequestKey) {
-        setAdminRequest(adminRequestKey);
-        setAdminValuesLoading(Boolean(isAdmin && token && selected?.gid));
-        if (!isAdmin || !token) setAdminStatus(null);
-        if (!isAdmin || !token || !selected?.gid) setAdminValues([]);
-    }
-    const trendRequestKey = `${selected?.gid}:${trendIndicatorKey}`;
-    const [trendRequest, setTrendRequest] = useState(null);
-    if (trendRequest !== trendRequestKey) {
-        setTrendRequest(trendRequestKey);
-        setTrendLoading(Boolean(selected?.gid && trendIndicatorKey));
-        if (!selected?.gid || !trendIndicatorKey) setTrendData(null);
-    }
-
-    const matchingMunicipalities = useMemo(() => {
-        const q = normalise(query);
-        if (!q) return EMPTY;
-        return municipalities
-            .filter((item) =>
-                [item.municipality, item.province, item.district, item.code]
-                    .map(normalise)
-                    .some((value) => value.includes(q))
-            )
-            .slice(0, 8);
-    }, [municipalities, query]);
-
+    useEffect(() => { municipalitiesRef.current = municipalities; }, [municipalities]);
     useEffect(() => {
-        municipalitiesRef.current = municipalities;
-    }, [municipalities]);
-
-    function fitMapBounds(bounds, options = {}) {
-        const map = mapRef.current;
-        if (!map) return;
-        const run = () => {
-            if (!mapRef.current) return;
-            map.stop();
-            map.resize();
-            map.fitBounds(bounds, {
-                padding: options.padding ?? 28,
-                duration: options.duration ?? 650,
-                maxZoom: options.maxZoom ?? 5,
-            });
-        };
-        if (!map.loaded()) {
-            map.once("load", run);
-            return;
-        }
-        run();
-        requestAnimationFrame(run);
-    }
+        const controller = new AbortController();
+        fetch(apiUrl("/api/municipalities"), { signal: controller.signal })
+            .then(response => response.json()).then(body => {
+                if (body.status !== "ok") throw Error(body.message || "Municipalities could not be loaded");
+                setMunicipalities(body.data.records);
+            }).catch(error => { if (error.name !== "AbortError") setMunicipalitiesError(error.message); })
+            .finally(() => setMunicipalitiesLoading(false));
+        return () => controller.abort();
+    }, []);
+    useEffect(() => {
+        if (!selected) return;
+        const controller = new AbortController();
+        fetch(apiUrl(`/api/municipalities/${selected.gid}/profile`), { signal: controller.signal })
+            .then(response => response.json()).then(body => {
+                if (body.status !== "ok") throw Error(body.message || "Profile unavailable");
+                const records = (body.data.indicators?.records || []).filter(eligibleSource);
+                setProfile({ ...body.data, indicators: { ...body.data.indicators, records } });
+                setProfileError(""); setLoadedGid(selected.gid);
+            }).catch(error => { if (error.name !== "AbortError") { setProfileError(error.message); setLoadedGid(selected.gid); } });
+        return () => controller.abort();
+    }, [selected]);
+    useEffect(() => {
+        const controller = new AbortController();
+        const params = new URLSearchParams({ metric: selectedMetric });
+        if (selectedPeriod) params.set("period", selectedPeriod);
+        fetch(apiUrl(`/api/municipalities/metric?${params}`), { signal: controller.signal })
+            .then(response => response.json()).then(body => {
+                if (body.status !== "ok") throw Error(body.message || "Map values unavailable");
+                setMetricData(body.data); setMetricError("");
+            }).catch(error => { if (error.name !== "AbortError") setMetricError(error.message); });
+        return () => controller.abort();
+    }, [selectedMetric, selectedPeriod]);
 
     function fitCountryView(options = {}) {
         const map = mapRef.current;
         if (!map) return;
-        const run = () => {
-            if (!mapRef.current) return;
-            const width = map.getContainer()?.clientWidth || 900;
-            const zoom = width < 720 ? 3.45 : width < 1050 ? 3.75 : 3.95;
-            map.stop();
-            map.resize();
-            map.easeTo({
-                center: SOUTH_AFRICA_CENTER,
-                zoom,
-                bearing: 0,
-                pitch: 0,
-                duration: options.duration ?? 650,
-            });
-        };
-        if (!map.loaded()) {
-            map.once("load", run);
-            return;
-        }
-        run();
-        requestAnimationFrame(run);
+        map.resize(); map.easeTo({ center: SOUTH_AFRICA_CENTER, zoom: 3.8, duration: options.duration ?? 650 });
     }
-
-    function selectMunicipalityFromSearch(event) {
-        event?.preventDefault();
-        const q = normalise(query);
-        if (!q) return;
-        const exact = municipalities.find((item) =>
-            normalise(item.municipality) === q ||
-            normalise(item.code) === q ||
-            normalise(`${item.municipality} | ${item.district} | ${item.province}`) === q
-        );
-        const match = exact || matchingMunicipalities[0];
-        if (match) {
-            mapViewModeRef.current = "municipality";
-            setSelected(match);
-            trackInteraction('municipality', String(match.gid));
-        }
-    }
-
-    useEffect(() => {
-        const controller = new AbortController();
-        fetch(apiUrl("/api/municipalities"), { signal: controller.signal })
-            .then((response) => response.json())
-            .then((body) => {
-                if (body?.status !== "ok") throw new Error(body?.message || "Municipalities could not be loaded");
-                const records = Array.isArray(body.data?.records) ? body.data.records : EMPTY;
-                setMunicipalities(records);
-            })
-            .catch((error) => {
-                if (error.name !== "AbortError") setMunicipalitiesError(error.message);
-            })
-            .finally(() => setMunicipalitiesLoading(false));
-        return () => controller.abort();
-    }, []);
-
     useEffect(() => {
         if (!mapContainerRef.current || mapRef.current) return undefined;
 
@@ -834,7 +324,7 @@ export default function MunicipalRiskProfiler() {
                         type: "raster",
                         tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
                         tileSize: 256,
-                        attribution: "OpenStreetMap contributors",
+                        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
                     },
                     municipal_boundaries: {
                         type: "vector",
@@ -939,7 +429,7 @@ export default function MunicipalRiskProfiler() {
         };
         map.on("load", () => {
             map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
-            map.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-left");
+            map.addControl(new maplibregl.AttributionControl({ compact: false }), "bottom-left");
             map.on("mousemove", "municipal-profile-fill", handleMouseMove);
             map.on("mouseleave", "municipal-profile-fill", handleMouseLeave);
             map.on("click", "municipal-profile-fill", handleClick);
@@ -956,1539 +446,95 @@ export default function MunicipalRiskProfiler() {
         };
     }, []);
 
-    function zoomToCountry() {
-        mapViewModeRef.current = "country";
-        fitCountryView({ duration: 650 });
-    }
-
-    useEffect(() => {
-        if (!selected?.gid) return undefined;
-        const controller = new AbortController();
-        fetch(apiUrl(`/api/municipalities/${selected.gid}/profile`), { signal: controller.signal })
-            .then((response) => response.json())
-            .then((body) => {
-                if (body?.status !== "ok") throw new Error(body?.message || "Profile could not be loaded");
-                setProfile(body.data);
-                const bbox = body.data?.municipality?.bbox || selected.bbox;
-                if (bbox && mapRef.current && mapViewModeRef.current !== "country") {
-                    fitMapBounds(
-                        [
-                            [bbox[0], bbox[1]],
-                            [bbox[2], bbox[3]],
-                        ],
-                        { padding: 52, duration: 650, maxZoom: 9 }
-                    );
-                }
-            })
-            .catch((error) => {
-                if (error.name !== "AbortError") setProfileError(error.message);
-            })
-            .finally(() => setProfileLoading(false));
-        return () => controller.abort();
-    }, [selected]);
-
-    useEffect(() => {
-        const controller = new AbortController();
-        fetch(apiUrl(`/api/municipalities/metric?metric=${encodeURIComponent(selectedMetric)}${selectedPeriod ? `&period=${encodeURIComponent(selectedPeriod)}` : ""}`), { signal: controller.signal })
-            .then((response) => response.json())
-            .then((body) => {
-                if (body?.status !== "ok") throw new Error(body?.message || "Metric could not be loaded");
-                setMetricData(body.data);
-            })
-            .catch((error) => {
-                if (error.name !== "AbortError") setMetricData(null);
-            })
-            .finally(() => setMetricLoading(false));
-        return () => controller.abort();
-    }, [selectedMetric, selectedPeriod]);
-
-    useEffect(() => {
-        const controller = new AbortController();
-        fetch(apiUrl("/api/municipalities/metadata"), { signal: controller.signal })
-            .then((response) => response.json())
-            .then((body) => {
-                if (body?.status === "ok") setMetadata(body.data);
-            })
-            .catch(() => {});
-        return () => controller.abort();
-    }, []);
-
-    useEffect(() => {
-        if (!isAdmin || !token) return undefined;
-        const controller = new AbortController();
-        fetch(apiUrl("/api/municipalities/admin/import-status"), {
-            signal: controller.signal,
-            headers: { Authorization: `Bearer ${token}` },
-        })
-            .then((response) => response.json())
-            .then((body) => {
-                if (body?.status === "ok") setAdminStatus(body.data);
-            })
-            .catch(() => {});
-        return () => controller.abort();
-    }, [isAdmin, token]);
-
-    useEffect(() => {
-        if (!isAdmin || !token || !selected?.gid) return undefined;
-        const controller = new AbortController();
-        fetch(apiUrl(`/api/municipalities/${selected.gid}/admin/indicator-values`), {
-            signal: controller.signal,
-            headers: { Authorization: `Bearer ${token}` },
-        })
-            .then((response) => response.json())
-            .then((body) => {
-                if (body?.status !== "ok") throw new Error(body?.message || "Admin values could not be loaded");
-                setAdminValues(Array.isArray(body.data?.records) ? body.data.records : EMPTY);
-            })
-            .catch(() => setAdminValues([]))
-            .finally(() => setAdminValuesLoading(false));
-        return () => controller.abort();
-    }, [isAdmin, token, selected?.gid, adminRefreshKey]);
-
 
     useEffect(() => {
         const map = mapRef.current;
-        const records = Array.isArray(metricData?.records) ? metricData.records : EMPTY;
-        if (!map || !mapReady) return;
+        if (!mapReady || !map) return;
+        const current = metricData?.metric?.key === selectedMetric.split(":")[1];
+        const records = current ? (metricData?.records || []).filter(record => eligibleSource(record) && hasRawEvidence(record) && record.period === metricData.metric.period && record.displayUnit === metricData.metric.unit && record.scenario === metricData.metric.scenario) : EMPTY;
+        const byGid = new Map(records.map(record => [Number(record.gid), record]));
+        metricRecordsRef.current = byGid;
         metricLabelRef.current = metricData?.metric?.label || "Selected layer";
-        const recordsByGid = new Map(records.map((record) => [Number(record.gid), record]));
-        metricRecordsRef.current = recordsByGid;
-        const applyMetricState = () => {
-            const values = selectedMetric.startsWith("indicator:")
-                ? usableMapRecords(metricData).map(record => Number(record.rawValue))
-                : records.filter(record => record.mapValue != null && Number.isFinite(Number(record.mapValue))).map(record => Number(record.mapValue));
-            const scale=municipalMapScale(values);
-            const colour=scale.length>1 ? ["step",["coalesce",["feature-state","metricValue"],0],scale[0].colour,...scale.slice(1).flatMap(item=>[item.value,item.colour])] : scale[0]?.colour || "#cbd5e1";
-            map.setPaintProperty("municipal-profile-fill","fill-color",["case",["boolean",["feature-state","hover"],false],"#fbbf24",["!",["boolean",["feature-state","hasMetric"],false]],"#cbd5e1",colour]);
-
-            municipalities.forEach((municipality) => {
-                const record = recordsByGid.get(Number(municipality.gid));
-                const isIndicator = selectedMetric.startsWith("indicator:");
-                const hasMetric = isIndicator
-                    ? record?.rawValue != null && !record.isProxy && record.confidence !== "proxy" && record.period === metricData?.metric?.period && record.displayUnit === metricData?.metric?.unit && record.scenario === metricData?.metric?.scenario && Number.isFinite(Number(record.rawValue))
-                    : record?.mapValue != null && Number.isFinite(Number(record.mapValue));
-                map.setFeatureState(
-                    { source: "municipal_boundaries", sourceLayer: "municipalities", id: Number(municipality.gid) },
-                    {
-                        hasMetric,
-                        metricValue: hasMetric ? Number(isIndicator ? record.rawValue : record.mapValue) : null,
-                        metricDisplay: hasMetric ? formatIndicatorValue(record.displayValue, record.displayUnit) : "No data",
-                    }
-                );
-            });
-        };
-        if (map.isStyleLoaded()) applyMetricState();
-        else map.once("load", applyMetricState);
-    }, [metricData, mapReady, municipalities, selectedMetric]);
-
+        const scale = municipalMapScale(records.map(record => Number(record.rawValue)));
+        const colour = scale.length > 1 ? ["step", ["coalesce", ["feature-state", "metricValue"], 0], scale[0].colour, ...scale.slice(1).flatMap(item => [item.value, item.colour])] : scale[0]?.colour || "#cbd5e1";
+        map.setPaintProperty("municipal-profile-fill", "fill-color", ["case", ["boolean", ["feature-state", "hover"], false], "#fbbf24", ["!", ["boolean", ["feature-state", "hasMetric"], false]], "#cbd5e1", colour]);
+        municipalities.forEach(item => {
+            const record = byGid.get(Number(item.gid));
+            map.setFeatureState({ source: "municipal_boundaries", sourceLayer: "municipalities", id: Number(item.gid) }, { hasMetric: Boolean(record), metricValue: record ? Number(record.rawValue) : null, selected: Number(item.gid) === Number(selected?.gid) });
+        });
+    }, [mapReady, metricData, municipalities, selected, selectedMetric]);
     useEffect(() => {
         const map = mapRef.current;
-        if (!map || !selected?.gid) return;
-        const applyState = () => {
-            for (const item of municipalities) {
-                map.setFeatureState(
-                    { source: "municipal_boundaries", sourceLayer: "municipalities", id: Number(item.gid) },
-                    { selected: Number(item.gid) === Number(selected.gid) }
-                );
-            }
-        };
-        if (map.isStyleLoaded()) applyState();
-        else map.once("load", applyState);
-    }, [municipalities, selected]);
+        if (!mapReady || !map || !selected?.bbox) return;
+        map.fitBounds([[selected.bbox[0], selected.bbox[1]], [selected.bbox[2], selected.bbox[3]]], { padding: 35, maxZoom: 10, duration: 650 });
+    }, [selected, mapReady]);
 
-    useEffect(() => {
-        if (!selected?.gid || !trendIndicatorKey) return undefined;
-        const controller = new AbortController();
-        fetch(apiUrl(`/api/municipalities/${selected.gid}/indicators/${encodeURIComponent(trendIndicatorKey)}/trend`), {
-            signal: controller.signal,
-        })
-            .then((response) => response.json())
-            .then((body) => {
-                if (body?.status !== "ok") throw new Error(body?.message || "Trend could not be loaded");
-                setTrendData(body.data);
-            })
-            .catch((error) => {
-                if (error.name !== "AbortError") setTrendData(null);
-            })
-            .finally(() => setTrendLoading(false));
-        return () => controller.abort();
-    }, [selected?.gid, trendIndicatorKey]);
-
-    function updateAdminField(field, value) {
-        setAdminForm((current) => ({ ...current, [field]: value }));
-    }
-
-    function showExplanation(title, rows) {
-        setDetailInfo({
-            title,
-            rows: rows.filter((row) => row?.value),
-        });
-    }
-
-    function infoButton(title, rows) {
-        return (
-            <button
-                type="button"
-                className="sarva-muniProfiler__miniInfo"
-                onClick={() => showExplanation(title, rows)}
-                aria-label={`Explain ${title}`}
-                title={`Explain ${title}`}
-            >
-                i
-            </button>
-        );
-    }
-
-    function editAdminValue(record) {
-        setActiveTab("admin");
-        setAdminMessage("Editing admin-entered value. Save will update the selected period and scenario.");
-        setAdminForm({
-            municipalityCode: record.municipalityCode || selected?.code || "",
-            indicatorKey: record.indicatorKey || "",
-            label: record.label || "",
-            theme: record.theme || "",
-            unit: record.displayUnit || record.unit || "",
-            direction: record.direction || "higher_risk",
-            period: record.period || "",
-            scenario: record.scenario || "admin import",
-            rawValue: record.rawValue ?? "",
-            value_0_100: record.normalizedValue ?? "",
-            sourceName: record.sourceName || "",
-            sourceUrl: record.sourceUrl || "",
-            notes: record.notes || "",
-        });
-    }
-
-    async function deleteAdminValue(record) {
-        if (!token) return;
-        const ok = window.confirm(`Delete admin value "${record.label || record.indicatorKey}" for ${record.period}? Imported and proxy data will not be touched.`);
-        if (!ok) return;
-        setAdminMessage("Deleting...");
-        try {
-            const response = await fetch(apiUrl("/api/municipalities/admin/indicator-values"), {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    municipalityCode: record.municipalityCode || selected?.code,
-                    indicatorKey: record.indicatorKey,
-                    period: record.period,
-                    scenario: record.scenario,
-                }),
-            });
-            const body = await response.json().catch(() => null);
-            if (!response.ok) throw new Error(body?.message || "Could not delete admin value");
-            setAdminMessage("Deleted. Refreshing profile data...");
-            setAdminRefreshKey((value) => value + 1);
-            setSelected((current) => (current ? { ...current } : current));
-            setMetricData(null);
-        } catch (error) {
-            setAdminMessage(error.message);
-        }
-    }
-
-    async function submitAdminIndicator(event) {
+    function selectMunicipalityFromSearch(event) {
         event.preventDefault();
-        if (!token) return;
-        setAdminMessage("Saving...");
-        try {
-            const response = await fetch(apiUrl("/api/municipalities/admin/indicator-values"), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(adminForm),
-            });
-            const body = await response.json().catch(() => null);
-            if (!response.ok) throw new Error(body?.message || "Could not save indicator value");
-            setAdminMessage("Saved. Refreshing profile data...");
-            setAdminRefreshKey((value) => value + 1);
-            setSelected((current) => (current ? { ...current } : current));
-            setMetricData(null);
-        } catch (error) {
-            setAdminMessage(error.message);
-        }
+        if (!query.trim()) return;
+        const match = matches.find(item => normalise(item.municipality) === normalise(query) || normalise(item.code) === normalise(query)) || matches[0];
+        if (match) { setSelected(match); trackInteraction("municipality", String(match.gid)); }
     }
-
-    function downloadMunicipalProfilePdf() {
-        if (!profile) return;
-        const municipality = profile.municipality || {};
-        const title = `${municipality.municipality || "Municipal"} risk profile`;
-        const allSources = new Set();
-        indices.forEach((index) => (index.components || []).forEach((component) => {
-            const source = sourceLabel(component);
-            if (source) allSources.add(source);
-        }));
-        indicatorRecords.forEach((indicator) => {
-            const source = [indicator.sourceName, indicator.period, scenarioLabel(indicator.scenario), confidenceLabel(indicator.confidence)].filter(Boolean).join(" | ");
-            if (source) allSources.add(source);
-        });
-        if (forecast.latestRun?.source) allSources.add(forecastSourceLabel(forecast));
-
-        const sortedIndices = [...indices].sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
-        const topDrivers = [...drivers].sort((a, b) => (Number(b.contribution) || 0) - (Number(a.contribution) || 0)).slice(0, 8);
-        const highestIndicators = [...indicatorRecords]
-            .filter((indicator) => !indicator.isProxy && indicator.confidence !== "proxy" && indicator.adjustedValue != null && Number.isFinite(Number(indicator.adjustedValue)))
-            .sort((a, b) => Number(b.adjustedValue) - Number(a.adjustedValue))
-            .slice(0, 10);
-
-        const blob = buildPdf(({ write, gap, newPage, rect, sectionTitle, statCard, scoreBar, colors, pageWidth, margin }) => {
-            rect(0, 841.89, pageWidth, 132, { fill: colors.primary });
-            write("SARVA Municipal Risk Profile", { font: "F2", size: 20, maxChars: 48, after: 4, color: colors.surface });
-            write(title, { font: "F2", size: 28, maxChars: 34, color: colors.surface });
-            write([municipality.district, municipality.province, municipality.code].filter(Boolean).join(" | "), { size: 11, color: colors.pale, after: 8 });
-            write(`Generated ${formatDate(new Date().toISOString())} | Screening profile for planning support`, { size: 9, color: colors.pale });
-            write(`Forecast layer: ${forecastWindowLabel(forecast)} | ${forecast.latestRun?.source || "SARVA cached forecast risk layer"}`, { size: 8, color: colors.pale });
-            write("Relative indicator comparisons; not probabilities of harm. Exposure and losses are not assessed.", { size: 8, color: colors.pale });
-            write(isExpiredForecast(String(forecast.forecastEnd || "").slice(0, 10)) ? "Expired forecast: historical context only." : "Check forecast dates and official updates before use.", { size: 8, color: colors.pale });
-            gap(22);
-
-            const cardTop = 674;
-            const cardGap = 8;
-            const cardWidth = (pageWidth - margin * 2 - cardGap * 2) / 3;
-            topStatCards.slice(0, 6).forEach((card, index) => {
-                const row = Math.floor(index / 3);
-                const col = index % 3;
-                statCard(
-                    margin + col * (cardWidth + cardGap),
-                    cardTop - row * 66,
-                    cardWidth,
-                    card.label,
-                    card.value,
-                    card.note
-                );
-            });
-            gap(118);
-
-            sectionTitle("Executive snapshot", "key findings");
-            write("Municipal risk scores and 5-day forecast risk are separate views. Municipal risk uses available static indicator data, while the forecast risk uses cached model points for the listed forecast window.", { size: 9, maxChars: 105 });
-            write(`Municipal risk source: ${primaryIndex ? sourceList(primaryIndex.components) : "No municipal composite source available."}`, { size: 8, maxChars: 112 });
-            write(`5-day forecast source: ${forecastSourceLabel(forecast)}.`, { size: 8, maxChars: 112 });
-            gap(6);
-            keyFindingCards.slice(0, 8).forEach((card) => {
-                if (Number.isFinite(Number(card.score))) {
-                    scoreBar(`${card.label}: ${card.value}`, card.score, card.detail, { indent: 4 });
-                } else {
-                    write(`${card.label}: ${card.value}. ${card.detail}`, { size: 9, indent: 4, maxChars: 105 });
-                }
-            });
-            gap(4);
-
-            sectionTitle("Municipal indices", "normalized 0-100 scores");
-            sortedIndices.slice(0, 6).forEach((index) => {
-                scoreBar(index.label, index.score, `${index.riskLabel}. ${index.description || ""}`, { indent: 4 });
-            });
-            gap(4);
-
-            sectionTitle("Risk drivers", "largest contributors");
-            if (topDrivers.length === 0) {
-                write("No risk driver records are available for this municipality.", { size: 10 });
-            } else {
-                topDrivers.forEach((driver) => {
-                    scoreBar(driver.label, driver.adjustedValue, `${driver.theme || "Indicator"} | weight ${formatNumber(driver.weight, 2)} | source ${driver.sourceName || "not listed"}`, { indent: 4, size: 8 });
-                });
-            }
-
-            newPage();
-            sectionTitle("5-day forecast screening", forecastWindowLabel(forecast));
-            riskCards.forEach((card) => {
-                scoreBar(`${card.label}: ${card.value || "n/a"}`, card.score, `${card.explanation} ${forecastSourceLabel(forecast)}.`, { indent: 4 });
-            });
-            gap(6);
-
-            sectionTitle("Highest indicator pressures", "raw values and source context");
-            highestIndicators.forEach((indicator) => {
-                scoreBar(
-                    `${indicator.label}: ${formatIndicatorValue(indicator.displayValue, indicator.displayUnit)}`,
-                    indicator.adjustedValue,
-                    `${directionLabel(indicator.direction)} | ${[indicator.sourceName, indicator.period, scenarioLabel(indicator.scenario), confidenceLabel(indicator.confidence)].filter(Boolean).join(" | ") || "source not listed"}`,
-                    { indent: 4, size: 8 }
-                );
-            });
-
-            newPage();
-            sectionTitle("Municipal indices explained", "inputs and method");
-            if (indices.length === 0) write("No municipal indices available.", { size: 10 });
-            indices.forEach((index) => {
-                write(index.label, { font: "F2", size: 12, after: 2 });
-                scoreBar(`${index.riskLabel} index score`, index.score, index.description || "", { indent: 8, size: 8 });
-                write(indexFormula(index), { size: 8, indent: 8, maxChars: 110 });
-                write(`Main inputs: ${indexInputSummary(index)}`, { size: 8, indent: 8, maxChars: 110 });
-                gap(6);
-            });
-
-            newPage();
-            sectionTitle("Indicator catalogue", "grouped by category");
-            themes.forEach((theme) => {
-                write(theme.theme, { font: "F2", size: 12, after: 2 });
-                theme.records.slice(0, 14).forEach((indicator) => {
-                    const source = [indicator.sourceName, indicator.period, scenarioLabel(indicator.scenario), confidenceLabel(indicator.confidence)].filter(Boolean).join(" | ") || "source not listed";
-                    write(`${indicator.label}: ${formatIndicatorValue(indicator.displayValue, indicator.displayUnit)} | score ${formatNumber(indicator.normalizedValue, 1)} / 100 | ${source}`, { size: 7.5, indent: 8, maxChars: 116 });
-                });
-                if (theme.records.length > 14) {
-                    write(`${theme.records.length - 14} additional ${theme.theme} indicators are available in the live profiler.`, { size: 7.5, indent: 8 });
-                }
-                gap(6);
-            });
-
-            newPage();
-            sectionTitle("Nearby SAEON observations", "within 120 km");
-            if (profile.observationSites.length === 0) {
-                write("No observation sites were found within 120 km of this municipality.", { size: 10 });
-            } else {
-                profile.observationSites.forEach((site) => {
-                    write(`${site.displayName || site.stationName}: ${site.inside ? "inside municipality" : `${formatNumber(site.distanceKm)} km away`}`, { size: 9, indent: 8 });
-                });
-            }
-            gap(8);
-            sectionTitle("Footnotes and sources", "interpretation notes");
-            (metadata?.calculationNotes || []).forEach((note, index) => {
-                write(`${index + 1}. ${note.title}: ${note.body}`, { size: 8, indent: 6, maxChars: 112 });
-            });
-            write("Data source groups", { font: "F2", size: 10, after: 2 });
-            Array.from(allSources).forEach((source, index) => write(`${index + 1}. ${source}`, { size: 8, indent: 6, maxChars: 112 }));
-            gap(6);
-            write(profile.description || "", { size: 8, maxChars: 112 });
-        });
-
-        const slug = pdfSafe(municipality.municipality || "municipal-profile").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "municipal-profile";
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `${slug}-sarva-risk-profile.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(url);
-    }
-
-    const forecast = profile?.forecast || {};
-    const municipalIndicators = profile?.indicators || {};
-    const indices = Array.isArray(municipalIndicators.indices) ? municipalIndicators.indices : EMPTY;
-    const drivers = Array.isArray(municipalIndicators.drivers) ? municipalIndicators.drivers : EMPTY;
-    const themes = Array.isArray(municipalIndicators.themes) ? municipalIndicators.themes : EMPTY;
-    const indicatorRecords = Array.isArray(municipalIndicators.records) ? municipalIndicators.records : EMPTY;
-    const indicatorThemes = ["All themes", ...Array.from(new Set(indicatorRecords.map(indicator => indicator.theme || "Other"))).sort()];
-    const requestedTheme = new URLSearchParams(location.search).get("theme");
-    const [previousThemeSearch, setPreviousThemeSearch] = useState(location.search);
-    if (previousThemeSearch !== location.search) {
-        setPreviousThemeSearch(location.search);
-        setIndicatorThemeFilter(null);
-    }
-    const indicatorThemeFilter = chosenThemeFilter ?? (requestedTheme ? resolveThemeDeepLink(requestedTheme, indicatorThemes) : "All themes");
-
-    const filteredThemes = themes
-        .map((theme) => ({
-            ...theme,
-            records: indicatorThemeFilter === "All themes"
-                ? theme.records
-                : theme.records.filter((indicator) => (indicator.theme || "Other") === indicatorThemeFilter),
-        }))
-        .filter((theme) => theme.records.length > 0);
-    const trendCandidates = indicatorRecords
-        .filter((indicator) => /population|crime|household|unemployment|water|sanitation|electricity|subindex|income/i.test(`${indicator.key} ${indicator.label} ${indicator.theme}`))
-        .slice(0, 8);
-    const globalIndicators = Array.isArray(metadata?.indicators) ? metadata.indicators : EMPTY;
-    const globalIndices = Array.isArray(metadata?.indices) ? metadata.indices : EMPTY;
-    const mapLayerIndicators = indicatorRecords.length > 0 ? indicatorRecords : globalIndicators;
-    const mapLayerIndices = indices.length > 0 ? indices : globalIndices;
-    const mapLayerThemes = ["All themes", ...Array.from(new Set(mapLayerIndicators.map((indicator) => indicator.theme || "Other"))).sort()];
-    const metricIndexOptions = mapLayerIndices.map((index) => ({
-        value: `index:${index.key}`,
-        label: index.key === "imported_composite_risk" ? DEFAULT_METRIC_LABEL : index.label,
-        theme: index.theme || "Indices",
-        description: index.description || "",
-    }));
-    const guidedLayerCards = GUIDED_LAYER_KEYS.map((layer) => {
-        const option = metricIndexOptions.find((item) => item.value === `index:${layer.key}`);
-        if (!option) return null;
-        return {
-            ...layer,
-            value: option.value,
-            label: layer.key === "imported_composite_risk" ? DEFAULT_METRIC_LABEL : layer.label,
-            description: option.description,
-        };
-    }).filter(Boolean);
-    const indexThemeOptions = [
-        "All themes",
-        ...Array.from(new Set(mapLayerIndices.map((index) => index.theme || "Other"))).sort(),
-    ];
-    const filteredMetricIndexOptions = metricIndexOptions.filter((option) => (
-        (layerThemeFilter === "All themes" || option.theme === layerThemeFilter)
-        && textMatchesQuery(layerSearch, option.label, option.theme, option.description)
-    ));
-    const metricIndicatorGroups = mapLayerThemes
-        .filter((theme) => theme !== "All themes")
-        .map((theme) => ({
-            theme,
-            options: mapLayerIndicators
-                .filter((indicator) => (indicator.theme || "Other") === theme)
-                .map((indicator) => ({
-                    value: `indicator:${indicator.key}`,
-                    label: indicator.label,
-                    theme: indicator.theme || "Other",
-                    description: indicator.description || "",
-                })),
-        }))
-        .filter((group) => group.options.length > 0);
-    const layerThemeOptions = layerMode === "indices" ? indexThemeOptions : mapLayerThemes;
-    const filteredMetricIndicatorGroups = metricIndicatorGroups
-        .filter((group) => layerThemeFilter === "All themes" || group.theme === layerThemeFilter)
-        .map((group) => ({
-            ...group,
-            options: group.options.filter((option) => textMatchesQuery(layerSearch, option.label, option.theme, option.description)),
-        }))
-        .filter((group) => group.options.length > 0);
-    const visibleLayerOptionCount = layerMode === "guided"
-        ? guidedLayerCards.length
-        : layerMode === "indices"
-            ? filteredMetricIndexOptions.length
-            : filteredMetricIndicatorGroups.reduce((total, group) => total + group.options.length, 0);
-    const selectedMetricIsVisible = (() => {
-        if (layerMode === "guided") return guidedLayerCards.some((option) => option.value === selectedMetric);
-        if (layerMode === "indices") return filteredMetricIndexOptions.some((option) => option.value === selectedMetric);
-        return filteredMetricIndicatorGroups.some((group) => group.options.some((option) => option.value === selectedMetric));
-    })();
-    const activeMetric = metricData?.metric || {};
-    const activeMetricLabel = selectedMetric === DEFAULT_METRIC
-        ? (activeMetric.label || DEFAULT_METRIC_LABEL)
-        : (activeMetric.label || "Selected layer");
-    const metricRecords = Array.isArray(metricData?.records) ? metricData.records : EMPTY;
-    const metricCoverage = {
-        total: municipalities.length,
-        available: metricRecords.filter((record) => Number.isFinite(Number(record.mapValue))).length,
-    };
-    const missingProfileInputs = (() => {
-        const byKey = new Map();
-        indices.forEach((index) => {
-            (Array.isArray(index.missingComponents) ? index.missingComponents : EMPTY).forEach((component) => {
-                if (!component?.key || byKey.has(component.key)) return;
-                byKey.set(component.key, component);
+    function downloadProfilePdf() {
+        if (!visibleProfile) return;
+        const rows = visibleProfile.indicators.records.filter(hasRawEvidence);
+        const municipality = visibleProfile.municipality;
+        const blob = buildPdf(({ write, gap, sectionTitle, ensureSpace }) => {
+            sectionTitle(municipality.municipality, "Municipal source data");
+            write([municipality.district, municipality.province, municipality.code].filter(Boolean).join(" | "), { size: 10 });
+            write(`Generated ${new Date().toLocaleDateString("en-ZA")}`, { size: 8 });
+            gap();
+            write("Source values only. Synthetic placeholders and composite risk scores are excluded. Imported data has not been independently validated here. Check the original sources before use.", { size: 9 });
+            write("Crime counts are reported cases, not population-adjusted rates. Source years and units may differ.", { size: 9 });
+            gap();
+            if (!rows.length) write("Insufficient verified data: no eligible raw source values are available.", { size: 11 });
+            rows.forEach(row => {
+                ensureSpace(145);
+                write(row.label, { font: "F2", size: 12, maxChars: 75 });
+                write(row.theme || "Source indicator", { size: 8 });
+                write(formatIndicatorValue(row.rawValue, row.displayUnit || row.unit), { size: 12 });
+                write(`Period: ${row.period || "Unknown"} | Scenario: ${row.scenario || "Unknown"}`, { size: 8 });
+                write(`Source: ${row.sourceName || "Not supplied"}`, { size: 8 });
+                if (row.sourceUrl) write(row.sourceUrl, { size: 7 });
+                gap();
             });
         });
-        return [...byKey.values()].sort((a, b) => `${a.theme || ""} ${a.label || a.key}`.localeCompare(`${b.theme || ""} ${b.label || b.key}`));
-    })();
-    const [selectedMetricKind, selectedMetricKey] = selectedMetric.includes(":")
-        ? selectedMetric.split(":", 2)
-        : ["index", selectedMetric];
-    const selectedLayerProfileStatus = (() => {
-        if (!profile) return null;
-        if (selectedMetricKind === "indicator") {
-            const indicator = indicatorRecords.find((item) => item.key === selectedMetricKey);
-            if (!indicator) {
-                return {
-                    tone: "missing",
-                    title: "Selected layer missing here",
-                    detail: `${activeMetricLabel} has no loaded value for ${profile.municipality.municipality}. It is excluded from this municipality's local calculations until a source row is imported.`,
-                };
-            }
-            return {
-                tone: indicator.isProxy ? "partial" : "available",
-                title: indicator.isProxy ? "Selected layer is proxy data" : "Selected layer available here",
-                detail: `${rawValueLabel(indicator) ? `Raw value ${rawValueLabel(indicator)}. ` : ""}Comparison score ${formatNumber(indicator.normalizedValue, 1)} / 100. ${sourceLabel(indicator) || "Source metadata not listed."}`,
-            };
-        }
-        const index = indices.find((item) => item.key === selectedMetricKey);
-        if (!index) {
-            return {
-                tone: "missing",
-                title: "Selected index missing here",
-                detail: `${activeMetricLabel} cannot be calculated for this municipality because none of its component inputs are currently loaded.`,
-            };
-        }
-        const missingCount = Array.isArray(index.missingComponents) ? index.missingComponents.length : 0;
-        return {
-            tone: missingCount > 0 ? "partial" : "available",
-            title: missingCount > 0 ? "Selected index has data gaps" : "Selected index fully covered here",
-            detail: `${indexCoverageLabel(index)}. ${missingCount > 0 ? `Missing: ${missingInputSummary(index)}.` : "No missing component inputs are listed for this municipality."}`,
-        };
-    })();
-    const primaryIndex = indices.find((index) => index.key === "imported_composite_risk")
-        || indices.find((index) => index.key === "composite_risk")
-        || indices.find((index) => /overall/i.test(`${index.theme} ${index.label}`))
-        || indices[0]
-        || null;
-    const serviceIndex = indices.find((index) => /service/i.test(`${index.key} ${index.label} ${index.theme}`)) || null;
-    const crimeIndex = indices.find((index) => /crime|safety|security/i.test(`${index.key} ${index.label} ${index.theme}`)) || null;
-    const populationIndicator = findIndicator(indicatorRecords, [/total.population/, /population.total/, /^population /]);
-    const householdIndicator = findIndicator(indicatorRecords, [/households?/, /household.total/]);
-    const unemploymentIndicator = findIndicator(indicatorRecords, [/unemployment/]);
-    const crimeIndicator = findIndicator(indicatorRecords, [/crime/, /serious.total/, /safety/]);
-    const leadingDrivers = [...drivers]
-        .filter((driver) => Number.isFinite(Number(driver.adjustedValue)))
-        .sort((a, b) => (Number(b.contribution) || 0) - (Number(a.contribution) || 0))
-        .slice(0, 3);
-    const topStatCards = [
-        {
-            label: "Area",
-            value: formatNumber(profile?.municipality?.areaKm2, 0),
-            note: "km2",
-        },
-        primaryIndex && {
-            label: "Municipal risk",
-            value: primaryIndex.riskLabel || "n/a",
-            note: `${formatNumber(primaryIndex.score, 1)} / 100 | static indicators`,
-        },
-        {
-            label: "5-day forecast risk",
-            value: forecast.overallRiskLabel || "n/a",
-            note: `${formatNumber(forecast.overallRiskScore, 0)} / 100 | ECMWF forecast`,
-        },
-        populationIndicator && {
-            label: "Population",
-            value: formatIndicatorValue(populationIndicator.displayValue, populationIndicator.displayUnit),
-            note: [populationIndicator.period, populationIndicator.sourceName].filter(Boolean).join(" | "),
-        },
-        crimeIndex && {
-            label: "Crime/safety risk",
-            value: crimeIndex.riskLabel || "n/a",
-            note: `${formatNumber(crimeIndex.score, 1)} / 100 | SAPS/static`,
-        },
-        !crimeIndex && crimeIndicator && {
-            label: "Crime/safety risk",
-            value: `${formatNumber(crimeIndicator.adjustedValue, 1)} / 100`,
-            note: crimeIndicator.label,
-        },
-        serviceIndex && {
-            label: "Service pressure",
-            value: serviceIndex.riskLabel || "n/a",
-            note: `${formatNumber(serviceIndex.score, 1)} / 100 | Stats SA/static`,
-        },
-        {
-            label: "Forecast points",
-            value: String(forecast.pointCount || 0),
-            note: forecastWindowLabel(forecast),
-        },
-        {
-            label: "Indicators",
-            value: String(municipalIndicators.records?.length || 0),
-            note: `${themes.length} categories`,
-        },
-    ].filter(Boolean);
-    const keyFindingCards = [
-        primaryIndex && {
-            label: "Municipal risk",
-            value: `${formatNumber(primaryIndex.score, 1)} / 100`,
-            detail: `${primaryIndex.riskLabel}. Static municipal indicator composite, not the forecast layer. ${primaryIndex.description || "Composite screening score from available municipal indicators."} Source: ${sourceList(primaryIndex.components)}`,
-            score: primaryIndex.score,
-            info: [
-                { label: "What this is", value: "A static municipal comparison score from available Stats SA, SAPS and municipal-context indicators. It is separate from the 5-day forecast layer." },
-                { label: "Calculation", value: indexFormula(primaryIndex) },
-                { label: "Sources", value: sourceList(primaryIndex.components) },
-            ],
-        },
-        {
-            label: "5-day forecast risk",
-            value: forecast.overallRiskLabel || "n/a",
-            detail: `${formatNumber(forecast.overallRiskScore, 0)} / 100 from cached forecast points. Source: ${forecastSourceLabel(forecast)}.`,
-            score: forecast.overallRiskScore,
-            info: [
-                { label: "What this is", value: "A short-range forecast screening score only. It is based on forecast rain, heat, wind and fire-weather proxy values intersecting the municipality." },
-                { label: "Forecast window", value: forecastWindowLabel(forecast) },
-                { label: "Source", value: forecastSourceLabel(forecast) },
-            ],
-        },
-        populationIndicator && {
-            label: "Population",
-            value: formatIndicatorValue(populationIndicator.displayValue, populationIndicator.displayUnit),
-            detail: `Raw count used as context, not a risk score. Source: ${sourceLabel(populationIndicator) || "Source metadata not listed."}`,
-            score: populationIndicator.adjustedValue,
-            info: [
-                { label: "What this is", value: populationIndicator.description || "Population indicator available for this municipality." },
-                { label: "Raw value", value: formatIndicatorValue(populationIndicator.displayValue, populationIndicator.displayUnit) },
-                { label: "Source", value: sourceLabel(populationIndicator) || "Source metadata not listed." },
-            ],
-        },
-        householdIndicator && {
-            label: "Households",
-            value: formatIndicatorValue(householdIndicator.displayValue, householdIndicator.displayUnit),
-            detail: `Raw household context. Source: ${sourceLabel(householdIndicator) || "Source metadata not listed."}`,
-            score: householdIndicator.adjustedValue,
-            info: [
-                { label: "What this is", value: householdIndicator.description || "Household indicator available for this municipality." },
-                { label: "Raw value", value: formatIndicatorValue(householdIndicator.displayValue, householdIndicator.displayUnit) },
-                { label: "Source", value: sourceLabel(householdIndicator) || "Source metadata not listed." },
-            ],
-        },
-        unemploymentIndicator && {
-            label: "Unemployment pressure",
-            value: `${formatNumber(unemploymentIndicator.adjustedValue, 1)} / 100`,
-            detail: `${directionLabel(unemploymentIndicator.direction)}. Source: ${sourceLabel(unemploymentIndicator) || "Source metadata not listed."}`,
-            score: unemploymentIndicator.adjustedValue,
-            info: [
-                { label: "What this is", value: unemploymentIndicator.description || "Relative labour-market stress indicator." },
-                { label: "Score meaning", value: scoreExplanation(unemploymentIndicator.adjustedValue, unemploymentIndicator.riskLabel) },
-                { label: "Source", value: sourceLabel(unemploymentIndicator) || "Source metadata not listed." },
-            ],
-        },
-        (crimeIndex || crimeIndicator) && {
-            label: "Crime and safety",
-            value: crimeIndex ? `${formatNumber(crimeIndex.score, 1)} / 100` : `${formatNumber(crimeIndicator.adjustedValue, 1)} / 100`,
-            detail: crimeIndex
-                ? `${crimeIndex.riskLabel}. ${crimeIndex.description || "Crime and safety context from available SAPS indicators."} Source: ${sourceList(crimeIndex.components)}`
-                : `${directionLabel(crimeIndicator.direction)}. Source: ${sourceLabel(crimeIndicator) || "Source metadata not listed."}`,
-            score: crimeIndex?.score ?? crimeIndicator.adjustedValue,
-            info: crimeIndex ? [
-                { label: "What this is", value: crimeIndex.description || "Crime and safety context from available SAPS indicators." },
-                { label: "Calculation", value: indexFormula(crimeIndex) },
-                { label: "Sources", value: sourceList(crimeIndex.components) },
-            ] : [
-                { label: "What this is", value: crimeIndicator.description || "Crime and safety indicator." },
-                { label: "Score meaning", value: scoreExplanation(crimeIndicator.adjustedValue, crimeIndicator.riskLabel) },
-                { label: "Source", value: sourceLabel(crimeIndicator) || "Source metadata not listed." },
-            ],
-        },
-        serviceIndex && {
-            label: "Service pressure",
-            value: `${formatNumber(serviceIndex.score, 1)} / 100`,
-            detail: `Higher values mean higher service-related risk pressure. Access/resilience indicators are inverted before contributing. Source: ${sourceList(serviceIndex.components)}`,
-            score: serviceIndex.score,
-            info: [
-                { label: "What this is", value: serviceIndex.description || "Basic-service access and resilience context." },
-                { label: "Direction logic", value: "Indicators such as water, electricity and refuse access are treated as resilience inputs: higher access reduces risk pressure, so the risk input is calculated as 100 minus the normalized access score." },
-                { label: "Sources", value: sourceList(serviceIndex.components) },
-            ],
-        },
-        ...leadingDrivers.map((driver) => ({
-            label: `Driver: ${driver.label}`,
-            value: `${formatNumber(driver.adjustedValue, 1)} / 100`,
-            detail: `${driver.theme || "Indicator"} driver. ${riskInputExplanation(driver)} ${weightExplanation(driver)} Source: ${sourceExplanation(driver)}`,
-            score: driver.adjustedValue,
-            info: [
-                { label: "What this is", value: driver.description || "One of the largest contributors to the selected municipal composite risk score." },
-                { label: "How to read the score", value: riskInputExplanation(driver) },
-                { label: "Direction logic", value: directionExplanation(driver.direction) },
-                { label: "Weight in the index", value: weightExplanation(driver) },
-                { label: "Source and date", value: sourceExplanation(driver) },
-            ],
-        })),
-    ].filter(Boolean);
-    const trendRecords = Array.isArray(trendData?.records) ? trendData.records : EMPTY;
-    const trendChange = trendDelta(trendRecords);
-    const riskCards = [
-        {
-            label: "Overall",
-            score: forecast.overallRiskScore,
-            value: forecast.overallRiskLabel,
-            detail: "0-100 screening index",
-            explanation: "Highest overall screening signal from cached rain, heat, wind and fire-weather forecast points intersecting the municipality.",
-        },
-        {
-            label: "Rain",
-            score: forecast.rainRiskScore,
-            value: `${formatNumber(forecast.maxRainfallMm)} mm/day`,
-            detail: "highest forecast rainfall",
-            explanation: "Maximum daily rainfall value found inside the municipality during the current forecast window.",
-        },
-        {
-            label: "Heat",
-            score: forecast.heatRiskScore,
-            value: `${formatNumber(forecast.maxTemperatureC)} °C`,
-            detail: "maximum temperature",
-            explanation: "Maximum forecast daily temperature found inside the municipality during the current forecast window.",
-        },
-        {
-            label: "Wind",
-            score: forecast.windRiskScore,
-            value: `${formatNumber(forecast.maxWindKmh)} km/h`,
-            detail: "maximum wind speed",
-            explanation: "Maximum forecast 10 m wind speed found inside the municipality during the current forecast window.",
-        },
-        {
-            label: "Fire weather",
-            score: forecast.fireRiskScore,
-            value: forecast.dominantHazard || "proxy",
-            detail: "screening layer",
-            explanation: "Fire-weather screening combines cached heat, wind and dry-condition signals. It is an exploratory layer, not an official fire warning.",
-        },
-    ];
-
-    const rawMapValues = usableMapRecords(metricData).map(r=>Number(r.rawValue));
-    const rawMapScale = municipalMapScale(rawMapValues);
-    const rawMapLow = rawMapValues.length ? Math.min(...rawMapValues) : null;
-    const rawMapHigh = rawMapValues.length ? Math.max(...rawMapValues) : null;
-    return (
-        <div className="sarva-muniProfiler">
-            <section className="sarva-muniProfiler__tools" aria-label="Municipal risk profiler controls">
-                <div className="sarva-muniProfiler__intro">
-                    <span>SARVA municipal tool</span>
-                    <h1>Municipal Risk Profiler</h1>
-                    <p>
-                        Explore South Africa’s municipal data. Compare a layer, then select a municipality to inspect its values.
-                    </p>
+        const url = URL.createObjectURL(blob), link = document.createElement("a");
+        link.href = url; link.download = `${pdfSafe(municipality.municipality).toLowerCase().replace(/[^a-z0-9]+/g, "-")}-sarva-source-profile.pdf`;
+        document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+        trackInteraction("download", "municipal-source-profile");
+    }
+    const mapRecords = metricData?.metric?.key === selectedMetric.split(":")[1] ? (metricData?.records || []).filter(record => eligibleSource(record) && hasRawEvidence(record) && record.period === metricData.metric.period && record.displayUnit === metricData.metric.unit && record.scenario === metricData.metric.scenario) : EMPTY;
+    const scale = municipalMapScale(mapRecords.map(record => Number(record.rawValue)));
+    return <div className="sarva-muniProfiler">
+        <section className="sarva-muniProfiler__tools" aria-label="Municipal risk profiler controls">
+            <div className="sarva-muniProfiler__intro"><span>SARVA municipal tool</span><h1>Municipal Risk Profiler</h1><p>Explore South Africa’s municipal data. Compare a layer, then select a municipality to inspect its values.</p></div>
+            <form className="sarva-muniProfiler__search" onSubmit={selectMunicipalityFromSearch}>
+                <label><span>Search municipality</span><input type="search" value={query} onChange={event => setQuery(event.target.value)} list="sarva-municipality-options" placeholder="Type municipality, district, province or code..." /></label>
+                <datalist id="sarva-municipality-options">{matches.slice(0, 30).map(item => <option key={item.gid} value={item.municipality} label={[item.district, item.province].filter(Boolean).join(" | ")} />)}</datalist>
+                <button type="submit">Search</button>{municipalitiesLoading && <small>Loading municipalities…</small>}{municipalitiesError && <small role="alert">{municipalitiesError}</small>}
+            </form>
+            <button type="button" className="sarva-muniProfiler__infoButton" onClick={() => setInfoOpen(true)}>Methodology</button>
+            <button type="button" className="sarva-muniProfiler__infoButton" onClick={() => fitCountryView()}>Show country</button>
+        </section>
+        {infoOpen && <div className="sarva-muniProfiler__modal" role="dialog" aria-modal="true" aria-labelledby="municipal-method"><div>
+            <button type="button" onClick={() => setInfoOpen(false)} aria-label="Close">x</button><h2 id="municipal-method">About the municipal data</h2>
+            <p>The map and tables show source values in their original units. Colours show their distribution across municipalities with the same indicator, period, scenario and unit; they do not show risk levels or probabilities.</p>
+            <p>Synthetic test values are excluded. Missing information is shown as insufficient verified data, never as zero. Imported records have not been independently validated here.</p>
+            <p>Check source dates, definitions and coverage before comparing municipalities. Crime counts are reported cases and are not adjusted for population.</p>
+        </div></div>}
+        <div className="profiler-explorer">
+            <MapIndicatorControls value={selectedMetric} onChange={value => { setSelectedMetric(value); setSelectedPeriod(""); }} metric={metricData?.metric} period={selectedPeriod} onPeriodChange={setSelectedPeriod} />
+            <section className="sarva-muniProfiler__mapPanel" aria-label="Municipality map"><div ref={mapContainerRef} className="sarva-muniProfiler__map" />
+                <div className="sarva-profilerMapHint"><strong>{selected?.municipality || "Select a municipality"}</strong><span>Click a boundary or search above to view its source values.</span></div>
+                {metricError && <p role="alert">{metricError}</p>}
+                <div className="profiler-rawLegend"><strong>{metricData?.metric?.label || "Selected indicator"}</strong><small>{mapRecords.length ? `${metricData.metric.unit} · ${metricData.metric.period}` : "Insufficient verified data for this layer."}</small>
+                    <div className="profiler-legendClasses">{scale.map((item, index) => <div key={item.value}><i style={{ background: item.colour }} /><span>{formatNumber(item.value, 1)}{index < scale.length - 1 ? ` – <${formatNumber(scale[index + 1].value, 1)}` : ` – ${formatNumber(Math.max(...mapRecords.map(record => Number(record.rawValue))), 1)}`}</span></div>)}</div>
+                    <small>{mapRecords.length} municipalities · grey: insufficient verified data or a different measurement basis. Colours show magnitude, not risk.</small>
                 </div>
-
-                <form className="sarva-muniProfiler__search" onSubmit={selectMunicipalityFromSearch}>
-                    <label>
-                        <span>Search municipality</span>
-                        <input
-                            type="search"
-                            value={query}
-                            onChange={(event) => setQuery(event.target.value)}
-                            placeholder="Type municipality, district, province or code..."
-                            list="sarva-municipality-options"
-                        />
-                    </label>
-                    <datalist id="sarva-municipality-options">
-                        {matchingMunicipalities.map((item) => (
-                            <option
-                                key={item.gid}
-                                value={item.municipality}
-                                label={[item.district, item.province].filter(Boolean).join(" | ") || item.code}
-                            />
-                        ))}
-                    </datalist>
-                    <button type="submit">Search</button>
-                    {municipalitiesLoading && <small>Loading municipalities...</small>}
-                    {municipalitiesError && <small>{municipalitiesError}</small>}
-                </form>
-
-                <button type="button" className="sarva-muniProfiler__infoButton" onClick={() => setInfoOpen(true)}>
-                    Methodology
-                </button>
-                <button type="button" className="sarva-muniProfiler__infoButton" onClick={zoomToCountry}>
-                    Show country
-                </button>
             </section>
-
-            {infoOpen && (
-                <div className="sarva-muniProfiler__modal" role="dialog" aria-modal="true" aria-labelledby="municipal-profiler-info">
-                    <div>
-                        <button type="button" onClick={() => setInfoOpen(false)} aria-label="Close">x</button>
-                        <h2 id="municipal-profiler-info">How the municipal profiler works</h2>
-                        {(metadata?.calculationNotes || []).map((note) => (
-                            <section key={note.title}>
-                                <h3>{note.title}</h3>
-                                <p>{note.body}</p>
-                            </section>
-                        ))}
-                        <section>
-                            <h3>Adding new data</h3>
-                            <p>
-                                New municipal indicator rows should use municipal code, indicator key, period, scenario,
-                                raw value and source metadata. Optional normalized 0-100 values can be supplied; otherwise
-                                the importer should normalize within indicator, period and scenario.
-                            </p>
-                            <p>
-                                Required columns: {(metadata?.importSchema?.requiredColumns || []).join(", ") || "municipality_code, indicator_key, period, scenario, raw_value"}.
-                            </p>
-                        </section>
-                    </div>
-                </div>
-            )}
-            {detailInfo && (
-                <div className="sarva-muniProfiler__modal" role="dialog" aria-modal="true" aria-labelledby="municipal-profiler-detail-info">
-                    <div>
-                        <button type="button" onClick={() => setDetailInfo(null)} aria-label="Close">x</button>
-                        <h2 id="municipal-profiler-detail-info">{detailInfo.title}</h2>
-                        <dl className="sarva-muniProfiler__explainList">
-                            {detailInfo.rows.map((row) => (
-                                <div key={row.label}>
-                                    <dt>{row.label}</dt>
-                                    <dd>{row.value}</dd>
-                                </div>
-                            ))}
-                        </dl>
-                    </div>
-                </div>
-            )}
-
-            <div className="profiler-explorer">
-            <MapIndicatorControls value={selectedMetric} onChange={value => {setSelectedMetric(value);setSelectedPeriod("");}} metric={metricData?.metric} period={selectedPeriod} onPeriodChange={setSelectedPeriod} />
-            <section className="sarva-muniProfiler__mapPanel" aria-label="Municipality map">
-                <div ref={mapContainerRef} className="sarva-muniProfiler__map" />
-                {metricLoading && <div className="profiler-mapStatus" role="status">Loading map values…</div>}
-                <div className="sarva-profilerMapHint"><strong>{profile?.municipality?.municipality || "Select a municipality"}</strong><span>Click a boundary or search above to view its source values.</span></div>
-                {selectedMetric.startsWith("indicator:") && !metricLoading && metricData?.metric?.key === selectedMetric.split(":")[1] && <div className="profiler-rawLegend"><strong>{metricData.metric?.label}</strong><small>{rawMapValues.length ? `${metricData.metric?.unit} · ${metricData.metric?.period || "Period unknown"}` : "No comparable raw values available. Choose another indicator."}</small><div className="profiler-legendClasses">{rawMapScale.map((item,index)=><div key={item.value}><i style={{background:item.colour}}/><span>{formatNumber(item.value,1)}{index<rawMapScale.length-1 ? ` – <${formatNumber(rawMapScale[index+1].value,1)}` : ` – ${formatNumber(rawMapHigh,1)}`}</span></div>)}</div><span>{rawMapLow==null ? "No comparable values" : `${formatNumber(rawMapLow, 1)} — ${formatNumber(rawMapHigh, 1)}`}</span><small>{rawMapValues.length} municipalities · grey: missing, proxy or different basis. Distribution classes in raw units; colour shows magnitude, not risk.</small></div>}
-
-                <details className="sarva-profilerMapOptions"><summary>Legacy comparison layer controls</summary>
-                <div className={`sarva-muniProfiler__mapNote${layerBrowserOpen ? " is-expanded" : ""}`}>
-                    <label>
-                        <span className="sarva-muniProfiler__inlineHead">
-                            <strong>Map layer</strong>
-                            {infoButton("Map layer", [
-                                { label: "What the colours mean", value: "The map colours municipalities using a 0-100 comparison score for the selected layer. Green means lower relative pressure among South African municipalities in the available dataset; red means higher relative pressure." },
-                                { label: "Comparison scope", value: "Scores are normalized against other South African municipalities for the same indicator, source period and scenario where available. They are not international standards, legal thresholds or official warning levels." },
-                                { label: "0 and 100", value: "0 is the lowest relative pressure in the available South African municipal dataset for this layer. 100 is the highest relative pressure in that same comparison set. Missing values are shown separately as no data." },
-                                { label: "Layer levels", value: "Start here shows the best client-facing layers. Grouped scores combine multiple inputs. Single indicators show one source variable at a time." },
-                                { label: "Raw values", value: "Raw counts, percentages and units are kept in the profile panel. The map uses comparable scores so different municipalities can be viewed spatially." },
-                                { label: "Selected layer", value: activeMetricLabel },
-                                { label: "Source and period", value: [activeMetric.sourceName, activeMetric.period, activeMetric.scenario].filter(Boolean).join(" | ") || "Shown after the layer loads." },
-                            ])}
-                        </span>
-                        <button
-                            type="button"
-                            className="sarva-muniProfiler__layerToggle"
-                            onClick={() => setLayerBrowserOpen((open) => !open)}
-                            aria-expanded={layerBrowserOpen}
-                        >
-                            <span>{layerBrowserOpen ? "Hide layer chooser" : "Change map layer"}</span>
-                            <b>{activeMetricLabel}</b>
-                        </button>
-                        {layerBrowserOpen && (
-                            <div className="sarva-muniProfiler__layerBrowser">
-                                <div className="sarva-muniProfiler__layerModes" role="tablist" aria-label="Layer detail level">
-                                    {LAYER_MODE_OPTIONS.map((mode) => (
-                                        <button
-                                            key={mode.key}
-                                            type="button"
-                                            className={layerMode === mode.key ? "is-active" : ""}
-                                            onClick={() => {
-                                                setLayerMode(mode.key);
-                                                setLayerThemeFilter("All themes");
-                                                setLayerSearch("");
-                                            }}
-                                        >
-                                            <strong>{mode.label}</strong>
-                                            <small>{mode.detail}</small>
-                                        </button>
-                                    ))}
-                                </div>
-                                {layerMode === "guided" && guidedLayerCards.length > 0 && (
-                                    <div className="sarva-muniProfiler__guidedLayers" aria-label="Recommended map layers">
-                                        {guidedLayerCards.map((layer) => (
-                                            <button
-                                                key={layer.value}
-                                                type="button"
-                                                className={selectedMetric === layer.value ? "is-active" : ""}
-                                                onClick={() => setSelectedMetric(layer.value)}
-                                            >
-                                                <strong>{layer.label}</strong>
-                                                <span>{layer.detail}</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                                {layerMode !== "guided" && (
-                                    <div className="sarva-muniProfiler__layerFilters">
-                                        <select
-                                            value={layerThemeFilter}
-                                            onChange={(event) => setLayerThemeFilter(event.target.value)}
-                                            aria-label="Filter map layers by category"
-                                        >
-                                            {layerThemeOptions.map((theme) => (
-                                                <option key={theme} value={theme}>{theme}</option>
-                                            ))}
-                                        </select>
-                                        <input
-                                            type="search"
-                                            value={layerSearch}
-                                            onChange={(event) => setLayerSearch(event.target.value)}
-                                            placeholder={layerMode === "indices" ? "Search roll-ups..." : "Search indicators..."}
-                                            aria-label="Search map layers"
-                                        />
-                                    </div>
-                                )}
-                                <select value={selectedMetric} onChange={(event) => setSelectedMetric(event.target.value)}>
-                                    {metricIndexOptions.length === 0 && metricIndicatorGroups.length === 0 && (
-                                        <option value={DEFAULT_METRIC}>{DEFAULT_METRIC_LABEL}</option>
-                                    )}
-                                    {!selectedMetricIsVisible && (
-                                        <option value={selectedMetric}>{activeMetricLabel} (current selection)</option>
-                                    )}
-                                    {layerMode !== "indicators" && (
-                                        <optgroup label={layerMode === "guided" ? "Recommended layers" : "Compound indices"}>
-                                        {(layerMode === "guided" ? guidedLayerCards : filteredMetricIndexOptions).map((option) => (
-                                            <option key={option.value} value={option.value}>{option.label}</option>
-                                        ))}
-                                    </optgroup>
-                                    )}
-                                    {layerMode === "indicators" && filteredMetricIndicatorGroups.map((group) => (
-                                        <optgroup key={group.theme} label={group.theme}>
-                                            {group.options.map((option) => (
-                                                <option key={option.value} value={option.value}>{option.label}</option>
-                                            ))}
-                                        </optgroup>
-                                    ))}
-                                </select>
-                            </div>
-                        )}
-                    </label>
-                    <span>
-                        {metricLoading ? "Loading layer..." : activeMetricLabel || "Click a municipality or use search."}
-                        {activeMetric.unit ? ` | ${activeMetric.unit}` : ""}
-                        {activeMetric.period || activeMetric.scenario ? ` | ${[activeMetric.period, activeMetric.scenario].filter(Boolean).join(" | ")}` : ""}
-                        {activeMetric.sourceName ? ` | ${activeMetric.sourceName}` : ""}
-                    </span>
-                    {layerBrowserOpen && (
-                        <small className="sarva-muniProfiler__mapCoverage">
-                            {visibleLayerOptionCount} layer{visibleLayerOptionCount === 1 ? "" : "s"} in this view | {metricCoverageLabel(metricCoverage)}
-                        </small>
-                    )}
-                        <small className="sarva-muniProfiler__scoreScope">
-                        0-100 compares SA municipalities for this layer and period. It is not an international benchmark.
-                    </small>
-                    <div className="sarva-muniProfiler__legend" aria-hidden="true">
-                        <i />
-                        <small><b>Lower relative pressure</b><b>Higher relative pressure</b></small>
-                        <span><em /> No data</span>
-                    </div>
-                </div>                </details>
-
-            </section>
-
-            </div>
-            <RawMunicipalIndicators key={profile?.municipality?.gid || "empty"} profile={profile} loading={profileLoading} error={profileError} onSelect={gid => {const item=municipalities.find(m => Number(m.gid)===Number(gid));if(item)setSelected(item);}} />
-            <details className="sarva-profilerAdvanced" onToggle={() => requestAnimationFrame(() => mapRef.current?.resize())}><summary>Advanced evidence and legacy analysis</summary><div className="sarva-profilerAdvanced__body">
-            <aside className="sarva-muniProfiler__profile" aria-label="Municipal risk profile">
-                {profileLoading && <div className="sarva-muniProfiler__state">Loading municipal profile...</div>}
-                {profileError && <div className="sarva-muniProfiler__state">{profileError}</div>}
-                {!profileLoading && !profileError && !profile && (
-                    <div className="sarva-muniProfiler__state sarva-muniProfiler__state--guide">
-                        <strong>Start with a municipality</strong>
-                        <p>Search by name/code or click the map. Start with municipal pressures, source dates and evidence gaps. Weather screening is shown separately.</p>
-                        <div className="sarva-muniProfiler__startGrid">
-                            {profilerStartCards.map((card) => (
-                                <article key={card.title}>
-                                    <span>{card.title}</span>
-                                    <p>{card.detail}</p>
-                                </article>
-                            ))}
-                        </div>
-                    </div>
-                )}
-                {!profileLoading && !profileError && profile && (
-                    <>
-                        <div className="sarva-muniProfiler__head">
-                            <span>{profile.municipality.province || "South Africa"}</span>
-                            <h2>{profile.municipality.municipality}</h2>
-                            <p>{[profile.municipality.district, profile.municipality.code].filter(Boolean).join(" | ")}</p>
-                            <button type="button" className="sarva-muniProfiler__download" onClick={downloadMunicipalProfilePdf}>
-                                Download profile PDF
-                            </button>
-                        </div>
-
-                        {activeTab === "overview" && <MunicipalEvidenceSummary profile={profile} onSection={setActiveTab} />}
-
-                        {activeTab !== "overview" && <div className="sarva-muniProfiler__facts">
-                            {topStatCards.slice(0, 4).map((card) => (
-                                <span key={card.label}>
-                                    <b>{card.value}</b>
-                                    {card.label}
-                                    {card.note && <small>{card.note}</small>}
-                                </span>
-                            ))}
-                        </div>}
-
-                        {selectedLayerProfileStatus && (
-                            <div className={`sarva-muniProfiler__dataStatus is-${selectedLayerProfileStatus.tone}`}>
-                                <strong>{selectedLayerProfileStatus.title}</strong>
-                                <p>{selectedLayerProfileStatus.detail}</p>
-                            </div>
-                        )}
-
-                        <div className="sarva-muniProfiler__profileNav">
-                            <span>Profile sections</span>
-                            <nav className="sarva-muniProfiler__tabs" aria-label="Profile sections">
-                                {[
-                                    ["overview", "Summary"],
-                                    ["trends", "Trends"],
-                                    ["drivers", "Index contributors"],
-                                    ["indicators", "All indicators"],
-                                    ["observations", "Nearby data"],
-                                    ...(isAdmin ? [["admin", "Admin data"]] : []),
-                                ].map(([key, label]) => (
-                                    <button
-                                        key={key}
-                                        type="button"
-                                        className={activeTab === key ? "is-active" : ""}
-                                        onClick={() => setActiveTab(key)}
-                                    >
-                                        {label}
-                                    </button>
-                                ))}
-                            </nav>
-                        </div>
-
-                        {activeTab === "overview" && <details className="sarva-muniProfiler__section"><summary>Advanced: legacy indices and forecast scores</summary>
-                        {activeTab === "overview" && indices.length > 0 && (
-                            <section className="sarva-muniProfiler__section">
-                                <div className="sarva-muniProfiler__sectionHead">
-                                    <h3>Evidence cards</h3>
-                                    <span>municipal + forecast detail</span>
-                                </div>
-                                <div className="sarva-muniProfiler__findingGrid">
-                                    {keyFindingCards.slice(0, 8).map((card) => (
-                                        <article key={card.label} className={`is-${riskTone(card.score)}`}>
-                                            <div className="sarva-muniProfiler__cardTitle">
-                                                <small>{card.label}</small>
-                                                {infoButton(card.label, card.info)}
-                                            </div>
-                                            <strong>{card.value}</strong>
-                                            <p>{card.detail}</p>
-                                        </article>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
-
-                        {activeTab === "overview" && indices.length > 0 && (
-                            <section className="sarva-muniProfiler__section">
-                                <div className="sarva-muniProfiler__sectionHead">
-                                    <h3>Municipal indices</h3>
-                                    <span>Stats SA / SAPS ready</span>
-                                </div>
-                                <div className="sarva-muniProfiler__indexGrid">
-                                    {indices.map((index) => (
-                                        <article key={index.key} className={`is-${riskTone(index.score)}`}>
-                                            <small>{index.theme}</small>
-                                            <div className="sarva-muniProfiler__cardTitle">
-                                                <strong>{index.label}</strong>
-                                                {infoButton(index.label, [
-                                                    { label: "What it means", value: index.description },
-                                                    { label: "Score meaning", value: scoreExplanation(index.score, index.riskLabel) },
-                                                    { label: "Calculation", value: indexFormula(index) },
-                                                    { label: "Data coverage", value: indexCoverageLabel(index) },
-                                                    { label: "Missing inputs", value: missingInputSummary(index) },
-                                                    { label: "Underlying sources", value: sourceList(index.components) },
-                                                    { label: "Main inputs", value: indexInputSummary(index) },
-                                                ])}
-                                            </div>
-                                            <div>
-                                                <b>{formatNumber(index.score, 1)}</b>
-                                                <span>{index.riskLabel}</span>
-                                            </div>
-                                            <p>{index.description}</p>
-                                            <div className="sarva-muniProfiler__coverage">
-                                                <span>{indexCoverageLabel(index)}</span>
-                                                {Array.isArray(index.missingComponents) && index.missingComponents.length > 0 && (
-                                                    <small>Gaps: {missingInputSummary(index)}</small>
-                                                )}
-                                            </div>
-                                            <small>{index.sourceName || "SARVA municipal profiler"} | {index.indicatorCount} indicators used</small>
-                                        </article>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
-                        {activeTab === "overview" && indices.length === 0 && (
-                            <section className="sarva-muniProfiler__section">
-                                <div className="sarva-muniProfiler__sectionHead">
-                                    <h3>Municipal indices</h3>
-                                    <span>not available</span>
-                                </div>
-                                <p>No composite municipal indices are available for this municipality yet. Forecast screening and observation links are still shown below.</p>
-                            </section>
-                        )}
-
-                        {activeTab === "overview" && (
-                            <section className="sarva-muniProfiler__section">
-                                <div className="sarva-muniProfiler__sectionHead">
-                                    <h3>5-day forecast screening</h3>
-                                    <span>{forecastWindowLabel(forecast)}</span>
-                                </div>
-                                <div className="sarva-muniProfiler__riskGrid">
-                                    {riskCards.map((card) => (
-                                        <article key={card.label} className={`is-${riskTone(card.score)}`}>
-                                            <div className="sarva-muniProfiler__cardTitle">
-                                                <small>{card.label === "Overall" ? "5-day forecast risk" : card.label}</small>
-                                                {infoButton(card.label === "Overall" ? "5-day forecast risk" : card.label, [
-                                                    { label: "What it means", value: card.explanation },
-                                                    { label: "Current value", value: String(card.value || "n/a") },
-                                                    { label: "Comparison score", value: scoreExplanation(card.score) },
-                                                    { label: "Input layer", value: card.detail },
-                                                    { label: "Source", value: forecastSourceLabel(forecast) },
-                                                ])}
-                                            </div>
-                                            <strong>{card.value || "n/a"}</strong>
-                                            <span>{card.detail}</span>
-                                        </article>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
-
-                        {activeTab === "overview" && <section className="sarva-muniProfiler__section">
-                            <h3>Forecast window</h3>
-                            <p>
-                                {forecastWindowLabel(forecast)}
-                                {forecast.latestRun?.finishedAt ? ` | Updated ${formatDate(forecast.latestRun.finishedAt)}` : ""}
-                            </p>
-                            <small>{profile.description}</small>
-                        </section>}
-
-                        {activeTab === "overview" && (
-                            <section className="sarva-muniProfiler__section sarva-muniProfiler__roadmap">
-                                <div className="sarva-muniProfiler__sectionHead">
-                                    <h3>Coming next</h3>
-                                    <span>planned enhancements</span>
-                                </div>
-                                <div className="sarva-muniProfiler__roadmapGrid">
-                                    {plannedProfilerFeatures.map((item) => (
-                                        <article key={item.title}>
-                                            <small>Coming soon</small>
-                                            <strong>{item.title}</strong>
-                                            <p>{item.detail}</p>
-                                        </article>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
-
-                        </details>}
-
-                        {activeTab === "trends" && (
-                            <section className="sarva-muniProfiler__section">
-                                <div className="sarva-muniProfiler__sectionHead">
-                                    <h3>Trend analysis</h3>
-                                    <span>{trendLoading ? "loading" : `${trendRecords.length} periods`}</span>
-                                </div>
-                                {indicatorRecords.length === 0 ? (
-                                    <p>No indicator rows are available for trend analysis yet.</p>
-                                ) : (
-                                    <>
-                                        <label className="sarva-muniProfiler__trendSelect">
-                                            <span className="sarva-muniProfiler__inlineHead">
-                                                <span>Indicator</span>
-                                                {infoButton("Trend analysis", [
-                                                    { label: "What is plotted", value: "Each row is one available period/scenario for the selected indicator and municipality." },
-                                                    { label: "Raw values", value: "The number beside each bar is the source value in its original unit where available." },
-                                                    { label: "Comparison score", value: "Bar length uses the normalized 0-100 comparison score. This is for comparison and is not the raw source value." },
-                                                    { label: "Source", value: trendData?.indicator?.sourceName || "Shown after choosing an indicator." },
-                                                ])}
-                                            </span>
-                                            <select
-                                                value={trendIndicatorKey}
-                                                onChange={(event) => setTrendIndicatorKey(event.target.value)}
-                                            >
-                                                <option value="">Choose an indicator</option>
-                                                {indicatorRecords.map((indicator) => (
-                                                    <option key={indicator.key} value={indicator.key}>
-                                                        {indicator.theme} | {indicator.label}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </label>
-                                        {trendCandidates.length > 0 && (
-                                            <div className="sarva-muniProfiler__trendChips" aria-label="Common trend indicators">
-                                                {trendCandidates.map((indicator) => (
-                                                    <button
-                                                        key={indicator.key}
-                                                        type="button"
-                                                        className={trendIndicatorKey === indicator.key ? "is-active" : ""}
-                                                        onClick={() => setTrendIndicatorKey(indicator.key)}
-                                                    >
-                                                        {indicator.label}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
-                                        {trendRecords.length > 0 ? (
-                                            <div className="sarva-muniProfiler__trend">
-                                                <div>
-                                                    <strong>{trendData?.indicator?.label}</strong>
-                                                    <span className="sarva-muniProfiler__inlineHead">
-                                                        <span>
-                                                            Change {trendChange == null ? "n/a" : formatIndicatorValue(trendChange, trendRecords[0]?.displayUnit || trendData?.indicator?.unit || "")}
-                                                        </span>
-                                                        {infoButton(`${trendData?.indicator?.label || "Indicator"} trend`, [
-                                                        { label: "Calculation", value: "Latest raw value minus earliest raw value for this municipality and indicator." },
-                                                        { label: "Score meaning", value: "Trend bars use the normalized comparison score, while the printed number is the raw source value where available." },
-                                                        { label: "Direction", value: directionLabel(trendData?.indicator?.direction) },
-                                                        { label: "Source", value: trendData?.indicator?.sourceName || "SARVA municipal profiler" },
-                                                    ])}
-                                                    </span>
-                                                </div>
-                                                <div className="sarva-muniProfiler__trendBars">
-                                                    {trendRecords.map((record) => (
-                                                        <article key={`${record.period}-${record.scenario}`}>
-                                                            <span>{record.period}</span>
-                                                            <i aria-hidden="true">
-                                                                <b style={{ width: scoreWidth(record.normalizedValue) }} />
-                                                            </i>
-                                                            <strong>{formatIndicatorValue(record.displayValue, record.displayUnit)}</strong>
-                                                            <small>{record.scenario} | score {formatNumber(record.normalizedValue, 1)} / 100</small>
-                                                        </article>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <p>Select an indicator to view available time periods. Some indicators only have one source period, so the trend may be limited.</p>
-                                        )}
-                                    </>
-                                )}
-                            </section>
-                        )}
-
-                        {activeTab === "admin" && isAdmin && (
-                            <section className="sarva-muniProfiler__section">
-                                <div className="sarva-muniProfiler__sectionHead">
-                                    <h3>Admin data updates</h3>
-                                    <span>{adminStatus?.lastUpdatedAt ? formatDate(adminStatus.lastUpdatedAt) : "admin"}</span>
-                                </div>
-                                <div className="sarva-muniProfiler__adminBox">
-                                    <p>
-                                        Imported values: <b>{formatNumber(adminStatus?.importedValues, 0)}</b> |
-                                        Proxy values: <b>{formatNumber(adminStatus?.proxyValues, 0)}</b> |
-                                        Indicators: <b>{formatNumber(adminStatus?.indicatorKeys, 0)}</b>
-                                    </p>
-                                    <code>{adminStatus?.importCommand || "cd backend && npm run import:sa-risk-indicators"}</code>
-                                    <small>
-                                        Use the form for one-off corrections or additions for the selected municipality. Use the importer for full datasets.
-                                        Required bulk columns: {(metadata?.importSchema?.requiredColumns || []).join(", ")}.
-                                    </small>
-                                    <div className="sarva-muniProfiler__adminValues">
-                                        <div className="sarva-muniProfiler__sectionHead">
-                                            <h4>Admin-entered values for this municipality</h4>
-                                            <span>{adminValuesLoading ? "loading" : `${adminValues.length} rows`}</span>
-                                        </div>
-                                        {adminValues.length === 0 ? (
-                                            <p>No admin-entered values yet. Imported and proxy rows are managed through the database importer.</p>
-                                        ) : (
-                                            <div>
-                                                {adminValues.map((record) => (
-                                                    <article key={`${record.indicatorKey}-${record.period}-${record.scenario}`}>
-                                                        <div>
-                                                            <strong>{record.label || record.indicatorKey}</strong>
-                                                            <span>{formatIndicatorValue(record.rawValue, record.displayUnit)}</span>
-                                                        </div>
-                                                        <small>
-                                                            {record.theme} | {record.period}
-                                                            {record.scenario ? ` | ${record.scenario}` : ""}
-                                                            {record.sourceName ? ` | ${record.sourceName}` : ""}
-                                                        </small>
-                                                        <div className="sarva-muniProfiler__adminActions">
-                                                            <button type="button" onClick={() => editAdminValue(record)}>Edit</button>
-                                                            <button type="button" className="is-danger" onClick={() => deleteAdminValue(record)}>Delete</button>
-                                                        </div>
-                                                    </article>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <form onSubmit={submitAdminIndicator}>
-                                        <h4>Add or update one indicator value</h4>
-                                        <label>
-                                            <span>Municipality code or gid</span>
-                                            <input value={adminForm.municipalityCode} onChange={(event) => updateAdminField("municipalityCode", event.target.value)} placeholder="WC032 or Overstrand (WC032)" required />
-                                        </label>
-                                        <label>
-                                            <span>Indicator key</span>
-                                            <input value={adminForm.indicatorKey} onChange={(event) => updateAdminField("indicatorKey", event.target.value)} placeholder="e.g. admin_water_stress" required />
-                                        </label>
-                                        <label>
-                                            <span>Indicator label</span>
-                                            <input value={adminForm.label} onChange={(event) => updateAdminField("label", event.target.value)} placeholder="Human-readable label" />
-                                        </label>
-                                        <label>
-                                            <span>Theme/category</span>
-                                            <input value={adminForm.theme} onChange={(event) => updateAdminField("theme", event.target.value)} placeholder="e.g. Water security" />
-                                        </label>
-                                        <label>
-                                            <span>Unit</span>
-                                            <input value={adminForm.unit} onChange={(event) => updateAdminField("unit", event.target.value)} placeholder="count, %, cases, households..." />
-                                        </label>
-                                        <label>
-                                            <span>Risk direction</span>
-                                            <select value={adminForm.direction} onChange={(event) => updateAdminField("direction", event.target.value)}>
-                                                <option value="higher_risk">Higher value means higher risk</option>
-                                                <option value="higher_resilience">Higher value means higher resilience</option>
-                                                <option value="context">Context only</option>
-                                            </select>
-                                        </label>
-                                        <label>
-                                            <span>Period</span>
-                                            <input value={adminForm.period} onChange={(event) => updateAdminField("period", event.target.value)} placeholder="2024, 2022 Census, Q1 2026..." required />
-                                        </label>
-                                        <label>
-                                            <span>Scenario</span>
-                                            <input value={adminForm.scenario} onChange={(event) => updateAdminField("scenario", event.target.value)} placeholder="Observed, admin import, baseline..." />
-                                        </label>
-                                        <label>
-                                            <span>Raw value</span>
-                                            <input value={adminForm.rawValue} onChange={(event) => updateAdminField("rawValue", event.target.value)} type="number" step="any" required />
-                                        </label>
-                                        <label>
-                                            <span>0-100 comparison score</span>
-                                            <input value={adminForm.value_0_100} onChange={(event) => updateAdminField("value_0_100", event.target.value)} placeholder="Optional; defaults to 50" type="number" step="any" min="0" max="100" />
-                                        </label>
-                                        <label>
-                                            <span>Source name</span>
-                                            <input value={adminForm.sourceName} onChange={(event) => updateAdminField("sourceName", event.target.value)} placeholder="Stats SA, SAPS, municipal report..." />
-                                        </label>
-                                        <label>
-                                            <span>Source URL</span>
-                                            <input value={adminForm.sourceUrl} onChange={(event) => updateAdminField("sourceUrl", event.target.value)} placeholder="https://..." />
-                                        </label>
-                                        <label>
-                                            <span>Calculation notes</span>
-                                            <textarea value={adminForm.notes} onChange={(event) => updateAdminField("notes", event.target.value)} placeholder="How this value was calculated, caveats, data date..." />
-                                        </label>
-                                        <div className="sarva-muniProfiler__adminActions">
-                                            <button type="submit">Save indicator value</button>
-                                            <button type="button" onClick={() => setAdminForm(defaultAdminForm(selected?.code || ""))}>Clear form</button>
-                                        </div>
-                                    </form>
-                                    {adminMessage && <small>{adminMessage}</small>}
-                                </div>
-                            </section>
-                        )}
-
-                        {activeTab === "drivers" && (
-                            <section className="sarva-muniProfiler__section">
-                                <div className="sarva-muniProfiler__sectionHead">
-                                    <h3>Top risk drivers</h3>
-                                    <span>Composite risk pressure</span>
-                                </div>
-                                {drivers.length === 0 ? (
-                                    <p>No composite driver rows are available for this municipality yet.</p>
-                                ) : (
-                                    <>
-                                        <p className="sarva-muniProfiler__driverNote">
-                                            These are the largest weighted contributors for this municipality in the same composite index. They can differ between municipalities because each place has a different indicator profile.
-                                        </p>
-                                        <div className="sarva-muniProfiler__drivers">
-                                            {drivers.slice(0, 6).map((driver) => (
-                                                <article key={driver.key}>
-                                                    <div>
-                                                        <span className="sarva-muniProfiler__cardTitle">
-                                                            <strong>{driver.label}</strong>
-                                                            {infoButton(driver.label, [
-                                                                { label: "What this is", value: driver.description || "Risk driver used in the selected municipal composite." },
-                                                                { label: "How to read the score", value: riskInputExplanation(driver) },
-                                                                { label: "Direction logic", value: directionExplanation(driver.direction) },
-                                                                { label: "Weight in the index", value: weightExplanation(driver) },
-                                                                { label: "Source and date", value: sourceExplanation(driver) },
-                                                            ])}
-                                                        </span>
-                                                        <span>{formatNumber(driver.adjustedValue, 1)} / 100 risk pressure</span>
-                                                    </div>
-                                                    <i aria-hidden="true"><b style={{ width: scoreWidth(driver.adjustedValue) }} /></i>
-                                                    <small>
-                                                        {rawValueLabel(driver) ? `Raw value ${rawValueLabel(driver)} | ` : ""}
-                                                        {driver.theme} | weight {formatNumber(driver.weight, 2)}
-                                                        {driver.sourceName ? ` | ${driver.sourceName}` : ""}
-                                                        {driver.period || driver.scenario ? ` | ${[driver.period, driver.scenario].filter(Boolean).join(" | ")}` : ""}
-                                                    </small>
-                                                </article>
-                                            ))}
-                                        </div>
-                                    </>
-                                )}
-                            </section>
-                        )}
-
-                        {activeTab === "indicators" && (
-                            <section className="sarva-muniProfiler__section">
-                                <div className="sarva-muniProfiler__sectionHead">
-                                    <h3>Indicator catalogue</h3>
-                                    <span>{municipalIndicators.status}</span>
-                                </div>
-                                {themes.length === 0 ? (
-                                    <p>No municipal indicator records are available for this municipality yet.</p>
-                                ) : (
-                                    <>
-                                        {missingProfileInputs.length > 0 && (
-                                            <div className="sarva-muniProfiler__missingInputs">
-                                                <strong>Missing local inputs</strong>
-                                                <p>
-                                                    {missingProfileInputs.length} expected indicator{missingProfileInputs.length === 1 ? "" : "s"} are not loaded for this municipality and are excluded from affected index calculations.
-                                                </p>
-                                                <div>
-                                                    {missingProfileInputs.slice(0, 8).map((component) => (
-                                                        <span key={component.key}>{component.label || component.key}</span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-                                        <label className="sarva-muniProfiler__trendSelect">
-                                            <span className="sarva-muniProfiler__inlineHead">
-                                                <span>Category</span>
-                                                {infoButton("Indicator catalogue", [
-                                                    { label: "Raw value", value: "The main number is the source value for this municipality in its original unit where available." },
-                                                    { label: "Comparison score", value: "The 0-100 score is a normalized comparison score. It is used for spatial comparison and risk-index calculations, not as a raw measurement." },
-                                                    { label: "Risk direction", value: "Higher-risk indicators contribute directly. Higher-resilience indicators are inverted before risk calculations. Context indicators are displayed only." },
-                                                    { label: "Source", value: "Each indicator row lists its source name, period, scenario and proxy/imported status." },
-                                                ])}
-                                            </span>
-                                            <select value={indicatorThemeFilter} onChange={(event) => setIndicatorThemeFilter(event.target.value)}>
-                                                {indicatorThemes.map((theme) => (
-                                                    <option key={theme} value={theme}>{theme}</option>
-                                                ))}
-                                            </select>
-                                        </label>
-                                        <div className="sarva-muniProfiler__indicatorThemes">
-                                            {filteredThemes.map((theme) => (
-                                                <details key={theme.theme} open={["Exposure", "Social vulnerability", "Safety"].includes(theme.theme)}>
-                                                    <summary>
-                                                        <strong>{theme.theme}</strong>
-                                                        <span>{theme.records.length}</span>
-                                                    </summary>
-                                                    <div>
-                                                        {theme.records.map((indicator) => (
-                                                            <article key={indicator.key}>
-                                                                <div>
-                                                                    <span className="sarva-muniProfiler__cardTitle">
-                                                                        <strong>{indicator.label}</strong>
-                                                                        {infoButton(indicator.label, [
-                                                                            { label: "What this is", value: indicator.description || "Municipal indicator used for context, mapping or risk-index calculations." },
-                                                                            { label: "Source value", value: sourceValueExplanation(indicator) },
-                                                                            { label: "How SARVA scores it", value: riskInputExplanation(indicator) },
-                                                                            { label: "Direction logic", value: directionExplanation(indicator.direction) },
-                                                                            { label: "Source and date", value: sourceExplanation(indicator) },
-                                                                            { label: "Notes", value: indicator.notes || (indicator.isProxy ? "Proxy placeholder value." : "") },
-                                                                        ])}
-                                                                    </span>
-                                                                    <span>{formatIndicatorValue(indicator.displayValue, indicator.displayUnit)}</span>
-                                                                </div>
-                                                                <p>{indicator.description}</p>
-                                                                <small>
-                                                                    {indicator.sourceName}
-                                                                    {indicator.period || indicator.scenario ? ` | ${[indicator.period, indicator.scenario].filter(Boolean).join(" | ")}` : ""}
-                                                                    {indicator.isProxy ? " | proxy value" : ""}
-                                                                    {Number.isFinite(Number(indicator.normalizedValue)) ? ` | comparison score ${formatNumber(indicator.normalizedValue, 1)} / 100` : ""}
-                                                                </small>
-                                                            </article>
-                                                        ))}
-                                                    </div>
-                                                </details>
-                                            ))}
-                                        </div>
-                                    </>
-                                )}
-                                {municipalIndicators.caveat && <small>{municipalIndicators.caveat}</small>}
-                            </section>
-                        )}
-
-                        {activeTab === "observations" && <section className="sarva-muniProfiler__section">
-                            <div className="sarva-muniProfiler__sectionHead">
-                                <h3>Nearby SAEON observations</h3>
-                                {infoButton("Nearby SAEON observations", [
-                                    { label: "What is shown", value: "LoggerNet observation sites with coordinates within 120 km of the selected municipality boundary." },
-                                    { label: "Distance", value: "Distance is calculated from the municipality boundary to the observation-site point. Sites inside the municipality are marked as inside." },
-                                    { label: "Use", value: "These are nearby observation feeds and station links that may support interpretation. They are not the source for every municipal indicator." },
-                                ])}
-                            </div>
-                            {profile.observationSites.length === 0 ? (
-                                <p>No observation sites were found within 120 km of this municipality.</p>
-                            ) : (
-                                <div className="sarva-muniProfiler__sites">
-                                    {profile.observationSites.slice(0, 5).map((site) => (
-                                        <a
-                                            href={site.websiteUrl || site.doi || "#"}
-                                            key={`${site.stationName}-${site.distanceKm}`}
-                                            target={site.websiteUrl || site.doi ? "_blank" : undefined}
-                                            rel={site.websiteUrl || site.doi ? "noopener noreferrer" : undefined}
-                                        >
-                                            <strong>{site.displayName || site.stationName}</strong>
-                                            <small>{site.inside ? "Inside municipality" : `${formatNumber(site.distanceKm)} km away`}</small>
-                                        </a>
-                                    ))}
-                                </div>
-                            )}
-                        </section>}
-
-                        {activeTab === "observations" && <div className="sarva-muniProfiler__actions">
-                            <a href={profile.links.catalogueSearch}>Search SAEON data</a>
-                            <a href={profile.links.resourcesSearch}>Relevant resources</a>
-                        </div>}
-                    </>
-                )}
-            </aside>
-            </div></details>
         </div>
-    );
+        {visibleProfile && <div className="sarva-muniProfiler__actions"><button type="button" onClick={downloadProfilePdf}>Download source profile PDF</button></div>}
+        <RawMunicipalIndicators key={visibleProfile?.municipality?.gid || "empty"} profile={visibleProfile} loading={profileLoading} error={profileError} onSelect={gid => { const item = municipalities.find(m => Number(m.gid) === Number(gid)); if (item) setSelected(item); }} />
+    </div>;
 }
