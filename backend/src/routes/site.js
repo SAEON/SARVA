@@ -134,6 +134,7 @@ async function buildHomeHighlights() {
           lr.source
         FROM latest_run lr
         JOIN sarva.forecast_risk_points p ON p.sync_run_id = lr.id
+        WHERE p.forecast_date >= (now() AT TIME ZONE 'Africa/Johannesburg')::date
       ),
       selected AS (
         SELECT 'overall' AS kind, b.*
@@ -211,7 +212,7 @@ async function buildHomeHighlights() {
     title: "Environmental screening highlights",
     summary: `Public-facing screening highlights from the cached ${forecastRange} forecast window.`,
     highlights: [
-      hazardHighlight({
+      { ...hazardHighlight({
         label: "Combined SARVA screening indicator",
         value: overall.overallRiskScore === null || overall.overallRiskScore === undefined
           ? "--"
@@ -222,7 +223,8 @@ async function buildHomeHighlights() {
         tag: "5-day model window",
         severityScore: overall.overallRiskScore,
         explainer: "Highest SARVA screening signal across rain, heat, wind and fire-weather layers.",
-      }),
+      }), dominantHazard: overall.dominantHazard || null,
+        weatherValues: { rainfallMm: overall.rainfallMm ?? null, temperatureMaxC: overall.temperatureMaxC ?? null, windMaxKmh: overall.windMaxKmh ?? null } },
       hazardHighlight({
         label: "ECMWF rainfall estimate",
         value: rainfall.rainfallMm === null || rainfall.rainfallMm === undefined
@@ -376,6 +378,7 @@ async function getHomeHighlights() {
       FROM sarva.site_intelligence_snapshot
       WHERE snapshot_key = $1
         AND expires_at > now()
+        AND (generated_at AT TIME ZONE 'Africa/Johannesburg')::date = (now() AT TIME ZONE 'Africa/Johannesburg')::date
         AND NOT EXISTS (
           SELECT 1
           FROM sarva.forecast_risk_sync_run run
@@ -383,6 +386,7 @@ async function getHomeHighlights() {
             AND COALESCE(run.finished_at, run.started_at) > generated_at
         )
         AND payload->>'title' = 'Environmental screening highlights'
+        AND jsonb_typeof(payload #> '{highlights,0,weatherValues}') = 'object'
         AND jsonb_typeof(payload #> '{highlights,0,latitude}') = 'number'
         AND jsonb_typeof(payload #> '{highlights,0,longitude}') = 'number'
       ORDER BY generated_at DESC
