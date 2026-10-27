@@ -1,5 +1,13 @@
 # SARVA production deployment, 22 October 2026
 
+## Privacy notice production acceptance 27 October 2026
+
+PR #21 (merge `4ac19d1e6ba2f9693e85d3b99a225c11bfb1033e`) is deployed and operator-accepted. The homepage banner, introduction and footer expose the public /privacy notice and browser analytics choices. Registration, login, passkey setup and feedback also link to the notice. The notice remains explicitly under review; publication does not constitute final legal approval or confirmation of retention rules.
+
+The operator confirmed all deployment checks passed, the privacy notice looks good, normal password and passkey login both work, and DS Lab still works. Checks included public privacy/site/health responses, protected anonymous endpoint responses, passkeys enabled, and DNT/GPC analytics requests returning 204. Only SARVA backend/frontend were updated; no schema migration, authentication setting change or DS Lab update was required.
+
+The operator confirmed a pre-deployment privacy rollback backup was saved; its exact timestamp/path has not yet been supplied in the handover. Retain the matching backend/frontend rollback-privacy pair and all running images. Cleanup of older SARVA rollback tags is authorised but **pending operator execution and verification**. Preserve all database volumes, backups and DS Lab images/services. Do not restart the retired preview gateway. Acceptance is operator-reported terminal and browser verification, not an independently executed production audit.
+
 ## Forecast wording production acceptance 27 October 2026
 
 PR #20 (merge `7abeffb346a46f53d103d4ac0ad02b647dc9b44a`) is deployed and operator-accepted. Main-page highlights, forecast maps/popups, planning context and forecast API metadata identify SARVA outputs as experimental model interpretations, not official warnings. Model-value headlines replace warning-like severity descriptions; notices link to SAWS, explain rainfall/flood and fire-danger limitations, and include ECMWF source/licence information. Numeric model outputs and calculations are unchanged.

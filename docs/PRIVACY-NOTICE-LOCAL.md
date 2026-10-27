@@ -1,6 +1,6 @@
 # SARVA privacy notice local review
 
-Status: locally accepted 27 October 2026; publication as an under-review notice requested. Production deployment pending. This is not approved as a final legal notice.
+Status: deployed and operator-accepted on production 27 October 2026 via PR #21 (merge 4ac19d1). All deployment checks passed; the operator confirmed the privacy notice, password login, passkey login and DS Lab work. Cleanup is pending operator execution. The notice remains under review and is not approved as a final legal notice.
 
 Sources checked: NRF Privacy Policy (https://www.nrf.ac.za/privacy-policy/), NRF PAIA Information (https://www.nrf.ac.za/paia-information/), and Information Regulator complaints (https://inforegulator.org.za/complaints/). NRF's published general notice email is info@nrf.ac.za, postal address NRF, PO Box 2600, Pretoria 0001. The PAIA page links Information Officer/deputy details; do not copy names from an older manual as current appointments without verification. The public policy did not establish a SARVA-specific retention schedule.
 
@@ -17,7 +17,7 @@ Optional browser analytics can be disabled without touching the sign-in token, p
 - Clarify privacy notices on the linked Google Form and contribution services separately. Adding a SARVA page does not amend external forms or establish permission to publish third-party contact details.
 - Decide whether identifiable usage is necessary, reduce retention and access accordingly, and review the default analytics setting with the responsible officer. The new control preserves the current default while providing a real opt-out; it is not itself a legal-basis assessment.
 
-No backend schema, password/passkey/session settings, authentication secret or DS Lab configuration is changed. Test locally before any production approval.
+No backend schema, password/passkey/session settings, authentication secret or DS Lab configuration is changed. Local tests and operator production acceptance are recorded below.
 
 ## Release and production validation
 
