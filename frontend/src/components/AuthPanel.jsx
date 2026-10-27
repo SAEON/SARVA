@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import { AUTH_CHANGED_EVENT, AUTH_TOKEN_KEY, notifyAuthChanged } from "../hooks/useCurrentUser";
@@ -26,8 +26,30 @@ function initials(name, email) {
     return parts.map((part) => part[0]?.toUpperCase()).join("") || "U";
 }
 
+function AccountIcon({kind}) {
+    const paths = {
+        testing: <><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2M9 10h6M9 14h6M9 18h3"/></>,
+        users: <><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6M21 21v-3a6 6 0 0 0-3-5"/></>,
+        analytics: <><path d="M4 3v17h17M9 16v-5M14 16V7M19 16V4"/></>,
+        health: <><path d="M3 12h4l3-8 4 16 3-8h4"/></>,
+        exit: <><path d="M9 4H4v16h5M13 8l4 4-4 4M8 12h13"/></>,
+    };
+    return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[kind]}</svg>;
+}
+
+function AccountLink({to,kind,title,description,onClick}) {
+    return <Link className="sarva-accountLink" to={to} onClick={onClick}>
+        <span className="sarva-accountLink__icon"><AccountIcon kind={kind}/></span>
+        <span className="sarva-accountLink__copy"><strong>{title}</strong><small>{description}</small></span>
+        <span className="sarva-accountLink__arrow" aria-hidden="true">›</span>
+    </Link>;
+}
+
 export default function AuthPanel() {
     const [open, setOpen] = useState(false);
+    const panelId = useId();
+    const accountRef = useRef(null);
+    const triggerRef = useRef(null);
     const [mode, setMode] = useState("login");
     const [user, setUser] = useState(null);
     const [message, setMessage] = useState("");
@@ -76,6 +98,25 @@ export default function AuthPanel() {
         };
     }, []);
 
+    useEffect(() => {
+        if (!open) return undefined;
+        function outside(event) {
+            if (!accountRef.current?.contains(event.target)) setOpen(false);
+        }
+        function escape(event) {
+            if (event.key === 'Escape') {
+                setOpen(false);
+                triggerRef.current?.focus();
+            }
+        }
+        document.addEventListener('pointerdown', outside);
+        document.addEventListener('keydown', escape);
+        return () => {
+            document.removeEventListener('pointerdown', outside);
+            document.removeEventListener('keydown', escape);
+        };
+    }, [open]);
+
     function updateField(field, value) {
         setForm((current) => ({ ...current, [field]: value }));
     }
@@ -120,13 +161,15 @@ export default function AuthPanel() {
     }
 
     return (
-        <div className="sarva-auth">
+        <div className="sarva-auth" ref={accountRef}>
             {user ? (
                 <button
                     className="sarva-auth__avatar"
                     type="button"
                     onClick={() => setOpen((current) => !current)}
                     aria-expanded={open}
+                    aria-controls={panelId}
+                    ref={triggerRef}
                 >
                     {initials(user.displayName, user.email)}
                 </button>
@@ -136,23 +179,33 @@ export default function AuthPanel() {
                     type="button"
                     onClick={() => setOpen((current) => !current)}
                     aria-expanded={open}
+                    aria-controls={panelId}
+                    ref={triggerRef}
                 >
                     Login
                 </button>
             )}
 
             {open && (
-                <div className="sarva-auth__panel">
+                <div id={panelId} className={"sarva-auth__panel" + (user ? " sarva-auth__panel--account" : "")}>
                     {user ? (
                         <div className="sarva-auth__account">
-                            <strong>{user.displayName}</strong>
-                            <span>{user.email}</span>
-                            {roleLabels && <small>{roleLabels}</small>}
-                            <Link to="/testing" onClick={() => setOpen(false)}>Testing &amp; issues</Link>
-                            {user.roles?.some(role => role.name === 'admin') && <><Link to="/admin/users" onClick={() => setOpen(false)}>Users &amp; roles</Link><Link to="/analytics" onClick={() => setOpen(false)}>Analytics</Link><Link to="/data-health" onClick={() => setOpen(false)}>Data health</Link></>}
-                            <button type="button" onClick={signOut}>
-                                Sign out
-                            </button>
+                            <div className="sarva-accountIdentity">
+                                <span className="sarva-accountIdentity__avatar" aria-hidden="true">{initials(user.displayName, user.email)}</span>
+                                <div><strong>{user.displayName}</strong><span>{user.email}</span></div>
+                            </div>
+                            {roleLabels && <div className="sarva-accountRoles" aria-label="Your roles">{user.roles.map(role => <span key={role.name}>{role.label || role.name}</span>)}</div>}
+                            <nav aria-label="Account shortcuts">
+                                <p className="sarva-accountGroup">Workspace</p>
+                                <AccountLink to="/testing" kind="testing" title="Testing & issues" description="Report a problem or follow a review" onClick={() => setOpen(false)}/>
+                                {user.roles?.some(role => role.name === 'admin') && <>
+                                    <p className="sarva-accountGroup">Administration</p>
+                                    <AccountLink to="/admin/users" kind="users" title="Users & roles" description="Manage accounts and permissions" onClick={() => setOpen(false)}/>
+                                    <AccountLink to="/analytics" kind="analytics" title="Analytics" description="Explore visits and platform activity" onClick={() => setOpen(false)}/>
+                                    <AccountLink to="/data-health" kind="health" title="Data health" description="Check services and data updates" onClick={() => setOpen(false)}/>
+                                </>}
+                            </nav>
+                            <div className="sarva-accountFooter"><button className="sarva-accountSignOut" type="button" onClick={signOut}><AccountIcon kind="exit"/>Sign out</button></div>
                         </div>
                     ) : (
                         <form onSubmit={submit}>
