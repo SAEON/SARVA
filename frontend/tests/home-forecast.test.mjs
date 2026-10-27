@@ -23,3 +23,8 @@ test("index cards retain scores and explain their meaning without probabilities"
  assert.match(fire.explainer,/not a probability of fire/);
  assert.equal(explainHomeForecast({mapMode:"fire-risk",value:"Model index unavailable"}).value,"Score unavailable");
 });
+
+test("main fire-weather card preserves physical measurements instead of becoming a score",()=>{
+ const item={mapMode:"fire-risk",mainWeatherSignal:true,value:"35 °C · 45 km/h wind · 0 mm/day rain",label:"Main weather signal: Fire-weather conditions"};
+ assert.deepEqual(explainHomeForecast(item),item);
+});

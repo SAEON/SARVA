@@ -17,6 +17,7 @@ export function presentHomeForecast(payload) {
   title: "Experimental weather model outputs",
   summary: "Cached model estimates and SARVA-derived experimental indices. Check forecast dates and official SAWS warnings.",
   highlights: (payload.highlights || []).map(item => {
+   if (item.mapMode === "environmental-risk") return presentMainWeatherSignal(item);
    const info=labels[item.mapMode]; if(!info) return item;
    const isIndex=["environmental-risk","fire-risk"].includes(item.mapMode);
    const match=String(item.detail || "").match(/(\d+(?:\.\d+)?)\s*\/100/);
@@ -27,4 +28,31 @@ export function presentHomeForecast(payload) {
     detail:[item.location,item.forecastDate].filter(Boolean).join(" | "),
     source:"ECMWF model data · SARVA interpretation" };
   }) };
+}
+
+// Use measurements from the selected overall row, never another card's maximum.
+export function presentMainWeatherSignal(item) {
+ const fields = item.weatherValues || {};
+ const number = value => value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value))
+  ? new Intl.NumberFormat("en-GB", {maximumFractionDigits:1}).format(Number(value)) : null;
+ const rain = number(fields.rainfallMm), heat = number(fields.temperatureMaxC), wind = number(fields.windMaxKmh);
+ const definitions = {
+  "Rain / flood proxy": ["Rainfall", rain && `${rain} mm/day`, "forecast-risk"],
+  "Heat": ["Heat", heat && `${heat} °C`, "heat-risk"],
+  "Wind": ["Wind", wind && `${wind} km/h`, "wind-risk"],
+  "Fire-weather proxy": ["Fire-weather conditions", [heat && `${heat} °C`, wind && `${wind} km/h wind`, rain && `${rain} mm/day rain`].filter(Boolean).join(" · "), "fire-risk"],
+ };
+ const signal = definitions[item.dominantHazard];
+ const available = signal && signal[1];
+ return { ...item, mainWeatherSignal:true, experimental:true, officialWarning:false,
+  label: available ? `Main weather signal: ${signal[0]}` : "Main weather signal unavailable",
+  value: available ? signal[1] : "Forecast measurements unavailable",
+  mapMode: available ? signal[2] : item.mapMode,
+  tag:"Experimental", severity:"Experimental", severityKey:"experimental",
+  explainer: available
+   ? "Selected using SARVA's experimental screening calculation. These are model estimates for this location and date, not an official warning or a prediction of harm."
+   : "No matching forecast measurements are available. No risk score is shown.",
+  detail:[item.location,item.forecastDate].filter(Boolean).join(" | "),
+  source:"ECMWF model data · SARVA interpretation",
+ };
 }

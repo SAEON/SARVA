@@ -24,7 +24,7 @@ export function formatForecastDate(value) {
 }
 
 export function explainHomeForecast(item) {
-    if (!["environmental-risk", "fire-risk"].includes(item.mapMode)) return item;
+    if (item.mainWeatherSignal || !["environmental-risk", "fire-risk"].includes(item.mapMode)) return item;
     const match = String(item.value || "").match(/^(\d+(?:\.\d+)?)\/100/);
     const combined = item.mapMode === "environmental-risk";
     return { ...item,
