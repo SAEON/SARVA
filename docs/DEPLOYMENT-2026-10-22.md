@@ -176,3 +176,18 @@ were retained, Nginx validation passed, SARVA home/API and DS Lab returned 200,
 and anonymous issue/users/analytics access remained correctly denied (401/403).
 Backup files and database volumes were preserved; build cache was not pruned.
 No DS Lab deployment or host Nginx change was part of this release.
+
+
+## Passkey sign-in deployed and accepted, 27 October 2026
+
+PR #18 merged as 04a731e. Migration 065 applied after the operator saved
+/home/marc/sarva-backups/before-passkeys-20261027-155549 and tagged the current
+backend/frontend images for rollback. Only SARVA backend/frontend were recreated.
+Nginx validation passed, SARVA home/API/account page and DS Lab returned 200,
+passkey status was enabled, and protected anonymous requests returned 401/403.
+The operator confirmed both live passkey and normal password login work, with
+DS Lab still working. Passkey sessions are 30 days; password sessions stay 12
+hours. See [passkey acceptance](SARVA-ACCOUNT-PASSKEYS.md).
+Older rollback cleanup is authorized but pending. Retain the current images and
+the rollback-passkeys-20261027-155549 backend/frontend pair; preserve backups,
+DS Lab images and database volumes.

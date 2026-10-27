@@ -1,7 +1,8 @@
-# SARVA device passkeys: local candidate
+# SARVA device passkeys: production acceptance
 
-Implemented and tested locally on 27 October 2026; prepared for GitHub
-publication at the operator’s request. Production deployment is pending. Password login
+Deployed and accepted on production on 27 October 2026 after PR #18 merged
+as 04a731e. The operator confirmed both live passkey and password sign-in work,
+and DS Lab remains working. Password login
 and DS Lab remain available. This replaces the earlier abandoned local passkey
 experiment with a device-focused flow based on the current main branch.
 
@@ -82,7 +83,7 @@ device/provider prompt was not reported. Password fallback and owner-scoped
 removal passed automated tests; separate human cancellation/removal acceptance
 was not supplied. The 30-day token lifetime and unchanged 12-hour password token
 lifetime are asserted by backend tests; this does not claim 30 elapsed days of
-observation or production acceptance.
+observation. Subsequent production acceptance is recorded below.
 
 The candidate containers serve localhost:8095 and use only the existing
 synthetic local database. Private synthetic credentials are under
@@ -94,8 +95,8 @@ confirmation and enrollment; sign out, use Sign in with a passkey and confirm
 correct account/roles; then test password login and verify key removal blocks
 new passkey login. Check ordinary issue/feedback access and DS Lab again.
 Do not drive a personal PIN, biometric prompt or credential creation through
-automation. Publication is authorized; production migration and browser
-acceptance remain pending. Do not copy localhost passkeys or synthetic accounts
+automation. Production migration and browser acceptance are now confirmed
+below; key-removal/cancellation browser testing was not separately reported. Do not copy localhost passkeys or synthetic accounts
 to production. Users enable a fresh passkey on https://sarva.saeon.ac.za after
 rollout. Keep the latest backend/frontend rollback images and private configuration
 before applying migration 065 and recreating only SARVA backend/frontend.
@@ -105,3 +106,36 @@ https://simplewebauthn.dev/docs/packages/server
 https://simplewebauthn.dev/docs/packages/browser
 https://web.dev/articles/passkey-registration
 https://developer.chrome.com/blog/passkeys-updates-chrome-129
+
+## Production deployment accepted, 27 October 2026
+
+Verified pre-release backup and latest rollback pair:
+/home/marc/sarva-backups/before-passkeys-20261027-155549
+
+- sarva-backend:rollback-passkeys-20261027-155549
+- sarva-frontend:rollback-passkeys-20261027-155549
+
+The operator pulled main, configured the exact production origin/RP ID, built
+backend/frontend, applied 065_device_passkeys.sql and recreated only those two
+SARVA containers. An initial frontend connection reset during startup was
+followed by successful readiness checks. Supplied terminal output confirmed:
+
+- Backend healthy and host Nginx configuration valid.
+- SARVA home, /api/health and /account/passkeys: HTTPS 200.
+- Anonymous passkey management and issue APIs: 401.
+- Anonymous users/analytics APIs: 403.
+- Passkey status enabled=true.
+- DS Lab homepage: HTTPS 200.
+
+The operator then confirmed live passkey sign-in and normal password sign-in
+both work and DS Lab still works. A device PIN prompt was observed; no exact
+device/provider or biometric setup was established. User verification remains
+required for a new passkey sign-in. Existing signed-in sessions do not require
+verification for each page. Passkey sessions last up to 30 days; ordinary
+password sessions remain 12 hours. Signing out requires a new sign-in.
+
+This records operator-supplied production evidence. It does not imply biometric
+hardware was tested or that 30 days have elapsed. No DS Lab or host Nginx change
+was required. Cleanup of older SARVA backend/frontend rollback tags is authorized
+but pending operator execution. Retain the latest pair above, current images,
+all backups, DS Lab images and database volumes. Never force-remove images.
