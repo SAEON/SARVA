@@ -21,6 +21,7 @@ const SearchRoute = lazy(() => import("./routes/SearchRoute.jsx"));
 const About = lazy(() => import("./pages/About.jsx"));
 const Analytics = lazy(() => import("./pages/Analytics.jsx"));
 const TestingReview = lazy(() => import("./pages/TestingReview.jsx"));
+const AccountPasskeys = lazy(() => import("./pages/AccountPasskeys.jsx"));
 const UserAdmin = lazy(() => import("./pages/UserAdmin.jsx"));
 const DataHealth = lazy(() => import("./pages/DataHealth.jsx"));
 const MunicipalRiskProfiler = lazy(() => import("./pages/MunicipalRiskProfiler.jsx"));
@@ -46,6 +47,7 @@ const router = createBrowserRouter([
         element: <AppLayout />,
         errorElement: <RouteError />,
         children: [
+            { path: "/account/passkeys", element: <Suspense fallback={<PageLoading />}><AccountPasskeys /></Suspense> },
             { path: "/testing", element: <Suspense fallback={<PageLoading />}><TestingReview /></Suspense> },
             { path: "/admin/users", element: <Suspense fallback={<PageLoading />}><UserAdmin /></Suspense> },
             { path: "/analytics", element: <Suspense fallback={<PageLoading />}><Analytics /></Suspense> },

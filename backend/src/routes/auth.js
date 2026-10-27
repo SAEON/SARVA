@@ -1,3 +1,4 @@
+import {createPasskeyRouter} from './passkeys.js';
 import crypto from "crypto";
 import { Router } from "express";
 import { pool } from "../db/pool.js";
@@ -244,3 +245,6 @@ authRouter.get("/auth/me", async (req, res) => {
     res.status(401).json({ status: "error", message: "Not authenticated" });
   }
 });
+
+// Optional account passkeys preserve the existing SARVA password sign-in.
+authRouter.use(createPasskeyRouter({db:pool,getUserById,publicUser,tokenFor,verifyPassword}));
