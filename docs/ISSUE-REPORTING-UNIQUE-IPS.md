@@ -1,6 +1,7 @@
 # Issue reporting and unique-IP analytics: local review
 
-Prepared locally on 27 October 2026. Not yet pushed or deployed to production.
+Validated locally on 27 October 2026 and prepared for GitHub publication.
+Production deployment and acceptance checks are pending.
 
 ## Issue reporting
 
