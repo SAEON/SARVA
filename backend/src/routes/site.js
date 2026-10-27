@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { pool } from "../db/pool.js";
+import { presentHomeForecast } from "../services/forecastPresentation.js";
 
 export const siteRouter = Router();
 
@@ -391,12 +392,12 @@ async function getHomeHighlights() {
   );
 
   if (cached.rows[0]) {
-    return {
+    return presentHomeForecast({
       ...cached.rows[0].payload,
       generatedAt: cached.rows[0].generatedAt,
       expiresAt: cached.rows[0].expiresAt,
       cached: true,
-    };
+    });
   }
 
   const snapshot = await buildHomeHighlights();
@@ -416,12 +417,12 @@ async function getHomeHighlights() {
     [SNAPSHOT_KEY, JSON.stringify(snapshot), JSON.stringify(snapshot.sourceSummary)]
   );
 
-  return {
+  return presentHomeForecast({
     ...saved.rows[0].payload,
     generatedAt: saved.rows[0].generatedAt,
     expiresAt: saved.rows[0].expiresAt,
     cached: false,
-  };
+  });
 }
 
 siteRouter.get("/hero", async (req, res) => {

@@ -1,3 +1,4 @@
+import ForecastNotice from "../components/ForecastNotice";
 import SiteDisclaimer from "../components/SiteDisclaimer.jsx";
 import { lazy, Suspense, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -1282,7 +1283,7 @@ export default function Home() {
                         <aside className="sarva-dash__heroHighlights" aria-label="SARVA live highlights">
                             <div className="sarva-dash__heroHighlightsHead">
                                 <div>
-                                    <span>{siteStatsResponse?.data?.title || "Environmental screening highlights"}</span>
+                                    <span>{"Experimental weather model outputs"}</span>
                                     <small>Click a highlight to open its map layer. Click i for interesting facts about South Africa.</small>
                                 </div>
                                 <div>
@@ -1306,7 +1307,7 @@ export default function Home() {
                                     </button>
                                 </div>
                             </div>
-                            <p className="sarva-screeningNotice"><a href="https://www.ecmwf.int/en/forecasts/datasets/open-data" target="_blank" rel="noreferrer">ECMWF Open Data ↗</a> interpreted by SARVA for environmental screening. These are not official forecasts or early warnings. <a href="https://www.weathersa.co.za/warnings" target="_blank" rel="noreferrer">Official forecasts and warnings: SAWS ↗</a></p>
+                            <ForecastNotice />
                             <div className="sarva-dash__heroHighlightGrid">
                                 {heroHighlights.slice(0, 5).map((highlight) => (
                                     <button
@@ -1342,7 +1343,7 @@ export default function Home() {
                         <div className="sarva-panel__head">
                             <div>
                                 <h2>Explore South Africa</h2>
-                                <p>ECMWF rainfall screening, environmental risk layers and SAEON live observations for national context.</p>
+                                <p>Explore experimental weather model outputs and SAEON live observations.</p>
                             </div>
                             <div className="sarva-dash__tabs">
                                 <button
@@ -1350,7 +1351,7 @@ export default function Home() {
                                     className={mapMode === "forecast-risk" ? "is-active" : ""}
                                     onClick={() => setMapMode("forecast-risk")}
                                 >
-                                    Forecast Rainfall Risk
+                                    Experimental model rainfall
                                 </button>
                                 <button
                                     type="button"
@@ -1364,7 +1365,7 @@ export default function Home() {
                                     className={mapMode === "environmental-risk" ? "is-active" : ""}
                                     onClick={() => setMapMode("environmental-risk")}
                                 >
-                                    Environmental Risk Index
+                                    Experimental combined model index
                                 </button>
                             </div>
                         </div>
@@ -1480,7 +1481,7 @@ export default function Home() {
                             <span>Sources and metric calculation</span>
                             <h2>How the hero highlights are calculated</h2>
                             <p className="sarva-dash__glanceIntro">
-                                These are SARVA development screening indicators from cached ECMWF Open Data IFS 0.25 degree forecast fields. They are for exploration and context, not formal warnings.
+                                These experimental outputs use cached ECMWF Open Data IFS 0.25 degree model fields. SARVA-derived indices are not probabilities of harm, official warning levels or emergency advice. Check dates and SAWS warnings before acting.
                             </p>
                             <div>
                                 {heroHighlights.slice(0, 5).map((highlight) => (

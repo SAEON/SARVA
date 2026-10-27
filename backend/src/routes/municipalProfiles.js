@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { pool } from "../db/pool.js";
+import { FORECAST_METADATA } from "../services/forecastPresentation.js";
 import { requireCurrentAdmin as requireAdmin } from "../utils/currentAdmin.js";
 
 export const municipalProfilesRouter = Router();
@@ -1146,6 +1147,7 @@ municipalProfilesRouter.get("/municipalities/:gid/profile", async (req, res) => 
           bbox: bboxFromRow(row.extent || {}),
         },
         forecast: {
+          ...FORECAST_METADATA,
           latestRun: latestRun
             ? {
                 id: latestRun.id,
@@ -1168,7 +1170,7 @@ municipalProfilesRouter.get("/municipalities/:gid/profile", async (req, res) => 
           windRiskScore: numberOrNull(risk.wind_risk_score, 0),
           fireRiskScore: numberOrNull(risk.fire_risk_score, 0),
           overallRiskScore: numberOrNull(risk.overall_risk_score, 0),
-          overallRiskLabel: scoreLabel(risk.overall_risk_score),
+          overallRiskLabel: risk.overall_risk_score == null ? "Model output unavailable" : "Experimental model index",
         },
         observationSites: Array.isArray(row.observation_sites)
           ? row.observation_sites.map((site) => ({

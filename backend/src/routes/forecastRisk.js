@@ -1,66 +1,53 @@
 import { Router } from "express";
 import { pool } from "../db/pool.js";
+import { FORECAST_NOTICE, FORECAST_ATTRIBUTION, FORECAST_METADATA } from "../services/forecastPresentation.js";
 
 export const forecastRiskRouter = Router();
 
-const FORECAST_RISK_DESCRIPTION =
-  "Forecast environmental risk layers are SARVA development screening layers showing cached ECMWF forecast rainfall, heat, wind, fire-weather proxy and overall risk indices over the next forecast window. They are intended for exploration, not formal warnings.";
-
-const FORECAST_RISK_ATTRIBUTION =
-  "ECMWF Open Data IFS 0.25 degree forecast fields. SARVA development indices use daily precipitation totals, maximum 2 m temperature and maximum 10 m wind speed for screening and exploration.";
+const FORECAST_RISK_DESCRIPTION = FORECAST_NOTICE;
+const FORECAST_RISK_ATTRIBUTION = FORECAST_ATTRIBUTION;
 
 const FORECAST_RISK_SOURCE_URL = "https://www.ecmwf.int/en/forecasts/datasets/open-data";
 const LEGACY_FORECAST_ATTRIBUTION =
-  "SARVA legacy cached forecast rainfall risk retained while the direct ECMWF Open Data refresh retries. Risk classes are SARVA development thresholds derived from forecast daily rainfall totals.";
+  "Older cached model rainfall retained while direct ECMWF refresh retries. Check forecast dates; display bands are not official warning thresholds.";
 
 const RISK_LAYERS = {
   rainfall: {
-    label: "ECMWF rainfall screening",
+    label: "Experimental ECMWF rainfall estimate",
     description:
-      "Highest daily forecast rainfall risk on a 0.25 degree grid for the cached forecast window.",
+      "Largest modelled daily rainfall total on the cached 0.25 degree grid. Rainfall alone is not a flood assessment.",
     units: "mm/day",
   },
   overall: {
-    label: "SARVA combined screening index",
+    label: "Experimental SARVA combined model index",
     description:
-      "Highest SARVA development environmental risk index from rainfall, heat, wind and fire-weather proxy components.",
+      "Experimental SARVA index derived from modelled rain, temperature, wind and dryness. Not a probability of harm or warning level.",
     units: "0-100",
   },
   heat: {
-    label: "ECMWF temperature screening",
-    description: "SARVA development heat index derived from daily maximum ECMWF 2 m temperature.",
+    label: "Experimental ECMWF temperature estimate",
+    description: "Modelled daily maximum 2 m temperature. SARVA experimental indices are not official heat warnings.",
     units: "°C max",
   },
   wind: {
-    label: "ECMWF wind screening",
-    description: "SARVA development wind index derived from daily maximum ECMWF 10 m wind speed.",
+    label: "Experimental ECMWF wind estimate",
+    description: "Modelled daily maximum 10 m wind speed. SARVA experimental indices are not official wind warnings.",
     units: "km/h max",
   },
   fire: {
-    label: "SARVA fire-weather screening",
+    label: "Experimental SARVA fire-weather indicator",
     description:
-      "SARVA development fire-weather proxy derived from heat, wind and forecast dryness. This is not a formal fire danger index.",
+      "Experimental indicator derived from modelled heat, wind and dryness. Not an official fire-danger rating, fire prediction or instruction about lighting fires.",
     units: "0-100",
   },
 };
 
 function riskLabel(score) {
-  return {
-    0: "Minimal",
-    1: "Low",
-    2: "Moderate",
-    3: "High",
-    4: "Very high",
-  }[Number(score)] || "Unknown";
+  return score == null || !Number.isFinite(Number(score)) ? "Model band unavailable" : `Experimental band ${Number(score)}/4`;
 }
 
 function scoreLabel(score) {
-  if (!Number.isFinite(score)) return "Unknown";
-  if (score >= 80) return "Very high";
-  if (score >= 60) return "High";
-  if (score >= 40) return "Moderate";
-  if (score >= 20) return "Low";
-  return "Very low";
+  return score == null || !Number.isFinite(Number(score)) ? "Model band unavailable" : riskLabel(scoreClass(Number(score)));
 }
 
 function scoreClass(score) {
@@ -141,6 +128,7 @@ forecastRiskRouter.get("/forecast-risk/status", async (_req, res) => {
     res.json({
       status: "ok",
       data: {
+        ...FORECAST_METADATA,
         description: FORECAST_RISK_DESCRIPTION,
         attribution: FORECAST_RISK_ATTRIBUTION,
         sourceUrl: FORECAST_RISK_SOURCE_URL,
@@ -177,14 +165,15 @@ forecastRiskRouter.get("/forecast-risk/layer", async (req, res) => {
       res.json({
         status: "ok",
         data: {
-          description: FORECAST_RISK_DESCRIPTION,
+          ...FORECAST_METADATA,
+        description: FORECAST_RISK_DESCRIPTION,
           attribution: FORECAST_RISK_ATTRIBUTION,
           sourceUrl: FORECAST_RISK_SOURCE_URL,
           latestRun: null,
           count: 0,
           records: [],
           geojson: { type: "FeatureCollection", features: [] },
-          message: "ECMWF rainfall screening has not synced yet.",
+          message: "Experimental ECMWF rainfall estimate has not synced yet.",
         },
       });
       return;
@@ -273,8 +262,9 @@ forecastRiskRouter.get("/forecast-risk/layer", async (req, res) => {
         mode,
         layer,
         layerMeta,
+        ...FORECAST_METADATA,
         description: FORECAST_RISK_DESCRIPTION,
-        attribution: isFallback ? LEGACY_FORECAST_ATTRIBUTION : records[0]?.attribution || FORECAST_RISK_ATTRIBUTION,
+        attribution: isFallback ? `${FORECAST_RISK_ATTRIBUTION} ${LEGACY_FORECAST_ATTRIBUTION}` : FORECAST_RISK_ATTRIBUTION,
         sourceUrl: FORECAST_RISK_SOURCE_URL,
         latestRun: {
           id: run.id,
@@ -314,7 +304,7 @@ forecastRiskRouter.get("/forecast-risk/layer", async (req, res) => {
               riskLabel: record.riskLabel,
               source: record.source,
               sourceUrl: FORECAST_RISK_SOURCE_URL,
-              attribution: isFallback ? LEGACY_FORECAST_ATTRIBUTION : record.attribution || FORECAST_RISK_ATTRIBUTION,
+              attribution: isFallback ? `${FORECAST_RISK_ATTRIBUTION} ${LEGACY_FORECAST_ATTRIBUTION}` : FORECAST_RISK_ATTRIBUTION,
               isFallback,
               updatedAt: run.finished_at || run.started_at,
             },
