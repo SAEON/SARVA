@@ -1,6 +1,6 @@
 # Compact forecast cards
 
-Deployed and operator-accepted on production 28 October 2026 via PR #26 (merge f5b54b5). All checks passed; compact cards and ECMWF attribution look good, and password login, passkey login and DS Lab remain working. Rollback cleanup is pending operator verification/execution.
+Deployed and operator-accepted on production 28 October 2026 via PR #26 (merge f5b54b5). All checks passed; compact cards and ECMWF attribution look good, and password login, passkey login and DS Lab remain working. Rollback cleanup is complete, confirmed by operator terminal output on 28 October 2026. All post-cleanup site/access-control checks and Nginx validation passed. Retained frontend rollback: `sarva-frontend:rollback-compact-forecasts-20261028-084240`; backup: `/home/marc/sarva-backups/before-compact-forecasts-20261028-084240`. Running images, latest backend rollback, databases, volumes, backups, build cache and DS Lab images/services were preserved.
 
 The homepage separates Selected location weather outlook (all three physical values for one selected place/day) from Highest modelled values (independent maxima across available forecast locations/dates). Places and compact forecast dates appear above the values. The lower heading explains that places and dates differ. Group headings are accessible and absent groups are not rendered.
 
@@ -8,7 +8,7 @@ Compact spacing, short labels and a shared experimental warning reduce repeated 
 
 Validation: five existing frontend forecast tests passed; frontend lint and Docker production build passed. Browser review confirmed the distinct groups, compact cards, dates/locations and visible experimental/SAWS notice. Four privacy preference tests passed during the local preview build. Authentication/session settings and DS Lab configuration are unchanged. Local DS Lab root returned 200 and passkeys remain enabled.
 
-Deploy frontend only after retaining the current frontend image. No migration, backend recreation or forecast-worker change. Production acceptance is operator-confirmed; cleanup remains pending verification/execution.
+Deploy frontend only after retaining the current frontend image. No migration, backend recreation or forecast-worker change. Production acceptance and cleanup are operator-confirmed complete; post-cleanup checks passed.
 
 ## Visible source attribution
 
