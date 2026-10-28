@@ -9,3 +9,7 @@ Compact spacing, short labels and a shared experimental warning reduce repeated 
 Validation: five existing frontend forecast tests passed; frontend lint and Docker production build passed. Browser review confirmed the distinct groups, compact cards, dates/locations and visible experimental/SAWS notice. Four privacy preference tests passed during the local preview build. Authentication/session settings and DS Lab configuration are unchanged. Local DS Lab root returned 200 and passkeys remain enabled.
 
 Deploy frontend only after retaining the current frontend image. No migration, backend recreation or forecast-worker change. Production acceptance and cleanup must be recorded after operator verification.
+
+## Visible source attribution
+
+The shared notice visibly links ECMWF Open Data (IFS model, 0.25°) without expanding the source details. It retains © ECMWF and the CC BY 4.0 link and distinguishes SARVA caching/summarisation and derived experimental indices. The official source page was checked 28 October 2026; the worker explicitly requests model ifs, resol 0p25. This credit also appears in other uses of the shared forecast notice. Experimental warnings, SAWS link and full limitations remain.
