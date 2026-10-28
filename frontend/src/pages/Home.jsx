@@ -1978,10 +1978,13 @@ export default function Home() {
                                 "SARVA is a collaborative platform that integrates environmental data and tools to support decisions for a sustainable South Africa."}
                         </p>
                         <Link to="/about">Learn more about SARVA</Link>
-                        <div
-                            className={`sarva-about__image${heroImage ? " has-image" : ""}`}
-                            style={heroImage ? { backgroundImage: `url(${heroImage})` } : undefined}
-                        />
+                        {heroImage && <img
+                            className="sarva-about__image"
+                            src={heroImage}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                        />}
                     </article>
                 </section>
 

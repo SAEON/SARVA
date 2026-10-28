@@ -1277,7 +1277,6 @@ body {
 }
 
 .sarva-spotlight__thumb,
-.sarva-about__image,
 .sarva-report span {
     background:
         radial-gradient(circle at 42% 35%, rgba(124, 170, 82, 0.95), transparent 32%),
@@ -1896,14 +1895,12 @@ body {
 }
 
 .sarva-about__image {
-    height: 64px;
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
     margin-top: 13px;
-    background-position: center;
-    background-size: cover;
-}
-
-.sarva-about__image.has-image {
-    min-height: 76px;
+    object-fit: contain;
 }
 
 .sarva-dash__footer {
