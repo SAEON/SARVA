@@ -4029,3 +4029,7 @@ body {
 }
 .sarva-forecastGroup .sarva-dash__heroHighlightGrid button > .sarva-combinedWeatherValues { margin: 2px 0; gap: 8px; }
 .sarva-forecastGroup--selected-location .sarva-forecastPlaceDate { flex-direction: row !important; flex-wrap: wrap; gap: 4px 12px !important; align-items: baseline; }
+
+.sarva-forecastGroup .sarva-dash__heroHighlightGrid button > .sarva-forecastCardCredit {
+    font-size: 10px; line-height: 1.3; margin-top: 2px; color: rgba(255,253,247,.85);
+}

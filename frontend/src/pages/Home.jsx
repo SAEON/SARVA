@@ -1348,6 +1348,7 @@ export default function Home() {
                                                 ))}
                                             </span>
                                         ) : <strong>{highlight.value}</strong>}
+                                        <span className="sarva-forecastCardCredit">{highlight.mapMode === "fire-risk" && !highlight.combinedWeatherSummary ? "SARVA index · ECMWF data" : "ECMWF IFS · SARVA summary"}</span>
                                         <em>
                                             {highlight.updatedAtLabel ? `Updated: ${highlight.updatedAtLabel}` : "Data refresh time unavailable"}
                                         </em>

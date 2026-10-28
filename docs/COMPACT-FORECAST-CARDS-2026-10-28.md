@@ -13,3 +13,5 @@ Deploy frontend only after retaining the current frontend image. No migration, b
 ## Visible source attribution
 
 The shared notice visibly links ECMWF Open Data (IFS model, 0.25°) without expanding the source details. It retains © ECMWF and the CC BY 4.0 link and distinguishes SARVA caching/summarisation and derived experimental indices. The official source page was checked 28 October 2026; the worker explicitly requests model ifs, resol 0p25. This credit also appears in other uses of the shared forecast notice. Experimental warnings, SAWS link and full limitations remain.
+
+Each card also retains a short visible credit below its value: ECMWF IFS · SARVA summary for physical measurements and the selected-location summary; SARVA index · ECMWF data for the derived fire-weather score. The shared official source/licence links remain above the cards; no link is nested inside the map-action buttons.
