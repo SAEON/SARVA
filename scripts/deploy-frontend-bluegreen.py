@@ -69,6 +69,37 @@ def save_state(data):
         json.dump(data, handle, indent=2)
     STATE.chmod(0o600)
 
+def preserve_frontend_image(container, rollback_tag):
+    image_id = run('docker', 'inspect', container, '--format', '{{.Image}}', capture=True).strip()
+    try:
+        run('docker', 'tag', image_id, rollback_tag)
+        method = 'original image'
+    except subprocess.CalledProcessError:
+        # A container can remain running after its original image record is lost.
+        # Recover static frontend files, without pausing traffic or touching data volumes.
+        running = run('docker', 'inspect', container, '--format', '{{.State.Running}}', capture=True).strip()
+        service = run('docker', 'inspect', container, '--format', '{{index .Config.Labels "com.docker.compose.service"}}', capture=True).strip()
+        mounts = json.loads(run('docker', 'inspect', container, '--format', '{{json .Mounts}}', capture=True))
+        if running != 'true' or service != 'frontend' or mounts:
+            raise RuntimeError('Cannot safely recover rollback image: expected running frontend with no mounts')
+        print('Original frontend image record is unavailable; saving a non-pausing container snapshot for rollback.')
+        run('docker', 'commit', '--pause=false', container, rollback_tag)
+        method = 'recovered container snapshot'
+    run('docker', 'image', 'inspect', rollback_tag, '--format', '{{.Id}}', capture=True)
+    return method
+
+def backup_active_frontend(original, port):
+    stamp = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%d-%H%M%S')
+    backup = Path('/var/backups/sarva-frontend-bluegreen') / stamp
+    backup.mkdir(parents=True, mode=0o700, exist_ok=True)
+    shutil.copy2(CONFIG, backup / 'sarva.conf')
+    rollback_tag = 'sarva-frontend:rollback-bluegreen-' + stamp
+    method = preserve_frontend_image(container_for(port), rollback_tag)
+    (backup / 'rollback-image.txt').write_text(rollback_tag + '\n')
+    (backup / 'image-preservation.txt').write_text(method + '\n')
+    return backup, rollback_tag
+
+
 def prepare():
     original = CONFIG.read_text()
     old = active_port(original)
@@ -76,14 +107,7 @@ def prepare():
     run('nginx', '-t')
     ready(old)
     run('docker', 'compose', 'config', '--quiet')
-    stamp = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%d-%H%M%S')
-    backup = Path('/var/backups/sarva-frontend-bluegreen') / stamp
-    backup.mkdir(parents=True, mode=0o700)
-    shutil.copy2(CONFIG, backup / 'sarva.conf')
-    old_id = run('docker', 'inspect', container_for(old), '--format', '{{.Image}}', capture=True).strip()
-    rollback_tag = 'sarva-frontend:rollback-bluegreen-' + stamp
-    run('docker', 'tag', old_id, rollback_tag)
-    (backup / 'rollback-image.txt').write_text(rollback_tag + '\n')
+    backup, rollback_tag = backup_active_frontend(original, old)
     if new == 8091:
         # Never touch the active slot. Refuse a foreign listener on the inactive port.
         inspect = subprocess.run(['docker', 'inspect', container_for(new)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
@@ -179,6 +203,12 @@ def main():
             deployment_notice(True)
             try:
                 if args.action == 'build':
+                    original = CONFIG.read_text()
+                    port = active_port(original)
+                    run('nginx', '-t')
+                    ready(port)
+                    backup, tag = backup_active_frontend(original, port)
+                    print(f'Active frontend preserved before build: {tag}; backup: {backup}')
                     run('docker', 'compose', 'build', 'frontend')
                 else:
                     prepare()

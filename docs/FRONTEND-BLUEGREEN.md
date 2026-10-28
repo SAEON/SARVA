@@ -36,3 +36,11 @@ Use this workflow after adoption. Plain docker compose ps shows the canonical bl
 ## Deployment ribbon update
 
 Once the ribbon component is deployed, use `sudo python3 scripts/deploy-frontend-bluegreen.py build` followed by prepare and switch so the ribbon is enabled before building. It clears after failed build/prepare, switch or rollback, or after a 45-minute marker expiry. `notice-on` / `notice-off` allow manual testing/recovery. See DEPLOYMENT-RIBBON-LOCAL.md for the first-rollout limitation and marker storage. This adds no fixed staging port or separate database.
+
+## Active image preservation and missing-image recovery
+
+The operator reported prepare failed on 28 October 2026 because the running green frontend's image ID was no longer taggable after a build. The exact cause of the missing image record is not established. Production remained on port 8091; both frontend containers were running with no mounts, and SARVA/DS Lab returned 200. Preparation failed before candidate recreation or routing change.
+
+The workflow now preserves the active image before build as well as before prepare. If Docker cannot tag the original image, recovery is restricted to a running Compose frontend container with no mounts: `docker commit --pause=false` saves its current filesystem/configuration under the rollback tag without pausing requests. This is a recovered container snapshot, not a claim to reproduce the original build. The backup records the preservation method. Mounted or non-frontend containers are refused. The image is inspected after preservation before proceeding.
+
+Validation: ten isolated Python tests and syntax compilation pass, covering normal pinning, missing-image recovery, refusal of mounted recovery and previous switch/failure paths. Actual production recovery remains pending operator execution. A frontend image is already built on production; after pulling this fix, retry prepare without rebuilding. Preserve both running slots and existing rollback images throughout.
