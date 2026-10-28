@@ -45,16 +45,26 @@ export function createReviewIssuesRouter(db=pool){
    const where=`WHERE i.deleted_at IS ${deleted?'NOT NULL':'NULL'} AND ($1 OR i.created_by=$2) AND ($3='' OR position(lower($3) in lower(i.title))>0 OR position(lower($3) in lower(i.description))>0)
     AND ($4='' OR i.status=$4) AND ($5='' OR i.kind=$5)`;
    let assignmentWhere='';
-   if(req.query.assigned){
-    if(!req.reviewUser.isAdmin)throw fail(403,'Administrator access required');
-    if(!['mine','unassigned'].includes(req.query.assigned))throw fail(400,'Invalid assignment filter');
-    assignmentWhere=req.query.assigned==='mine'?' AND i.assigned_to=$2':' AND i.assigned_to IS NULL';
+   const assigned=String(req.query.assigned || ''),submittedBy=String(req.query.submittedBy || '');
+   const filterId=value=>/^(?:user:)?([1-9][0-9]{0,17})$/.exec(value)?.[1];
+   if((assigned||submittedBy)&&!req.reviewUser.isAdmin)throw fail(403,'Administrator access required');
+   if(assigned){
+    if(assigned==='mine')assignmentWhere+=' AND i.assigned_to=$2';
+    else if(assigned==='unassigned')assignmentWhere+=' AND i.assigned_to IS NULL';
+    else {const id=filterId(assigned);if(!id)throw fail(400,'Invalid assignment filter');args.push(id);assignmentWhere+=` AND i.assigned_to=$${args.length}`;}
    }
+   if(submittedBy){const id=filterId(submittedBy);if(!id)throw fail(400,'Invalid submitter filter');args.push(id);assignmentWhere+=` AND i.created_by=$${args.length}`;}
    const filteredWhere=where+assignmentWhere;
    const count=await db.query(`SELECT count(*)::integer AS total FROM sarva.review_issue i ${filteredWhere}`,args);
-   const result=await db.query(`SELECT ${issueFields} FROM sarva.review_issue i JOIN sarva.app_user u ON u.id=i.created_by ${filteredWhere} ORDER BY i.updated_at DESC,i.id DESC LIMIT 25 OFFSET $6`,[...args,(page-1)*25]);
+   const result=await db.query(`SELECT ${issueFields} FROM sarva.review_issue i JOIN sarva.app_user u ON u.id=i.created_by ${filteredWhere} ORDER BY i.updated_at DESC,i.id DESC LIMIT 25 OFFSET $${args.length+1}`,[...args,(page-1)*25]);
+   let filters;
+   if(req.reviewUser.isAdmin){
+    const assignees=await db.query(`SELECT u.id,u.display_name,u.is_active FROM sarva.app_user u WHERE EXISTS(SELECT 1 FROM sarva.review_issue i WHERE i.assigned_to=u.id) OR (u.is_active AND EXISTS(SELECT 1 FROM sarva.app_user_role ur JOIN sarva.auth_role r ON r.id=ur.role_id WHERE ur.user_id=u.id AND r.name='admin')) ORDER BY lower(u.display_name),u.id`);
+    const submitters=await db.query(`SELECT u.id,u.display_name,u.is_active FROM sarva.app_user u WHERE EXISTS(SELECT 1 FROM sarva.review_issue i WHERE i.created_by=u.id) ORDER BY lower(u.display_name),u.id`);
+    filters={assignees:assignees.rows,submitters:submitters.rows};
+   }
    const counts=await db.query(`SELECT status,count(*)::integer AS count FROM sarva.review_issue WHERE deleted_at IS NULL AND ($1 OR created_by=$2) GROUP BY status`,[req.reviewUser.isAdmin,req.reviewUser.id]);
-   res.json({data:{issues:result.rows.map(issue=>publicIssue(issue,req.reviewUser)),total:count.rows[0].total,page,pageSize:25,counts:counts.rows,isAdmin:req.reviewUser.isAdmin}});
+   res.json({data:{issues:result.rows.map(issue=>publicIssue(issue,req.reviewUser)),total:count.rows[0].total,page,pageSize:25,counts:counts.rows,isAdmin:req.reviewUser.isAdmin,...(filters?{filters}:{})}});
   }catch(error){res.status(error.status||500).json({message:error.status?error.message:'Unable to load testing issues'});}
  });
  router.get('/review/issues/:id',async(req,res)=>{

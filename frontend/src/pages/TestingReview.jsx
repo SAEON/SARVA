@@ -29,6 +29,7 @@ function Tracker({token,isAdmin,currentUser}){
  const reportPage=location.state?.reportPage || '';
  const [data,setData]=useState(null),[loading,setLoading]=useState(true),[error,setError]=useState(''),[notice,setNotice]=useState('');
  const [search,setSearch]=useState(''),[query,setQuery]=useState(''),[status,setStatus]=useState(''),[kind,setKind]=useState(''),[page,setPage]=useState(1),[reload,setReload]=useState(0);
+ const [submittedBy,setSubmittedBy]=useState('');
  const [assigned,setAssigned]=useState(''),[archived,setArchived]=useState(false),[selected,setSelected]=useState(null),[showNew,setShowNew]=useState(Boolean(reportPage));
  const formRef=useRef(null);
  useEffect(()=>{if(showNew)formRef.current?.scrollIntoView({block:'start'});},[showNew]);
@@ -36,11 +37,11 @@ function Tracker({token,isAdmin,currentUser}){
   let alive=true;
   async function load(){
    setLoading(true);setError('');
-   try{const result=await request('?'+new URLSearchParams({search:query,status,kind,page,archived,assigned}),token);if(alive)setData(result.data);}
+   try{const result=await request('?'+new URLSearchParams({search:query,status,kind,page,archived,assigned,submittedBy}),token);if(alive)setData(result.data);}
    catch(e){if(alive){setError(e.message);setData(null);}}finally{if(alive)setLoading(false);}
   }
   load();return()=>{alive=false;};
- },[token,query,status,kind,page,reload,archived,assigned]);
+ },[token,query,status,kind,page,reload,archived,assigned,submittedBy]);
  const count=key=>data?.counts.find(row=>row.status===key)?.count || 0;
  return <>
  <div className="ua-guidance"><strong>{isAdmin?'Review all reports and record the outcome.':'Your testing reports.'}</strong><p>{isAdmin?'Classify the report as a bug, update request, feedback or question. Assign an administrator, reply in the thread and mark it resolved when complete.':'Choose Bug / issue, Needs updating, Feedback / suggestion or Question. You can see your own reports and administrator replies. Only administrators can change review status.'} Do not include passwords, API keys or private personal information.</p></div>
@@ -49,7 +50,7 @@ function Tracker({token,isAdmin,currentUser}){
  {notice&&<div role="status" className="ua-success">{notice}</div>}{error&&<div role="alert" className="ua-error">{error}</div>}
  {showNew&&<section ref={formRef} className="ua-panel tr-new"><NewIssue token={token} isAdmin={isAdmin} reporter={currentUser} initialPage={reportPage} onCancel={()=>setShowNew(false)} onCreated={id=>{setShowNew(false);setSelected(id);setNotice('Issue #'+id+' reported.');setReload(n=>n+1);}}/></section>}
  <section className="ua-panel"><div className="tr-filters"><form onSubmit={e=>{e.preventDefault();setPage(1);setQuery(search.trim());}}><label className="ua-field">Find an issue<div className="ua-search"><input value={search} maxLength={150} onChange={e=>setSearch(e.target.value)} placeholder="Search title or description"/><button>Search</button></div></label></form><Pick label="Status" value={status} onChange={value=>{setPage(1);setStatus(value);}} options={{'':'All statuses',...statuses}}/><Pick label="Type" value={kind} onChange={value=>{setPage(1);setKind(value);}} options={{'':'All types',...kinds}}/></div>
- {isAdmin&&<Pick label="Assignment" value={assigned} onChange={value=>{setAssigned(value);setPage(1);setSelected(null);}} options={{'':'All assignments',mine:'Assigned to me',unassigned:'Unassigned'}}/>}
+ {isAdmin&&<div className="tr-form-row"><Pick label="Assignment" value={assigned} onChange={value=>{setAssigned(value);setPage(1);setSelected(null);}} options={{'':'All assignments',mine:'Assigned to me',unassigned:'Unassigned',...Object.fromEntries((data?.filters?.assignees || []).map(person=>['user:'+person.id,person.display_name+(person.is_active?'':' (inactive)')]))}}/><Pick label="Submitted by" value={submittedBy} onChange={value=>{setSubmittedBy(value);setPage(1);setSelected(null);}} options={{'':'All submitters',...Object.fromEntries((data?.filters?.submitters || []).map(person=>['user:'+person.id,person.display_name+(person.is_active?'':' (inactive)')]))}}/></div>}
  <label className="tr-deleted-filter"><input type="checkbox" checked={archived} onChange={e=>{setArchived(e.target.checked);setPage(1);setSelected(null);}}/> Show deleted reports (restorable)</label>
  <h2 className="tr-list-heading">{archived?'Deleted reports':isAdmin?'All reports':'My reports'} <small>{loading?'Loading…':`${data?.total ?? 0} matching`}</small></h2>
  <div className="tr-list" aria-busy={loading}>{!loading&&data?.issues.map(issue=><button className={'tr-issue '+(selected===issue.id?'selected':'')} key={issue.id} onClick={()=>{setSelected(issue.id);setShowNew(false);}}><span className="tr-issue-top"><span>#{issue.id} · {kinds[issue.kind]}</span><span className={'tr-badge '+(issue.deleted_at?'deleted':issue.status)}>{issue.deleted_at?'Deleted':statuses[issue.status]}</span></span><strong>{issue.title}</strong><span className="tr-issue-meta">{priorities[issue.priority]} priority · {issue.reporter_name} · {date(issue.updated_at)}{isAdmin&&issue.assignee_name?' · Assigned to '+issue.assignee_name:''}</span></button>)}</div>
