@@ -32,3 +32,7 @@ Requires the last switched config to be unchanged and the previous frontend to b
 ## Future deployments
 
 Use this workflow after adoption. Plain docker compose ps shows the canonical blue frontend, which may be standby; use script status to identify the active slot and docker ps to inspect both. Plain docker compose up frontend can interrupt traffic if blue is active, so do not use the old replacement step for routine frontend releases. Backend deployments remain separate: both frontend Nginx instances may need reloads after backend IP changes, and backend/database changes are not made disruption-free by this script. Retained static assets can increase disk use over repeated deployments; review asset retention separately rather than blindly pruning active slots. No permanent broad cleanup task is added.
+
+## Deployment ribbon update
+
+Once the ribbon component is deployed, use `sudo python3 scripts/deploy-frontend-bluegreen.py build` followed by prepare and switch so the ribbon is enabled before building. It clears after failed build/prepare, switch or rollback, or after a 45-minute marker expiry. `notice-on` / `notice-off` allow manual testing/recovery. See DEPLOYMENT-RIBBON-LOCAL.md for the first-rollout limitation and marker storage. This adds no fixed staging port or separate database.

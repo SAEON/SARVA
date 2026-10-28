@@ -1,0 +1,2 @@
+.sarva-deploymentRibbon { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:4px 12px; background:#174e61; color:#fff; padding:9px 20px; font-size:13px; line-height:1.4; text-align:center; border-bottom:1px solid #96c0ca; }
+.sarva-deploymentRibbon strong { color:#fff; font-size:13px; }
