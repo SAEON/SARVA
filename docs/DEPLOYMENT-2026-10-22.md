@@ -1,5 +1,13 @@
 # SARVA production deployment, 22 October 2026
 
+## Municipal Planning Workspace removal production acceptance 28 October 2026
+
+PR #27 (merge `14e56f6f10a17c0a1f6af7b8d8c5750276dd9ed8`) is deployed and operator-accepted. The Municipal Planning Workspace is removed from navigation and Explore entry points; its former URL redirects to Explore. Municipal Risk Profiler and the standalone boundary viewer remain available. No municipal data, historical analytics or saved browser drafts were deleted.
+
+The operator confirmed all deployment checks passed, the workspace is gone, password and passkey browser login both work, and DS Lab still works. Deployment verification covered navigation API exclusion, remaining tool routes, site/health/privacy routes, protected anonymous endpoint responses and passkeys enabled. Only SARVA backend/frontend were rebuilt/recreated; no database migration or authentication/session setting change was needed.
+
+A before-workspace-removal rollback pair was operator-confirmed saved; its exact timestamp remains to be verified. Cleanup is **pending operator execution and verification**. Verify and retain the latest workspace-removal backend/frontend rollback pair plus current running images before removing older SARVA rollback tags. Preserve all databases, volumes, backups, build cache and DS Lab images/services. Evidence is operator terminal/browser acceptance, not an independent server audit.
+
 ## Compact forecast cards production acceptance 28 October 2026
 
 PR #26 (merge `f5b54b598dcd7272d16e841d1ce28e5c9fbd0915`) is deployed and operator-accepted. Selected location weather outlook is separated from Highest modelled values; places and dates are prominent and the independent locations/dates are explained. Compact layout retains a shared experimental warning and official SAWS link. Visible ECMWF Open Data (IFS 0.25°) source link, copyright and CC BY 4.0 credit remain; individual cards include short ECMWF/SARVA credits, distinguishing the SARVA-derived fire-weather index.
