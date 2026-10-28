@@ -12,4 +12,9 @@ PR #40 merged as e014bfdb2627eba1103d64f729ab51c7209bc591. The operator built bo
 
 After the switch/check and browser-test instructions, the operator confirmed the analytics fix is working on production. No raw browser/network output or separate password/passkey browser confirmation was supplied for this acceptance; do not infer historical missing events were recovered. DS Lab was not redeployed. Full automatic frontend reload acceptance was not separately confirmed.
 
-Cleanup is pending. Verify and retain the new frontend rollback and the backend rollback saved before this release; preserve both frontend slots, DS Lab images, backup files and volumes.
+Cleanup is complete, as confirmed by the operator after all supplied checks passed. SARVA and DS Lab remain working. Retained latest SARVA rollback pair:
+
+- sarva-frontend:rollback-bluegreen-20261028-114842 (verified against the retained previous frontend slot; image prefix 08846bddfa86).
+- sarva-backend:rollback-analytics-pages-20261028-134606 (image prefix 89f8b33b1182).
+
+The five listed older/duplicate frontend and backend rollback tags were removed without force. Both frontend slots, current services, DS Lab images, backup files and database volumes were retained. Nginx and the supplied site/protected-route checks passed. Build cache was not pruned. This does not add separate confirmation of password/passkey browser sign-in or automatic frontend reload across versions.
