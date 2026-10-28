@@ -117,7 +117,8 @@
 
 .sarva-headerSearch input {
     min-width: 0;
-    width: 100%;
+    flex: 1 1 0%;
+    width: 0;
     border: 0;
     outline: 0;
     background: transparent;
@@ -128,6 +129,7 @@
 }
 
 .sarva-headerSearch > button {
+    flex: 0 0 30px;
     width: 30px;
     height: 30px;
     display: grid;
@@ -567,9 +569,14 @@
 }
 
 /* Give navigation its own row before it can push the account off-screen. */
-@media(min-width:721px) and (max-width:1500px) {
+@media(min-width:721px) {
  .sarva-header__inner { height: auto; min-height: 76px; flex-wrap: wrap; gap: 8px 16px; padding-top: 10px; padding-bottom: 8px; }
- .sarva-headerSearch { order: 1; flex: 1 1 180px; max-width: none; }
+ .sarva-headerSearch { order: 1; flex: 1 0 260px; min-width: 240px; max-width: none; box-sizing: border-box; }
  .sarva-auth { order: 2; }
  .sarva-nav { order: 3; flex: 1 0 100%; width: 100%; min-width: 0; flex-wrap: wrap; justify-content: flex-start; margin-left: 0; }
+}
+
+/* Keep the full-width mobile search inside the available viewport. */
+@media(max-width:720px) {
+ .sarva-headerSearch { flex: 1 0 100%; width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; }
 }
