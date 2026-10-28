@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Production frontend prepare/switch/rollback. Invoked manually with sudo."""
 import argparse
+import hashlib
 import datetime
 import fcntl
 import json
@@ -69,7 +70,40 @@ def save_state(data):
         json.dump(data, handle, indent=2)
     STATE.chmod(0o600)
 
-def preserve_frontend_image(container, rollback_tag):
+def verify_file_tree(expected, recovered):
+    files = [path for path in expected.rglob('*') if path.is_file()]
+    if not files:
+        raise RuntimeError('Active frontend file backup is empty')
+    for source in files:
+        target = recovered / source.relative_to(expected)
+        if source.is_symlink() or target.is_symlink() or not target.is_file():
+            raise RuntimeError('Recovery image is missing a regular frontend file')
+        if hashlib.sha256(source.read_bytes()).digest() != hashlib.sha256(target.read_bytes()).digest():
+            raise RuntimeError('Recovery image does not match the active frontend files')
+
+def verify_recovery_image(container, image):
+    if not re.fullmatch(r'sarva-frontend:rollback-recovered-\d{8}-\d{6}', image):
+        raise RuntimeError('Expected an explicitly named sarva-frontend:rollback-recovered timestamp tag')
+    # A stopped container exposes image files for inspection without binding ports.
+    run('docker', 'image', 'inspect', image, '--format', '{{.Id}}', capture=True)
+    candidate = run('docker', 'create', '--network', 'none', image, capture=True).strip()
+    if not re.fullmatch(r'[a-f0-9]{64}', candidate):
+        raise RuntimeError('Unexpected recovery inspection container ID')
+    try:
+        with tempfile.TemporaryDirectory(prefix='sarva-recovery-verify-') as directory:
+            root = Path(directory)
+            for label, source in [('active', container), ('recovered', candidate)]:
+                destination = root / label
+                destination.mkdir()
+                run('docker', 'cp', source + ':/usr/share/nginx/html', str(destination))
+                run('docker', 'cp', source + ':/etc/nginx/conf.d', str(destination))
+            for folder in ('html', 'conf.d'):
+                verify_file_tree(root / 'active' / folder, root / 'recovered' / folder)
+    finally:
+        run('docker', 'rm', candidate)
+
+
+def preserve_frontend_image(container, rollback_tag, recovery_image=None):
     image_id = run('docker', 'inspect', container, '--format', '{{.Image}}', capture=True).strip()
     try:
         run('docker', 'tag', image_id, rollback_tag)
@@ -82,32 +116,35 @@ def preserve_frontend_image(container, rollback_tag):
         mounts = json.loads(run('docker', 'inspect', container, '--format', '{{json .Mounts}}', capture=True))
         if running != 'true' or service != 'frontend' or mounts:
             raise RuntimeError('Cannot safely recover rollback image: expected running frontend with no mounts')
-        print('Original frontend image record is unavailable; saving a non-pausing container snapshot for rollback.')
-        run('docker', 'commit', '--pause=false', container, rollback_tag)
-        method = 'recovered container snapshot'
+        if not recovery_image:
+            raise RuntimeError('Original image unavailable. Keep the active container running; supply a verified --recovery-image backup.')
+        verify_recovery_image(container, recovery_image)
+        run('docker', 'tag', recovery_image, rollback_tag)
+        method = 'verified reconstructed static frontend image'
+        print('Recovery image files match the active frontend; rollback tag saved.')
     run('docker', 'image', 'inspect', rollback_tag, '--format', '{{.Id}}', capture=True)
     return method
 
-def backup_active_frontend(original, port):
+def backup_active_frontend(original, port, recovery_image=None):
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%d-%H%M%S')
     backup = Path('/var/backups/sarva-frontend-bluegreen') / stamp
     backup.mkdir(parents=True, mode=0o700, exist_ok=True)
     shutil.copy2(CONFIG, backup / 'sarva.conf')
     rollback_tag = 'sarva-frontend:rollback-bluegreen-' + stamp
-    method = preserve_frontend_image(container_for(port), rollback_tag)
+    method = preserve_frontend_image(container_for(port), rollback_tag, recovery_image)
     (backup / 'rollback-image.txt').write_text(rollback_tag + '\n')
     (backup / 'image-preservation.txt').write_text(method + '\n')
     return backup, rollback_tag
 
 
-def prepare():
+def prepare(recovery_image=None):
     original = CONFIG.read_text()
     old = active_port(original)
     new = 8091 if old == 8090 else 8090
     run('nginx', '-t')
     ready(old)
     run('docker', 'compose', 'config', '--quiet')
-    backup, rollback_tag = backup_active_frontend(original, old)
+    backup, rollback_tag = backup_active_frontend(original, old, recovery_image)
     if new == 8091:
         # Never touch the active slot. Refuse a foreign listener on the inactive port.
         inspect = subprocess.run(['docker', 'inspect', container_for(new)], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
@@ -193,6 +230,7 @@ def deployment_notice(active):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=['build', 'prepare', 'switch', 'rollback', 'status', 'notice-on', 'notice-off'])
+    parser.add_argument("--recovery-image", help="Explicit reconstructed frontend backup; verified against active files before use")
     args = parser.parse_args()
     if os.geteuid() != 0 or socket.gethostname().split('.')[0].lower() != 'ulwsarvadsl01':
         raise SystemExit('Run with sudo on ULWSARVADSL01 only')
@@ -207,11 +245,11 @@ def main():
                     port = active_port(original)
                     run('nginx', '-t')
                     ready(port)
-                    backup, tag = backup_active_frontend(original, port)
+                    backup, tag = backup_active_frontend(original, port, args.recovery_image)
                     print(f'Active frontend preserved before build: {tag}; backup: {backup}')
                     run('docker', 'compose', 'build', 'frontend')
                 else:
-                    prepare()
+                    prepare(args.recovery_image)
             except BaseException:
                 deployment_notice(False)
                 raise

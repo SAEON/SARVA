@@ -72,20 +72,22 @@ class ImagePreservationTest(unittest.TestCase):
             self.assertEqual(deploy.preserve_frontend_image('frontend', 'rollback'), 'original image')
         self.assertFalse(any(args[:2] == ('docker', 'commit') for args in calls))
 
-    def test_missing_image_recovers_only_running_unmounted_frontend(self):
+    def test_missing_image_requires_verified_explicit_recovery(self):
         calls = []
         def run(*args, **kwargs):
             calls.append(args)
-            if args[:2] == ('docker', 'tag'):
+            if args[:3] == ('docker', 'tag', 'sha256:missing'):
                 raise deploy.subprocess.CalledProcessError(1, args)
             if '{{.Image}}' in args: return 'sha256:missing'
             if '{{.State.Running}}' in args: return 'true'
             if '{{json .Mounts}}' in args: return '[]'
             if args[:2] == ('docker', 'inspect'): return 'frontend'
             return 'sha256:recovered'
-        with patch.object(deploy, 'run', run):
-            self.assertEqual(deploy.preserve_frontend_image('frontend', 'rollback'), 'recovered container snapshot')
-        self.assertIn(('docker', 'commit', '--pause=false', 'frontend', 'rollback'), calls)
+        with patch.object(deploy, 'run', run), patch.object(deploy, 'verify_recovery_image') as verify:
+            self.assertEqual(deploy.preserve_frontend_image('frontend', 'rollback', 'recovery'), 'verified reconstructed static frontend image')
+            verify.assert_called_once_with('frontend', 'recovery')
+        self.assertIn(('docker', 'tag', 'recovery', 'rollback'), calls)
+        self.assertFalse(any(args[:2] == ('docker', 'commit') for args in calls))
 
     def test_mounted_frontend_refuses_snapshot(self):
         def run(*args, **kwargs):
@@ -96,6 +98,23 @@ class ImagePreservationTest(unittest.TestCase):
             return 'frontend'
         with patch.object(deploy, 'run', run), self.assertRaises(RuntimeError):
             deploy.preserve_frontend_image('frontend', 'rollback')
+
+class RecoveryFileTest(unittest.TestCase):
+    def test_matching_files_allow_extra_old_assets(self):
+        with tempfile.TemporaryDirectory() as directory:
+            a, b = Path(directory)/'a', Path(directory)/'b'
+            a.mkdir(); b.mkdir()
+            (a/'index.html').write_text('same'); (b/'index.html').write_text('same')
+            (b/'old-asset.js').write_text('old')
+            deploy.verify_file_tree(a,b)
+            (b/'index.html').write_text('different')
+            with self.assertRaises(RuntimeError): deploy.verify_file_tree(a,b)
+    def test_empty_or_missing_files_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            a,b=Path(directory)/'a',Path(directory)/'b'; a.mkdir(); b.mkdir()
+            with self.assertRaises(RuntimeError): deploy.verify_file_tree(a,b)
+            (a/'index.html').write_text('required')
+            with self.assertRaises(RuntimeError): deploy.verify_file_tree(a,b)
 
 if __name__ == '__main__':
     unittest.main()
