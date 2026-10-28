@@ -263,3 +263,8 @@ hours. See [passkey acceptance](SARVA-ACCOUNT-PASSKEYS.md).
 Older rollback cleanup is authorized but pending. Retain the current images and
 the rollback-passkeys-20261027-155549 backend/frontend pair; preserve backups,
 DS Lab images and database volumes.
+
+
+## Public issue assignment compatibility accepted, 28 October 2026
+
+PRs #34 and #35 hardened assignment error responses and changed the current frontend to POST, preserving the same admin checks, conflict protection, audit history and legacy PATCH route. The operator confirmed assignment now works from a Mac outside VPN after the staged frontend rollout to 8090. The earlier public PATCH response was HTML 403; the precise filtering rule remains unconfirmed. No schema migration or DS Lab changes. Cleanup is pending and both frontend slots plus all recovery images must be retained. See [assignment evidence and acceptance limits](ISSUE-ASSIGNMENT-HARDENING.md).
