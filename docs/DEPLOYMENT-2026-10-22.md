@@ -1,5 +1,17 @@
 # SARVA production deployment, 22 October 2026
 
+## Staged frontend and deployment ribbon acceptance 28 October 2026
+
+Operator confirmed the ribbon rollout and all requested checks worked: live switch, notice-on visibility and notice-off disappearance, normal password/passkey login and DS Lab. PR #31 introduced the ribbon (merge 3edac8726ad1e775ad6071fe783adb7d87d31ac1); PR #32 and #33 corrected rollback preservation/recovery. Current release includes PR #28 Explore/menu changes and PR #29 direct Explore link. Acceptance is operator-reported, not an independent production audit.
+
+Active frontend is now blue sarva-frontend on loopback 8090; green sarva-frontend-green on 8091 is retained as previous slot. Host Nginx changed only its SARVA proxy port with validation/graceful reload. The latest prepare record was /var/backups/sarva-frontend-bluegreen/20261028-085912; rollback tag sarva-frontend:rollback-bluegreen-20261028-085912; blue candidate ID e802d46f5c2409e170cbb9b368b2d5d05567bb3335ebfd9f237ae1cc49b2bacd. Consult script status and current config before later operations; slot roles alternate.
+
+Preparation initially failed because the active green container referenced an unavailable image record; Docker tag and commit failed. Both containers and live SARVA stayed running and SARVA/DS Lab returned 200. Root cause of the missing image record was not established. Operator saved and verified /home/marc/sarva-backups/frontend-files-20261028-105317 and built sarva-frontend:rollback-recovered-20261028-105317 (image b18f74ad373d1a8bb861c25149a9edfafbf7058c0c9352f4814e308535648aef) from a known available runtime plus saved live files. Recovery image nginx validation and file-by-file comparison with the active frontend passed. It is a reconstructed static frontend backup, not an original image replica. No Docker daemon restart or production data deletion was performed.
+
+Future frontend releases must use script build, prepare, switch and status rather than directly replacing the active Compose frontend. Build preserves the active image first; the ribbon marker is enabled for build/prepare and cleared afterward, with 45-minute expiry and manual notice-on/off. No fixed staging preview port or separate staging database was installed. Both slots share production backend/data; passkeys must be tested on the public origin. Backend, database, authentication/session settings and DS Lab configuration were unchanged by the rollout.
+
+**Cleanup is on hold.** Retain both frontend containers, the current/previous images, verified recovered rollback image, latest blue-green rollback and all file/config backups. The prior green slot lacks the ribbon; it remains a working-site rollback but will not display the ribbon if restored. Do not use older broad rollback-tag cleanup commands or --remove-orphans. Additional housekeeping and any later slot refresh require a separate verified operation.
+
 ## Municipal Planning Workspace removal production acceptance 28 October 2026
 
 PR #27 (merge `14e56f6f10a17c0a1f6af7b8d8c5750276dd9ed8`) is deployed and operator-accepted. The Municipal Planning Workspace is removed from navigation and Explore entry points; its former URL redirects to Explore. Municipal Risk Profiler and the standalone boundary viewer remain available. No municipal data, historical analytics or saved browser drafts were deleted.
