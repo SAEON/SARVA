@@ -62,5 +62,40 @@ class BlueGreenTest(unittest.TestCase):
     def test_reload_failure_restores_original(self): self.exercise('reload-fail')
     def test_https_failure_restores_original(self): self.exercise('https-fail')
 
+class ImagePreservationTest(unittest.TestCase):
+    def test_original_image_is_pinned_without_snapshot(self):
+        calls = []
+        def run(*args, **kwargs):
+            calls.append(args)
+            return 'sha256:original' if '{{.Image}}' in args else 'sha256:pinned'
+        with patch.object(deploy, 'run', run):
+            self.assertEqual(deploy.preserve_frontend_image('frontend', 'rollback'), 'original image')
+        self.assertFalse(any(args[:2] == ('docker', 'commit') for args in calls))
+
+    def test_missing_image_recovers_only_running_unmounted_frontend(self):
+        calls = []
+        def run(*args, **kwargs):
+            calls.append(args)
+            if args[:2] == ('docker', 'tag'):
+                raise deploy.subprocess.CalledProcessError(1, args)
+            if '{{.Image}}' in args: return 'sha256:missing'
+            if '{{.State.Running}}' in args: return 'true'
+            if '{{json .Mounts}}' in args: return '[]'
+            if args[:2] == ('docker', 'inspect'): return 'frontend'
+            return 'sha256:recovered'
+        with patch.object(deploy, 'run', run):
+            self.assertEqual(deploy.preserve_frontend_image('frontend', 'rollback'), 'recovered container snapshot')
+        self.assertIn(('docker', 'commit', '--pause=false', 'frontend', 'rollback'), calls)
+
+    def test_mounted_frontend_refuses_snapshot(self):
+        def run(*args, **kwargs):
+            if args[:2] == ('docker', 'tag'): raise deploy.subprocess.CalledProcessError(1, args)
+            if '{{.Image}}' in args: return 'sha256:missing'
+            if '{{.State.Running}}' in args: return 'true'
+            if '{{json .Mounts}}' in args: return '[{"Destination":"/usr/share/nginx/html"}]'
+            return 'frontend'
+        with patch.object(deploy, 'run', run), self.assertRaises(RuntimeError):
+            deploy.preserve_frontend_image('frontend', 'rollback')
+
 if __name__ == '__main__':
     unittest.main()
