@@ -1,3 +1,4 @@
+import { SUBMIT_DATA_URL } from "../config/contributeData";
 import DeploymentRibbon from "./DeploymentRibbon";
 import { exploreNavigation } from "../config/exploreNavigation";
 import {trackInteraction} from '../config/analyticsInteraction';
@@ -32,7 +33,7 @@ const fallbackNav = [
         items: [
             { label: "Search SAEON Data", to: "/search" },
             { label: "Supporting Data", to: "/?supportingData=true" },
-            { label: "Submit Data", href: "https://docs.google.com/forms/d/1bxnefRblVoQ8hpJJx_KL1nzeZHQfEK-QKVCxoPIXnAU/viewform?edit_requested=true", external: true },
+            { label: "Submit Data", href: SUBMIT_DATA_URL, external: true },
             { label: "Terrestrial Observations Monitor", href: "https://observationsmonitor.saeon.ac.za", external: true },
         ],
     },
@@ -66,7 +67,7 @@ const fallbackNav = [
         items: [
             { label: "Help & Training", to: "/resources?search=training" },
             { label: "Data Science Lab", href: DATA_SCIENCE_LAB_URL, external: true },
-            { label: "Contribute Data", href: "https://docs.google.com/forms/d/1bxnefRblVoQ8hpJJx_KL1nzeZHQfEK-QKVCxoPIXnAU/viewform?edit_requested=true", external: true },
+            { label: "Contribute Data", href: SUBMIT_DATA_URL, external: true },
             { label: "Communities of Practice", to: "/about" },
             { label: "Contact SARVA", to: "/about" },
         ],
