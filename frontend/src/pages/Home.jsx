@@ -798,6 +798,7 @@ export default function Home() {
     const [supportingInstitute, setSupportingInstitute] = useState("");
     const [supportingKeyword, setSupportingKeyword] = useState("");
     const mapSectionRef = useRef(null);
+    const [showAllMonitoring, setShowAllMonitoring] = useState(false);
     useEffect(() => {
         if (location.hash !== '#risk-map') return;
         const frame = requestAnimationFrame(() => {
@@ -1940,13 +1941,13 @@ export default function Home() {
                     <article className="sarva-panel">
                         <div className="sarva-panel__head">
                             <h2>Updates & Monitoring</h2>
-                            <Link to="/overview">View all</Link>
+                            <button type="button" aria-expanded={showAllMonitoring} aria-controls="monitoring-updates" onClick={() => setShowAllMonitoring(value => !value)}>{showAllMonitoring ? "Show highlights" : "Show all updates"}</button>
                         </div>
-                        <ul className="sarva-alerts">
-                            {highlightItems.map((alert) => (
+                        <ul id="monitoring-updates" className="sarva-alerts">
+                            {(showAllMonitoring ? updatePanelItems : highlightItems).map((alert) => (
                                 <li key={alert.id}>
                                     <span className={alertSeverityClass(alert.severity)}>{alert.label.slice(0, 1)}</span>
-                                    <strong>{alert.title}</strong>
+                                    <strong>{externalAlertUrl(alert.href) ? <a href={externalAlertUrl(alert.href)} target="_blank" rel="noopener noreferrer">{alert.title}</a> : alert.title}</strong>
                                     <small>
                                         {alert.kind === "update"
                                             ? `${alert.category || "Update"} | ${formatAlertDate(alert.date)} | ${alert.source}`
