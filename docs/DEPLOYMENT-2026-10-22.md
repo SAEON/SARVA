@@ -1,5 +1,13 @@
 # SARVA production deployment, 22 October 2026
 
+## Simplified privacy notice production acceptance 28 October 2026
+
+PR #25 (merge `ca1fdad6f963c3838cb57c01feb71b61ea78758f`) is deployed and operator-accepted. The notice uses short sections with expandable details, retains accurate account/passkey and account-linked analytics disclosures, and adds the SAEON Catalogue general enquiry contact. How we use analytics precedes the collapsed Manage your analytics preference control. Tracking defaults, opt-out behavior and the review-in-progress status are unchanged.
+
+The operator confirmed all deployment checks passed, the privacy notice looks good, password and passkey browser login both work, and DS Lab still works. Only SARVA frontend was rebuilt/recreated. No migration, backend deployment, authentication/session configuration change or DS Lab update was required. The earlier live assignment error was subsequently reported working by the operator; no assignment code fix was included in this release.
+
+A before-privacy-simplification frontend rollback image was operator-confirmed saved; exact timestamp pending verification. Cleanup is **pending operator execution and verification**. Retain the latest verified frontend rollback, running images and the most recent backend rollback (combined-weather-20261027-210825); remove only verified older frontend rollback tags for this release. Preserve databases, volumes, backups, build cache and DS Lab images/services. This acceptance is based on operator checks and browser confirmation, not an independent production audit.
+
 ## Combined risk weather summary production acceptance 27 October 2026
 
 PR #24 (merge `18e4c27eb565954f5ace97d6ab8f0bf979581475`) is deployed and operator-accepted. The main card is titled Combined risk and shows maximum temperature, daily rainfall and maximum wind speed together for one selected forecast location/date, without a combined numerical score. Forecast date and refresh time are separate. The experimental notice and official SAWS link remain. This supersedes the main-signal-only presentation of PR #23. Internal screening still selects the location; this is not a national summary or a newly validated risk assessment.
