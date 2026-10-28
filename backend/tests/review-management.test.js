@@ -140,3 +140,25 @@ test('assignment rollback failures still return JSON and discard the broken conn
  assert.match((await response.json()).message,/Refresh the issue/);
  assert.deepEqual((await detail(admin)).issue,before);
 });
+
+
+test('POST assignment uses the same permissions, revisions and audit trail as PATCH',async()=>{
+ let issue=(await detail(admin2)).issue;
+ const body={revision:issue.revision,assignedTo:String(admin)};
+ assert.equal((await call(null,'/'+id+'/assignment','POST',body)).status,401);
+ assert.equal((await call(owner,'/'+id+'/assignment','POST',body)).status,403);
+ assert.equal((await call(admin2,'/'+id+'/assignment','POST',{...body,assignedTo:owner})).status,400);
+ assert.equal((await call(admin2,'/'+id+'/assignment','POST',body)).status,200);
+ const saved=await detail(admin2);assert.equal(String(saved.issue.assigned_to),String(admin));
+ const event=(await pool.query("SELECT actor_user_id,changes FROM sarva.review_issue_event WHERE issue_id=$1 AND event_type='assigned' ORDER BY id DESC LIMIT 1",[id])).rows[0];
+ assert.equal(String(event.actor_user_id),String(admin2));assert.equal(String(event.changes.after.assigned_to),String(admin));
+ assert.equal((await call(admin2,'/'+id+'/assignment','POST',body)).status,409);
+ const before=(await detail(admin2)).issue;
+ assert.equal((await call(admin2,'/'+id+'/assignment','POST',{revision:before.revision,assignedTo:null},'/failure')).status,500);
+ assert.deepEqual((await detail(admin2)).issue,before);
+ assert.equal((await call(admin2,'/'+id+'/assignment','PATCH',{revision:before.revision,assignedTo:null})).status,200);
+ assert.equal((await detail(admin2)).issue.assignment_status,'Unassigned');
+ issue=(await detail(admin2)).issue;
+ const unavailable=await call(admin2,'/'+id+'/assignment','POST',{revision:issue.revision,assignedTo:admin},'/unavailable');
+ assert.equal(unavailable.status,503);assert.match(unavailable.headers.get('content-type'),/application\/json/);
+});
