@@ -337,3 +337,12 @@ Cleanup completed, confirmed by the operator after the supplied procedure. Verif
 ## POST-only update actions accepted, 28 October 2026
 
 PR #46 deployed POST review/resolution and all remaining update actions, removing backend PATCH routes as requested. The operator confirmed working after backend update and staged frontend switch to 8091. No schema migration or auth configuration change; DS Lab containers were not redeployed. Latest frontend rollback: sarva-frontend:rollback-bluegreen-20261028-134707. Cleanup is complete, confirmed by the operator. Latest rollback pair retained: sarva-frontend:rollback-bluegreen-20261028-134707 and sarva-backend:rollback-post-updates-20261028-154644. Six older/duplicate tags were removed; both frontend slots, backup files, volumes and DS Lab images were retained, and build cache was not pruned. See [POST-only deployment and acceptance](POST-ONLY-UPDATES.md).
+
+
+## About SARVA homepage image accepted, 28 October 2026
+
+PR #47 merged as ee3e7234530cb092e54a795970c942ced2709758. The homepage About card now uses a responsive image at its natural aspect ratio instead of a fixed-height background crop. Local lint/build/privacy checks passed and browser verification confirmed the full 2500×1112 source loaded proportionally.
+
+The operator prepared on 8090 while live stayed on 8091 and confirmed completion after switch/browser-test instructions. Backup: /var/backups/sarva-frontend-bluegreen/20261028-135643; rollback: sarva-frontend:rollback-bluegreen-20261028-135643; candidate: dde53db2142611189bee6197e7074313dea9050b4e5138f0a5167f45109f946f. No separate final per-check terminal/browser output was supplied. Frontend-only change; backend, database, authentication configuration and DS Lab were not redeployed.
+
+Cleanup is pending latest rollback verification/execution. Retain both frontend slots, latest frontend rollback, backend rollback images, backup files, DS Lab images and database volumes.
