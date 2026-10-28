@@ -96,7 +96,8 @@ export function createReviewIssuesRouter(db=pool){
   }catch(error){await client.query('ROLLBACK');res.status(error.status||500).json({message:error.status?error.message:'Unable to add comment'});}finally{client.release();}
  });
  // Owner/admin content changes preserve the review decision and append history.
- router.patch('/review/issues/:id/assignment',limit,async(req,res)=>{
+ router.route('/review/issues/:id/assignment').post(limit,assignIssue).patch(limit,assignIssue);
+ async function assignIssue(req,res){
   if(!req.reviewUser.isAdmin)return res.status(403).json({message:'Only administrators can assign reports'});
   const b=req.body||{};
   if(!isId(req.params.id)||!Number.isSafeInteger(b.revision)||b.revision<1||(b.assignedTo!==null&&!isId(b.assignedTo))||Object.keys(b).some(k=>!['revision','assignedTo'].includes(k)))return res.status(400).json({message:'Choose an active administrator or Unassigned'});
@@ -121,7 +122,7 @@ export function createReviewIssuesRouter(db=pool){
    if(!error.status)console.error('Issue assignment failed',{stage,code:error.code || 'UNEXPECTED'});
    res.status(error.status || (stage==='connect'?503:500)).json({message:error.status?error.message:'Unable to save assignment. Refresh the issue before trying again.'});
   }finally{if(client)client.release(rollbackFailed?new Error('Assignment rollback failed'):undefined);}
- });
+ }
  router.patch('/review/issues/:id/content',limit,async(req,res)=>{
   const b=req.body||{};let pagePath,contact;
   try{contact=reviewContact(b);}catch{return res.status(400).json({message:'Enter valid optional contact details'});}
