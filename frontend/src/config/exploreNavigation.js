@@ -1,5 +1,7 @@
 export function exploreNavigation(groups) {
-    return groups.map(group => ({...group, items: (group.items || []).filter(item => {
+    return groups.map(group => /^explore$/i.test(String(group.label || "").trim())
+        ? {...group, to:"/explore", items:[]}
+        : ({...group, items: (group.items || []).filter(item => {
         const path = String(item.to || item.href || "").split(/[?#]/)[0];
         return !path.endsWith("/municipal-planning-workspace")
             && !/ocean data explorer/i.test(item.label || "")
