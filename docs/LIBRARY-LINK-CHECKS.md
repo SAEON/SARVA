@@ -17,3 +17,11 @@ The calendar expression was validated locally. Full service dependency validatio
 ## Validation
 
 Mock HTTP tests cover 200, redirects, redirects to 404, HEAD fallback, 401/403/405/429/500/503, network failure and invalid schemes. An isolated database dry-run test verifies more than 250 candidates are included without status writes. Frontend lint and backend/frontend builds are checked locally; no authentication configuration or DS Lab changes.
+
+## Production installation and acceptance, 28 October 2026
+
+PR #49 merged as f9492e7aa73b4150a8f1ed0896504933d6d7c463. Backend/frontend images deployed; candidate prepared on 8090 while live remained on 8091, then switched to 8090. Backup: /var/backups/sarva-frontend-bluegreen/20261028-143427; frontend rollback: sarva-frontend:rollback-bluegreen-20261028-143427; candidate: fd0cfba23becd0f2d25707227a8eb9216b355e3d31e9f7c105b2b39708c56006. Production dry run found 98 candidates without writes. Units were installed and systemd-analyze verify passed on production.
+
+Manual service run 16:35:28–16:38:02 SAST completed successfully: requested/checked/updated 98 (66 resources, 32 policies); 49 active, 20 redirected, 11 broken, 18 unchecked/Not verified, 0 missing, 0 errors. The operator then confirmed completion of the timer-enable and site-check procedure. Monthly checks are enabled for the first day at 02:00 SAST with up to 15 minutes jitter. No actual next-trigger timestamp output was supplied. This records installation/manual success, not proof of a future scheduled run. No separate production GBIF/EarthExplorer per-record or password/passkey browser result was supplied.
+
+Both sites returned HTTP 200 in the supplied deployment output, and the final procedure included site checks. DS Lab was not redeployed. Cleanup is pending latest frontend/backend rollback verification. Preserve both frontend slots, database/configuration backups, timer units and database volumes.

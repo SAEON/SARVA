@@ -355,3 +355,8 @@ PR #48 merged as 195c87422533d277f9660cdfeee62bbd81798804. Removed the final Upd
 The operator prepared on 8091 while live stayed on 8090 and confirmed completion after switch/browser-test instructions. Backup: /var/backups/sarva-frontend-bluegreen/20261028-141953; rollback: sarva-frontend:rollback-bluegreen-20261028-141953; candidate: a5a45dcae97b69ad077ecaebdecf169314cf20c860e8d5c306f2531a642fdb9d. No separate per-check final output was supplied. Frontend-only change; backend, database and DS Lab were not redeployed.
 
 Cleanup is pending latest rollback verification/execution. Preserve both frontend slots, newest frontend rollback, backend rollback images, backup files, DS Lab images and database volumes.
+
+
+## Monthly library link verification installed, 28 October 2026
+
+PR #49 deployed the corrected link checker and Not verified label. Production manual service run checked/updated all 98 active resource/policy links: 49 active, 20 redirected, 11 broken, 18 not verified, no errors. The operator confirmed enabling the monthly timer after successful manual completion. Schedule: first day of each month at 02:00 SAST plus up to 15 minutes jitter. Backend/frontend deployed through the staged workflow; DS Lab was not redeployed. Latest frontend rollback: sarva-frontend:rollback-bluegreen-20261028-143427. Cleanup is pending verification of the pre-release backend rollback. See [link-check evidence and operations](LIBRARY-LINK-CHECKS.md).
