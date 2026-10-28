@@ -156,17 +156,37 @@ def rollback(data):
     save_state(data)
     print('ROLLED BACK; both frontend containers retained.')
 
+def deployment_notice(active):
+    now = datetime.datetime.now(datetime.timezone.utc)
+    payload = dict(active=active, startedAt=now.isoformat(), expiresAt=(now + datetime.timedelta(minutes=45)).isoformat())
+    # The same backend serves this public, non-sensitive marker to both slots.
+    # Atomic write, no secrets or internal deployment state exposed.
+    javascript = "const fs=require('fs');const p='/app/public/deployment-status.json';let data='';process.stdin.on('data',c=>data+=c);process.stdin.on('end',()=>{JSON.parse(data);fs.writeFileSync(p+'.tmp',data,{mode:0o644});fs.renameSync(p+'.tmp',p);});"
+    subprocess.run(['docker','exec','-i','sarva-backend','node','-e',javascript],
+                   cwd=PROJECT, input=json.dumps(payload), text=True, check=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=['prepare', 'switch', 'rollback', 'status'])
+    parser.add_argument('action', choices=['build', 'prepare', 'switch', 'rollback', 'status', 'notice-on', 'notice-off'])
     args = parser.parse_args()
     if os.geteuid() != 0 or socket.gethostname().split('.')[0].lower() != 'ulwsarvadsl01':
         raise SystemExit('Run with sudo on ULWSARVADSL01 only')
     STATE.parent.mkdir(parents=True, mode=0o700, exist_ok=True)
     with (STATE.parent / 'lock').open('a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        if args.action == 'prepare':
-            prepare()
+        if args.action in ('build', 'prepare'):
+            deployment_notice(True)
+            try:
+                if args.action == 'build':
+                    run('docker', 'compose', 'build', 'frontend')
+                else:
+                    prepare()
+            except BaseException:
+                deployment_notice(False)
+                raise
+        elif args.action in ('notice-on', 'notice-off'):
+            deployment_notice(args.action == 'notice-on')
         elif args.action == 'status':
             print('Nginx frontend port:', active_port(CONFIG.read_text()))
             if STATE.exists():
@@ -174,7 +194,10 @@ def main():
                 print(json.dumps({key: value for key, value in data.items() if key not in ('original', 'switched')}, indent=2))
         else:
             data = json.loads(STATE.read_text())
-            (switch if args.action == 'switch' else rollback)(data)
+            try:
+                (switch if args.action == 'switch' else rollback)(data)
+            finally:
+                deployment_notice(False)
 
 if __name__ == '__main__':
     main()

@@ -1,3 +1,4 @@
+import DeploymentRibbon from "./DeploymentRibbon";
 import { exploreNavigation } from "../config/exploreNavigation";
 import {trackInteraction} from '../config/analyticsInteraction';
 import DevelopmentNotice from "./DevelopmentNotice.jsx";
@@ -227,6 +228,7 @@ export default function Header() {
     return (
         <header className="sarva-header" ref={rootRef}>
             <AnalyticsTracker />
+            <DeploymentRibbon />
             <DevelopmentNotice />
             <PreviewAccess />
             <div className="sarva-header__inner">
