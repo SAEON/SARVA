@@ -305,3 +305,12 @@ PR #42 merged as 78589327b914b791bfec2bd01c2b2152607bf65b. Community now contain
 The replacement frontend was prepared on 8091 while 8090 remained live, then switched. Backup: /var/backups/sarva-frontend-bluegreen/20261028-123730; rollback: sarva-frontend:rollback-bluegreen-20261028-123730; candidate: 8bffe086ce730d6477dd6ff4cfc167b5cfc96232fbbd57ec540aac56f82cb1a3. The operator supplied successful switch checks, including protected review/users API denial and DS Lab HTTP 200, and subsequently requested resolution/cleanup. No separate password/passkey browser result was provided for this frontend-only change. Backend, database and DS Lab were not redeployed.
 
 Cleanup completed with supplied production evidence. Older/duplicate frontend rollback tags were removed without force; sarva-frontend:rollback-bluegreen-20261028-123730 was verified and retained. Both frontend slots and backend remained running; backend rollback images, backup files, DS Lab images and volumes were untouched. Nginx validation passed and SARVA/DS Lab both returned HTTP 200. Final Docker report: 28 images (19 active), image storage 5.718 GB, five volumes all active; build cache 14.61 GB remained unpruned. The resource-order backend rollback remains retained; no new password/passkey browser result is inferred from these HTTP checks.
+
+
+## Monitoring navigation and Overview accepted, 28 October 2026
+
+PR #43 merged as 1bc09cdddfac1eaaed764b21ba772d75b29d21bb. Updates & Monitoring now expands in place and links update titles to source URLs. The Explore weather-model question was removed, and legacy /overview redirects to /#risk-map without displaying health JSON. The /api/health endpoint remains intact.
+
+The operator prepared on 8090 while live stayed on 8091, then confirmed all working after switch and browser checks, including monitoring expansion/source links, Overview browser redirect, removed Explore question and login/DS Lab checks. Backup: /var/backups/sarva-frontend-bluegreen/20261028-130531; rollback: sarva-frontend:rollback-bluegreen-20261028-130531; candidate: 7ee8f63ad0db6f9d394b7e6ef9a19d895380cbd6dfd08eb2867f15d7a1f786d3. Frontend-only rollout; backend, database and DS Lab were not redeployed.
+
+Cleanup is pending verification/execution. Retain both frontend slots and the latest frontend rollback, backend rollback images, all backup files, database volumes and DS Lab images.
