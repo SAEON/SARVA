@@ -100,8 +100,10 @@ export function createReviewIssuesRouter(db=pool){
   if(!req.reviewUser.isAdmin)return res.status(403).json({message:'Only administrators can assign reports'});
   const b=req.body||{};
   if(!isId(req.params.id)||!Number.isSafeInteger(b.revision)||b.revision<1||(b.assignedTo!==null&&!isId(b.assignedTo))||Object.keys(b).some(k=>!['revision','assignedTo'].includes(k)))return res.status(400).json({message:'Choose an active administrator or Unassigned'});
-  const client=await db.connect();
+  let client,rollbackFailed=false;
+  let stage="connect";
   try{
+   client=await db.connect();stage="transaction";
    await client.query('BEGIN');const actor=await freshActor(client,req.reviewUser.id);if(!actor.isAdmin)throw fail(403,'Administrator access required');
    const issue=(await client.query('SELECT * FROM sarva.review_issue WHERE id=$1 FOR UPDATE',[req.params.id])).rows[0];visible(issue,actor);
    if(issue.revision!==b.revision)throw fail(409,'This report changed. Refresh before assigning.');
@@ -114,7 +116,11 @@ export function createReviewIssuesRouter(db=pool){
    const changes={before:{assigned_to:issue.assigned_to},after:{assigned_to:target?.id || null,assignee_name:target?.display_name || null}};
    await client.query(`INSERT INTO sarva.review_issue_event(issue_id,actor_user_id,event_type,note,changes) VALUES($1,$2,'assigned',$3,$4)`,[issue.id,actor.id,target?'Assigned to an administrator':'Assignment removed',JSON.stringify(changes)]);
    await client.query('COMMIT');res.json({message:target?'Issue assigned':'Issue unassigned'});
-  }catch(error){await client.query('ROLLBACK');res.status(error.status||500).json({message:error.status?error.message:'Unable to assign issue'});}finally{client.release();}
+  }catch(error){
+   if(client){try{await client.query('ROLLBACK');}catch{rollbackFailed=true;}}
+   if(!error.status)console.error('Issue assignment failed',{stage,code:error.code || 'UNEXPECTED'});
+   res.status(error.status || (stage==='connect'?503:500)).json({message:error.status?error.message:'Unable to save assignment. Refresh the issue before trying again.'});
+  }finally{if(client)client.release(rollbackFailed?new Error('Assignment rollback failed'):undefined);}
  });
  router.patch('/review/issues/:id/content',limit,async(req,res)=>{
   const b=req.body||{};let pagePath,contact;
