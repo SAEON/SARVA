@@ -3984,3 +3984,48 @@ body {
 @media (max-width: 480px) {
     .sarva-dash__heroHighlightGrid button > .sarva-combinedWeatherValues { grid-template-columns: 1fr; }
 }
+
+/* Separate a single-place outlook from independent model-window maxima. */
+.sarva-forecastGroup { margin-top: 20px; min-width: 0; }
+.sarva-forecastGroup > header { margin: 0 0 12px; }
+.sarva-forecastGroup > header h3 { margin: 0 0 6px; font-size: 18px; color: #fffdf7; }
+.sarva-forecastGroup > header p { margin: 0; font-size: 13px; line-height: 1.5; color: #ece8de; }
+.sarva-forecastGroup--highest-values { border-top: 1px solid rgba(255,253,247,.4); padding-top: 20px; }
+.sarva-forecastGroup--highest-values .sarva-dash__heroHighlightGrid > button:first-child {
+    grid-column: auto; min-height: 132px; background: rgba(16,32,27,.48);
+}
+.sarva-forecastGroup--selected-location .sarva-dash__heroHighlightGrid { grid-template-columns: 1fr; }
+.sarva-forecastGroup--selected-location .sarva-dash__heroHighlightGrid > button:first-child { grid-column: auto; }
+.sarva-dash__heroHighlightGrid button > .sarva-forecastPlaceDate {
+    display: flex; flex-direction: column; gap: 5px;
+    margin: 12px 0; padding: 10px 0;
+    border-top: 1px solid rgba(255,253,247,.25); border-bottom: 1px solid rgba(255,253,247,.25);
+    color: #fffdf7;
+}
+.sarva-forecastPlace { font-size: 16px; font-weight: 700; line-height: 1.3; }
+.sarva-forecastPlaceDate .sarva-forecastDate { font-size: 13px; line-height: 1.4; }
+
+/* Compact cards: shared warning/source above, detailed explanations in fx. */
+.sarva-forecastGroup { margin-top: 12px; }
+.sarva-forecastGroup > header { margin-bottom: 8px; }
+.sarva-forecastGroup > header h3 { font-size: 16px; margin-bottom: 3px; }
+.sarva-forecastGroup > header p { font-size: 12px; line-height: 1.35; }
+.sarva-forecastGroup--highest-values { padding-top: 12px; }
+.sarva-forecastGroup .sarva-dash__heroHighlightGrid > button {
+    min-height: 0; padding: 10px; justify-content: flex-start; gap: 6px;
+}
+.sarva-forecastGroup .sarva-dash__heroHighlightGrid > button:first-child { min-height: 0; }
+.sarva-forecastGroup .sarva-dash__heroHighlightGrid button > .sarva-forecastPlaceDate {
+    margin: 0; padding: 5px 0; gap: 3px; border-top: 0;
+}
+.sarva-forecastGroup .sarva-forecastPlace { font-size: 13px; }
+.sarva-forecastGroup .sarva-forecastDate { font-size: 12px; font-weight: 600; }
+.sarva-forecastGroup .sarva-dash__heroHighlightGrid strong { font-size: 23px; margin: 2px 0; }
+.sarva-forecastGroup .sarva-dash__heroHighlightGrid em {
+    font-size: 10px; font-weight: 500; padding: 0; border: 0; background: none; margin-top: auto;
+}
+.sarva-forecastGroup .sarva-dash__heroHighlightGrid .sarva-highlightAction {
+    padding-top: 5px; margin-top: 2px; font-size: 11px;
+}
+.sarva-forecastGroup .sarva-dash__heroHighlightGrid button > .sarva-combinedWeatherValues { margin: 2px 0; gap: 8px; }
+.sarva-forecastGroup--selected-location .sarva-forecastPlaceDate { flex-direction: row !important; flex-wrap: wrap; gap: 4px 12px !important; align-items: baseline; }

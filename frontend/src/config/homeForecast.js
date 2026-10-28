@@ -16,10 +16,10 @@ export function visibleHomeForecasts(highlights, now = new Date()) {
         && validDate(item.forecastDate) && item.forecastDate >= today).map(explainHomeForecast);
 }
 
-export function formatForecastDate(value) {
+export function formatForecastDate(value, compact = false) {
     if (!validDate(value)) return "Date unavailable";
     return new Intl.DateTimeFormat("en-ZA", {
-        timeZone: "Africa/Johannesburg", day: "numeric", month: "long", year: "numeric",
+        timeZone: "Africa/Johannesburg", day: "numeric", month: compact ? "short" : "long", year: "numeric",
     }).format(new Date(`${value}T12:00:00Z`));
 }
 
