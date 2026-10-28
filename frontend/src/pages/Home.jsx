@@ -1308,19 +1308,36 @@ export default function Home() {
                                     </button>
                                 </div>
                             </div>
-                            <ForecastNotice />
+                            <ForecastNotice compact />
+                            {[
+                                {
+                                    id: "selected-location",
+                                    title: "Selected location weather outlook",
+                                    description: "One place and day, selected by SARVA’s experimental screening calculation.",
+                                    items: heroHighlights.filter(highlight => highlight.combinedWeatherSummary),
+                                },
+                                {
+                                    id: "highest-values",
+                                    title: "Highest modelled values",
+                                    description: "Across the available model window. Places and dates differ between cards.",
+                                    items: heroHighlights.filter(highlight => !highlight.combinedWeatherSummary),
+                                },
+                            ].filter(group => group.items.length > 0).map(group => (
+                            <section className={`sarva-forecastGroup sarva-forecastGroup--${group.id}`} key={group.id} aria-labelledby={`forecast-group-${group.id}`}>
+                            <header><h3 id={`forecast-group-${group.id}`}>{group.title}</h3><p>{group.description}</p></header>
                             <div className="sarva-dash__heroHighlightGrid">
-                                {heroHighlights.slice(0, 5).map((highlight) => (
+                                {group.items.map((highlight) => (
                                     <button
                                         type="button"
                                         key={highlight.label}
                                         onClick={() => openHighlightLayer(highlight)}
                                         aria-label={`Open ${highlight.label} on the map`}
                                     >
-                                        <small>
-                                            <b className={`is-${highlight.severityKey || "unknown"}`}>{highlight.tag || highlight.severity}</b>
-                                            {highlight.label}
-                                        </small>
+                                        {!highlight.combinedWeatherSummary && <small>{highlight.label.replace("Modelled ", "").replace("Experimental fire-weather score", "Fire-weather score")}</small>}
+                                        <span className="sarva-forecastPlaceDate">
+                                            <span className="sarva-forecastPlace">{highlight.location || "Location unavailable"}</span>
+                                            <span className="sarva-forecastDate">{formatForecastDate(highlight.forecastDate, true)} · SAST</span>
+                                        </span>
                                         {highlight.combinedWeatherSummary && Array.isArray(highlight.measurements) ? (
                                             <span className="sarva-combinedWeatherValues">
                                                 {highlight.measurements.map(measurement => (
@@ -1331,17 +1348,16 @@ export default function Home() {
                                                 ))}
                                             </span>
                                         ) : <strong>{highlight.value}</strong>}
-                                        {highlight.explainer && <i>{highlight.explainer}</i>}
-                                        <p>{highlight.location}</p>
-                                        <p className="sarva-forecastDate">Forecast for: {formatForecastDate(highlight.forecastDate)} (SAST)</p>
-                                        <span>{highlight.source}</span>
+                                        <span className="sarva-forecastCardCredit">{highlight.mapMode === "fire-risk" && !highlight.combinedWeatherSummary ? "SARVA index · ECMWF data" : "ECMWF IFS · SARVA summary"}</span>
                                         <em>
-                                            {highlight.updatedAtLabel ? `Data refreshed: ${highlight.updatedAtLabel}` : "Data refresh time unavailable"}
+                                            {highlight.updatedAtLabel ? `Updated: ${highlight.updatedAtLabel}` : "Data refresh time unavailable"}
                                         </em>
                                         <span className="sarva-highlightAction">View on map <b aria-hidden="true">→</b></span>
                                     </button>
                                 ))}
                             </div>
+                            </section>
+                            ))}
                         </aside>
                     )}
                 </section>
