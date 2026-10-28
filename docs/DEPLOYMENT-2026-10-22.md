@@ -296,3 +296,12 @@ PR #41 merged as 6ae07710233a0879be6b1493ac768bab2fa3da91. Resources requests pu
 The operator built backend/frontend, updated the backend, refreshed both frontend proxies, prepared on 8090 and switched from 8091. Backup: /var/backups/sarva-frontend-bluegreen/20261028-122426; rollback: sarva-frontend:rollback-bluegreen-20261028-122426; candidate: 8fdaa5c8af77bf71404d8977a7602caa4f22b337f623fc6924a0963beba70b84. Supplied output confirms Nginx validation; SARVA home/resources/health/version/passkey page and DS Lab HTTP 200; protected anonymous auth/review APIs 401 and users API 403. After browser-test instructions, the operator confirmed all working, including report order, pagination/filters and password/passkey login checks. DS Lab containers were not redeployed.
 
 Cleanup is authorized but pending verification of the pre-release backend rollback and latest frontend rollback. Keep both frontend slots, backup files, database volumes and DS Lab images. Automatic frontend reload across versions was not separately confirmed.
+
+
+## Community menu and contact deployed, 28 October 2026
+
+PR #42 merged as 78589327b914b791bfec2bd01c2b2152607bf65b. Community now contains only Data Science Lab and Contact SARVA, for API/cached and fallback navigation alike. DS Lab opens the configured lab URL; /contact recommends registration/sign-in then the user icon → Issues & feedback, with datascience@saeon.nrf.ac.za as an alternative contact. Other Community items and duplicate Communities of Practice were removed. The contribution form remains in the Data menu.
+
+The replacement frontend was prepared on 8091 while 8090 remained live, then switched. Backup: /var/backups/sarva-frontend-bluegreen/20261028-123730; rollback: sarva-frontend:rollback-bluegreen-20261028-123730; candidate: 8bffe086ce730d6477dd6ff4cfc167b5cfc96232fbbd57ec540aac56f82cb1a3. The operator supplied successful switch checks, including protected review/users API denial and DS Lab HTTP 200, and subsequently requested resolution/cleanup. No separate password/passkey browser result was provided for this frontend-only change. Backend, database and DS Lab were not redeployed.
+
+Cleanup is authorized but pending verification of the newest rollback image. Keep both frontend slots, the latest frontend and backend rollback images, all backup files, DS Lab images and database volumes. The resource-order release backend rollback must also remain available.
