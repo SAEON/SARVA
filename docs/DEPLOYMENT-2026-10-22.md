@@ -268,3 +268,12 @@ DS Lab images and database volumes.
 ## Public issue assignment compatibility accepted, 28 October 2026
 
 PRs #34 and #35 hardened assignment error responses and changed the current frontend to POST, preserving the same admin checks, conflict protection, audit history and legacy PATCH route. The operator confirmed assignment now works from a Mac outside VPN after the staged frontend rollout to 8090. The earlier public PATCH response was HTML 403; the precise filtering rule remains unconfirmed. No schema migration or DS Lab changes. Cleanup is pending and both frontend slots plus all recovery images must be retained. See [assignment evidence and acceptance limits](ISSUE-ASSIGNMENT-HARDENING.md).
+
+
+## Homepage Get Involved links accepted, 28 October 2026
+
+PR #37 merged as 7b8fb22d49dcbd2292c8c9eb395c93b0692e9ec8. Contribute Data now uses the shared Submit Data menu URL, Training & Capacity Building uses the configured DS Lab URL, and Join a Community was removed. Frontend lint, Docker build and privacy regression tests passed locally.
+
+The production replacement was prepared on 8090 while 8091 remained active. Backup: /var/backups/sarva-frontend-bluegreen/20261028-104232; rollback tag: sarva-frontend:rollback-bluegreen-20261028-104232; candidate: 5971577c81d58cc9389e0b28702fb47fda15e06429d69ef394b89882d1d25ae4. The operator subsequently confirmed the live links work after the switch instructions. Backend, database and DS Lab containers were not redeployed.
+
+Cleanup is pending operator execution. Proposed cleanup is dangling images only; retain both frontend slots, all tagged rollback/recovery images, backups and volumes. No broad image or volume pruning, Docker restart, or assertion of new password/passkey browser testing is included in this acceptance.
