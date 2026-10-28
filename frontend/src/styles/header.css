@@ -212,6 +212,8 @@
     color: var(--link);
     text-decoration: none;
 
+    box-sizing: border-box;
+    height: 42px;
     min-height: 42px;
     display: inline-flex;
     align-items: center;
@@ -243,7 +245,9 @@
 /* Dropdown container */
 .sarva-nav__dropdown {
     position: relative;
-    padding-bottom: 9px;
+    display: flex;
+    align-items: center;
+    padding-bottom: 0;
 }
 
 /* Open state styling on the button */
