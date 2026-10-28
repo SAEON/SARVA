@@ -11,6 +11,8 @@ const token=(sub)=>{const data=Buffer.from(JSON.stringify({sub:String(sub),roles
 const app=express();app.use(express.json());app.use('/api',createReviewIssuesRouter());
 const failing={query:pool.query.bind(pool),connect:async()=>{const c=await pool.connect();return {release:()=>c.release(),query:(sql,args)=>String(sql).startsWith('INSERT INTO sarva.review_issue_event')?Promise.reject(Error('Synthetic audit failure')):c.query(sql,args)};}};
 app.use('/failure',createReviewIssuesRouter(failing));
+app.use('/unavailable',createReviewIssuesRouter({query:pool.query.bind(pool),connect:async()=>{throw Object.assign(Error('Synthetic unavailable pool'),{code:'TEST_UNAVAILABLE'});}}));
+app.use('/broken-rollback',createReviewIssuesRouter({query:pool.query.bind(pool),connect:async()=>({query:async()=>{throw Object.assign(Error('Synthetic failed transaction'),{code:'TEST_TRANSACTION'});},release:error=>{assert.ok(error);}})}));
 const server=app.listen(0,'127.0.0.1');await once(server,'listening');const base='http://127.0.0.1:'+server.address().port;
 async function call(user,path='',method='GET',body,root='/api'){return fetch(base+root+'/review/issues'+path,{method,headers:{'Content-Type':'application/json',...(user?{Authorization:'Bearer '+token(user)}:{})},...(body?{body:JSON.stringify(body)}:{})});}
 async function detail(user=owner){const response=await call(user,'/'+id);assert.equal(response.status,200);return (await response.json()).data;}
@@ -100,5 +102,41 @@ test('assignment rejects inactive admins and rolls back on history failure',asyn
  await pool.query('UPDATE sarva.app_user SET is_active=true WHERE id=$1',[admin2]);
  const before=(await detail(admin)).issue;
  assert.equal((await call(admin,'/'+id+'/assignment','PATCH',{revision,assignedTo:admin2},'/failure')).status,500);
+ assert.deepEqual((await detail(admin)).issue,before);
+});
+
+test('assignment connection failures return JSON and leave the report unchanged',async()=>{
+ const before=(await detail(admin)).issue;
+ const response=await call(admin,'/'+id+'/assignment','PATCH',{revision:before.revision,assignedTo:admin2},'/unavailable');
+ assert.equal(response.status,503);assert.match(response.headers.get('content-type'),/application\/json/);
+ assert.match((await response.json()).message,/Refresh the issue/);
+ assert.deepEqual((await detail(admin)).issue,before);
+});
+
+
+test('second administrator assigns, reloads, reassigns and unassigns another user report',async()=>{
+ const options=await(await call(admin2,'/assignment-options')).json();
+ assert.ok(options.data.admins.some(u=>String(u.id)===String(admin)));
+ let issue=(await detail(admin2)).issue;
+ let response=await call(admin2,'/'+id+'/assignment','PATCH',{revision:issue.revision,assignedTo:String(admin)});
+ assert.equal(response.status,200);assert.match(response.headers.get('content-type'),/application\/json/);
+ assert.ok(await response.json());
+ issue=(await detail(admin2)).issue;
+ assert.equal(String(issue.assigned_to),String(admin));
+ assert.equal(String((await detail(admin)).issue.assigned_to),String(admin));
+ response=await call(admin2,'/'+id+'/assignment','PATCH',{revision:issue.revision,assignedTo:String(admin2)});
+ assert.equal(response.status,200);await response.json();
+ issue=(await detail(admin2)).issue;assert.equal(String(issue.assigned_to),String(admin2));
+ response=await call(admin2,'/'+id+'/assignment','PATCH',{revision:issue.revision,assignedTo:null});
+ assert.equal(response.status,200);await response.json();
+ assert.equal((await detail(admin2)).issue.assignment_status,'Unassigned');
+});
+
+
+test('assignment rollback failures still return JSON and discard the broken connection',async()=>{
+ const before=(await detail(admin)).issue;
+ const response=await call(admin,'/'+id+'/assignment','PATCH',{revision:before.revision,assignedTo:admin2},'/broken-rollback');
+ assert.equal(response.status,500);assert.match(response.headers.get('content-type'),/application\/json/);
+ assert.match((await response.json()).message,/Refresh the issue/);
  assert.deepEqual((await detail(admin)).issue,before);
 });

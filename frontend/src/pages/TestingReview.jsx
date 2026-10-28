@@ -1,3 +1,4 @@
+import {readReviewResponse} from "../config/reviewResponse";
 import {Link} from "react-router-dom";
 import {useLocation} from 'react-router-dom';
 import {useEffect,useRef,useState} from 'react';
@@ -12,8 +13,8 @@ const statuses={open:'Open','in-review':'In review',resolved:'Resolved'};
 const priorities={low:'Low',normal:'Normal',high:'High'};
 const date=value=>new Date(value).toLocaleString('en-ZA',{timeZone:'Africa/Johannesburg',dateStyle:'medium',timeStyle:'short'})+' SAST';
 async function request(path,token,options={}){
- const response=await fetch(apiUrl('/api/review/issues'+path),{...options,headers:{'Content-Type':'application/json',Authorization:'Bearer '+token}});
- const body=await response.json();if(!response.ok)throw new Error(body.message || 'Unable to complete request');return body;
+ const response=await fetch(apiUrl('/api/review/issues'+path),{...options,cache:'no-store',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token}});
+ return readReviewResponse(response);
 }
 function Pick({label,value,onChange,options,disabled=false}){return <label className="ua-field">{label}<select value={value} onChange={e=>onChange(e.target.value)} disabled={disabled}>{Object.entries(options).map(([key,text])=><option key={key} value={key}>{text}</option>)}</select></label>;}
 export default function TestingReview(){
@@ -80,7 +81,7 @@ function IssueDetail({id,token,onClose,onChanged,reporter}){
   request('/assignment-options',token).then(result=>{if(alive)setAssignmentData(result.data);}).catch(()=>{if(alive)setAssignmentData({admins:[],error:'Unable to load administrators. Refresh detail to retry.'});});
   return()=>{alive=false;};
  },[token,data?.isAdmin,reload]);
- async function assignIssue(e){e.preventDefault();setBusy(true);setError('');try{await request('/'+id+'/assignment',token,{method:'PATCH',body:JSON.stringify({revision:data.issue.revision,assignedTo:assignment || null})});setNotice(assignment?'Issue assigned.':'Issue unassigned.');setReload(n=>n+1);onChanged();}catch(e){setError(e.message);}finally{setBusy(false);}}
+ async function assignIssue(e){e.preventDefault();if(busy)return;setBusy(true);setError('');setNotice('');try{await request('/'+id+'/assignment',token,{method:'PATCH',body:JSON.stringify({revision:data.issue.revision,assignedTo:assignment || null})});setNotice(assignment?'Issue assigned.':'Issue unassigned.');setReload(n=>n+1);onChanged();}catch(e){setError(e.message);}finally{setBusy(false);}}
  const issue=data?.issue;
  return <section ref={ref} className="ua-panel tr-detail" aria-label="Issue detail"><div className="ua-editor-heading"><h2>{issue?'#'+issue.id+' '+issue.title:'Issue #'+id}</h2><button onClick={onClose} disabled={busy}>Close details</button></div><button onClick={()=>setReload(n=>n+1)} disabled={busy||loading}>Refresh detail</button>{error&&<p role="alert" className="ua-error">{error}</p>}{notice&&<p role="status" className="ua-success">{notice}</p>}{loading?<p>Loading issue…</p>:issue&&<>
  <div className="tr-detail-actions">{!issue.deleted_at&&<><button disabled={busy} onClick={()=>{setEditing(true);setArchiveMode('');}}>Edit report</button><button className="tr-danger" disabled={busy} onClick={()=>{setArchiveMode('delete');setEditing(false);}}>Delete report</button>{data.isAdmin&&issue.status!=='resolved'&&<button className="ua-primary" disabled={busy} onClick={()=>{setReview(d=>({...d,status:'resolved'}));reviewRef.current?.scrollIntoView({block:'center'});reviewRef.current?.querySelector('textarea')?.focus();}}>Resolve issue</button>}</>}{issue.deleted_at&&<button disabled={busy} onClick={()=>setArchiveMode('restore')}>Restore report</button>}</div>
