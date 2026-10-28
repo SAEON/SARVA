@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from "react";
 import ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 
 import PageLoading from "./components/PageLoading.jsx";
 import RouteError from "./components/RouteError.jsx";
@@ -26,7 +26,6 @@ const AccountPasskeys = lazy(() => import("./pages/AccountPasskeys.jsx"));
 const UserAdmin = lazy(() => import("./pages/UserAdmin.jsx"));
 const DataHealth = lazy(() => import("./pages/DataHealth.jsx"));
 const MunicipalRiskProfiler = lazy(() => import("./pages/MunicipalRiskProfiler.jsx"));
-const MunicipalPlanningWorkspace = lazy(() => import("./pages/MunicipalPlanningWorkspace.jsx"));
 const MdbBoundaryPreview = lazy(() => import("./pages/MdbBoundaryPreview.jsx"));
 
 const router = createBrowserRouter([
@@ -120,11 +119,7 @@ const router = createBrowserRouter([
             },
             {
                 path: "/municipal-planning-workspace",
-                element: (
-                    <Suspense fallback={<PageLoading />}>
-                        <MunicipalPlanningWorkspace />
-                    </Suspense>
-                ),
+                element: <Navigate to="/explore" replace />,
             },
             {
                 path: "/mdb-2026-boundaries",

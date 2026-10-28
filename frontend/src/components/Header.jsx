@@ -38,7 +38,6 @@ const fallbackNav = [
         label: "Maps & Tools",
         items: [
             { label: "Municipal Risk Profiler", to: "/municipal-risk-profiler" },
-            { label: "Municipal Planning Workspace", to: "/municipal-planning-workspace" },
             { label: "Rainfall Risk Layers", to: "/#risk-map" },
             { label: "SARVA Atlas Gallery", href: "https://sarva.saeon.ac.za/atlas/", external: true },
             { label: "2017 Agriculture Census", href: "https://sarvamaps.saeon.ac.za/agri-census/", external: true },
@@ -102,7 +101,7 @@ export default function Header() {
 
     const nav = useMemo(() => {
         if (navResponse?.status === "ok" && Array.isArray(navResponse.data)) {
-            return navResponse.data;
+            return navResponse.data.map(group => ({...group, items: (group.items || []).filter(item => !String(item.to || item.href || "").split(/[?#]/)[0].endsWith("/municipal-planning-workspace"))}));
         }
 
         return fallbackNav;
