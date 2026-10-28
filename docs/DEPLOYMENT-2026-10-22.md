@@ -332,3 +332,8 @@ PR #45 merged as f6a28b0d54c795f536c7643fd19a6497f7a551ee. Removed the dropdown 
 The operator prepared the replacement on 8090 while live remained on 8091, then confirmed working after the supplied switch and admin browser/navigation/search/login/DS Lab checks. Backup: /var/backups/sarva-frontend-bluegreen/20261028-133457; rollback: sarva-frontend:rollback-bluegreen-20261028-133457; candidate: 806c176c6ab831aa2d91a7d24e049e087b121e616e9253d74ee01bf756f0d615. Frontend CSS only; backend, database and DS Lab were not redeployed.
 
 Cleanup completed, confirmed by the operator after the supplied procedure. Verified and retained sarva-frontend:rollback-bluegreen-20261028-133457 against the previous frontend slot (image prefix eedf38a6d6ee). Removed duplicate/older tags rollback-bluegreen-20261028-133438 and rollback-bluegreen-20261028-131514. The cleanup procedure included Nginx and SARVA/DS Lab HTTP checks; no separate final terminal output was supplied. Both frontend slots, backend rollback images, backup files, DS Lab images and database volumes were preserved; build cache was not pruned.
+
+
+## POST-only update actions accepted, 28 October 2026
+
+PR #46 deployed POST review/resolution and all remaining update actions, removing backend PATCH routes as requested. The operator confirmed working after backend update and staged frontend switch to 8091. No schema migration or auth configuration change; DS Lab containers were not redeployed. Latest frontend rollback: sarva-frontend:rollback-bluegreen-20261028-134707. Cleanup is pending verification of the pre-release backend rollback. See [POST-only deployment and acceptance](POST-ONLY-UPDATES.md).

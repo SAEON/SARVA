@@ -4,6 +4,12 @@ Resolve/review, report editing, assignment, user-role management and resource/po
 
 Admin permissions, current database roles, password confirmation for access changes, revision conflicts and transactional audit history are retained. Review connection and rollback failures now return JSON without exposing internal errors. No schema migration or auth configuration change.
 
-Validation: 68 isolated backend tests passed, covering resolution/reopening and history, note requirements, permissions, conflicts, role-management protections and persisted resource/policy/glossary POST edits. A frontend regression guard rejects literal PATCH requests in app source. Lint and backend/frontend Docker builds passed. Local SARVA/DS Lab return 200 and passkeys remain enabled. Production acceptance pending.
+Validation: 68 isolated backend tests passed, covering resolution/reopening and history, note requirements, permissions, conflicts, role-management protections and persisted resource/policy/glossary POST edits. A frontend regression guard rejects literal PATCH requests in app source. Lint and backend/frontend Docker builds passed. Local SARVA/DS Lab return 200 and passkeys remain enabled. Production acceptance is recorded below.
 
 Deployment requires backend and frontend; preserve rollback images/configuration, prepare the replacement frontend, then update backend and switch promptly. Old open clients will no longer be able to submit PATCH; they must load the new frontend (automatic idle refresh or manual refresh). Preserve unfinished form text before refreshing. Reload both frontend proxies after backend replacement. Verify public-route resolution and editing, password/passkey login and DS Lab.
+
+## Production acceptance, 28 October 2026
+
+PR #46 merged as aa1f69edbaae0d73801141d8d0de0e7fe2faf947. Backend/frontend images built and the candidate was prepared on 8091 while live remained on 8090. Backup: /var/backups/sarva-frontend-bluegreen/20261028-134707; frontend rollback: sarva-frontend:rollback-bluegreen-20261028-134707; candidate: 339465d336eaad2284e66fd2d8030896c07db43ead4362ab62274ece15bb3304. The operator subsequently updated the backend, refreshed both frontend proxies and switched using the supplied procedure, then confirmed working after resolution/edit/assignment and login browser-test instructions. No separate per-action browser trace was supplied. DS Lab was not redeployed.
+
+Cleanup is pending verification of the new frontend and pre-release backend rollback images. Retain both frontend slots, backup files, DS Lab images and database volumes. Old open clients must load the new frontend before sending updates.
