@@ -31,13 +31,6 @@ const primaryPaths = [
         to: "/resources?search=data%20science%20lab",
         status: "Starting point",
     },
-    {
-        label: "Explore by action",
-        title: "Municipal planning workspace",
-        detail: "Capture local evidence, rank priorities, draft actions and export a municipal planning brief.",
-        to: "/municipal-planning-workspace",
-        status: "Prototype",
-    },
 ];
 
 const atlasTools = [
@@ -129,12 +122,6 @@ const questionPaths = [
         state: "live",
     },
     {
-        question: "How do we turn risk evidence into a plan?",
-        action: "Open planning workspace",
-        to: "/municipal-planning-workspace",
-        state: "live",
-    },
-    {
         question: "What does this term mean?",
         action: "Search glossary",
         to: "/glossary",
@@ -170,7 +157,6 @@ const themeLinks = [
     ["Essential biodiversity variables", "/search?ev=ebv"],
     ["Reports and evidence", "/resources?resource_group=reports_stories"],
     ["Training and methods", "/resources?search=training"],
-    ["Municipal planning", "/municipal-planning-workspace"],
 ];
 
 function ActionLink({ item, className = "" }) {

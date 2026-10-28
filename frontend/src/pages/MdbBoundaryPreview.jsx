@@ -1036,16 +1036,13 @@ export default function MdbBoundaryPreview() {
         <main className="mdb-preview">
             <section className="mdb-preview__header">
                 <div>
-                    <p>Municipal Planning Workspace</p>
+                    <p>Municipal boundaries</p>
                     <h1>MDB 2026 boundary layer preview</h1>
                     <span>
                         Latest Municipal Demarcation Board spatial downloads for planning, ward inspection and
                         future-effective municipal boundary review.
                     </span>
                 </div>
-                <a href="/municipal-planning-workspace#boundaries">
-                    Open inside planning workspace
-                </a>
                 <a href="https://spatialhub-mdb-sa.opendata.arcgis.com/pages/data-download" target="_blank" rel="noreferrer">
                     Source: MDB Spatial Data Hub
                 </a>

@@ -30,6 +30,8 @@ navRouter.get("/", async (req, res) => {
       SELECT nav_id, label, to_path, href, is_external, sort_order
       FROM sarva.site_nav_item
       WHERE is_active = true
+        AND split_part(split_part(COALESCE(to_path, href, ''), '#', 1), '?', 1) NOT LIKE '%/municipal-planning-workspace'
+        AND lower(trim(label)) <> 'municipal planning workspace'
       ORDER BY sort_order ASC
     `);
 
