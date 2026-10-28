@@ -1,6 +1,6 @@
 # Simplified SARVA privacy notice
 
-Deployed and operator-accepted on production 28 October 2026 via PR #25 (merge ca1fdad6). All deployment checks passed; the notice, password login, passkey login and DS Lab were confirmed working. Frontend rollback cleanup remains pending.
+Deployed and operator-accepted on production 28 October 2026 via PR #25 (merge ca1fdad6). All deployment checks passed; the notice, password login, passkey login and DS Lab were confirmed working. Frontend rollback cleanup is complete, operator-confirmed on 28 October 2026. All post-cleanup checks passed; the privacy notice, password/passkey login and DS Lab remain working. Retained latest frontend rollback: `sarva-frontend:rollback-privacy-simplification-20261028-081412`; backup: `/home/marc/sarva-backups/before-privacy-simplification-20261028-081412`. Current running images, the latest backend rollback, databases, volumes, backups, build cache and DS Lab images/services were preserved.
 
 Short overview sections replace the dense table. Expandable sections retain the accurate disclosures about accounts/password hashes, optional passkeys, account-linked/pseudonymous analytics, logs, feedback history, retention limitations, external services and request routes. SAEON general enquiry contact (enquiries@saeon.ac.za, +27 (12) 534 3504) is attributed to the Catalogue privacy policy, not represented as a dedicated privacy office. The notice remains under review.
 
