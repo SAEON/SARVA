@@ -8,7 +8,7 @@ export const resourcesRouter = Router();
 const SORT_COLUMNS = {
   title: "lower(title)",
   author: "lower(author)",
-  publication_year: "publication_year",
+  publication_year: "CASE WHEN btrim(publication_year) ~ '^[12][0-9]{3}$' THEN btrim(publication_year)::integer END",
   resource_type: "lower(resource_type)",
   created_at: "created_at",
 };
