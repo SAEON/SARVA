@@ -287,3 +287,12 @@ PR #39 is deployed through the staged frontend workflow; the operator confirmed 
 ## Analytics HTTP 400 fix accepted, 28 October 2026
 
 PR #40 is deployed: known Issues & feedback and account paths are accepted by analytics, and the frontend skips unsupported page paths. The operator confirmed the fix works after the staged deployment to 8091. No schema migration or DS Lab deployment. Latest frontend rollback: sarva-frontend:rollback-bluegreen-20261028-114842. Cleanup is complete and the operator confirmed all supplied checks passed, with SARVA and DS Lab still working. Latest rollback pair retained: sarva-frontend:rollback-bluegreen-20261028-114842 and sarva-backend:rollback-analytics-pages-20261028-134606. Both frontend slots, backup files and database volumes were retained; build cache was not pruned. See [analytics validation and acceptance details](ANALYTICS-PAGE-VALIDATION.md).
+
+
+## Resources newest-first ordering accepted, 28 October 2026
+
+PR #41 merged as 6ae07710233a0879be6b1493ac768bab2fa3da91. Resources requests publication-year descending order; backend sorting treats blank/unknown/invalid year labels as null so they appear last, with ordering applied before pagination. No schema migration or authentication configuration changes.
+
+The operator built backend/frontend, updated the backend, refreshed both frontend proxies, prepared on 8090 and switched from 8091. Backup: /var/backups/sarva-frontend-bluegreen/20261028-122426; rollback: sarva-frontend:rollback-bluegreen-20261028-122426; candidate: 8fdaa5c8af77bf71404d8977a7602caa4f22b337f623fc6924a0963beba70b84. Supplied output confirms Nginx validation; SARVA home/resources/health/version/passkey page and DS Lab HTTP 200; protected anonymous auth/review APIs 401 and users API 403. After browser-test instructions, the operator confirmed all working, including report order, pagination/filters and password/passkey login checks. DS Lab containers were not redeployed.
+
+Cleanup is authorized but pending verification of the pre-release backend rollback and latest frontend rollback. Keep both frontend slots, backup files, database volumes and DS Lab images. Automatic frontend reload across versions was not separately confirmed.
