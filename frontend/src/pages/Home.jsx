@@ -1,3 +1,4 @@
+import { SUBMIT_DATA_URL } from "../config/contributeData";
 import ForecastNotice from "../components/ForecastNotice";
 import SiteDisclaimer from "../components/SiteDisclaimer.jsx";
 import { lazy, Suspense, useMemo, useRef, useState } from "react";
@@ -1960,9 +1961,8 @@ export default function Home() {
                             <h2>Get Involved</h2>
                         </div>
                         <div className="sarva-involved">
-                            <a href="#help"><span>▤</span><strong>Contribute Data</strong><small>Share your data and knowledge</small></a>
-                            <a href="#help"><span>◎</span><strong>Join a Community</strong><small>Participate in communities of practice</small></a>
-                            <a href="#help"><span>◇</span><strong>Training & Capacity Building</strong><small>Grow skills and access resources</small></a>
+                            <a href={SUBMIT_DATA_URL} target="_blank" rel="noopener noreferrer"><span>▤</span><strong>Contribute Data</strong><small>Share your data and knowledge</small></a>
+                            <a href={DATA_SCIENCE_LAB_PATH} target="_blank" rel="noopener noreferrer"><span>◇</span><strong>Training & Capacity Building</strong><small>Grow skills and access resources</small></a>
                         </div>
                     </article>
 
