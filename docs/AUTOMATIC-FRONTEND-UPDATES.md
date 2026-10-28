@@ -9,3 +9,11 @@ The feature must first be loaded by a normal navigation or one manual refresh; o
 Validation: four automatic-update tests cover version validation, idle timing, hidden tabs, unfinished input, pending submission, password protection, failed checks, storage preservation and repeat-refresh prevention. Frontend lint, Docker build and four privacy regression tests passed. The local version endpoint returned JSON with no-store; passkeys remained enabled and DS Lab returned 200. Production acceptance pending.
 
 Deploy using frontend build/prepare/switch. Backend, database and DS Lab need no deployment. Confirm version.json matches the active frontend and test an old loaded version against a later staged switch. Retain both slots and rollback images.
+
+## Production deployment, 28 October 2026
+
+PR #39 merged as 557ba8a7cc83d4f6f070e60ba2d56d8bc8fcb216. The replacement frontend was prepared on 8090 while live remained on 8091. Backup: /var/backups/sarva-frontend-bluegreen/20261028-110655; rollback tag: sarva-frontend:rollback-bluegreen-20261028-110655; candidate: 100a073d727509939e16277af07cecdf954569159cf7c2cb02118ecb103af538. The operator confirmed completion of the supplied switch and site/version-check procedure. Backend, database and DS Lab were not redeployed.
+
+Automatic refresh is deployed. A single manual refresh/navigation is required for older open tabs to load the watcher. End-to-end live automatic reload remains pending a subsequent frontend version change. New password/passkey browser acceptance was requested but not separately reported for this release.
+
+Cleanup is authorized but pending: verify the latest rollback against the retained previous slot and current deployment state before removing older frontend rollback tags. Preserve both frontend containers, latest rollback tag, all backup files, database volumes and DS Lab images. Do not claim cleanup complete until the operator supplies confirmation.
