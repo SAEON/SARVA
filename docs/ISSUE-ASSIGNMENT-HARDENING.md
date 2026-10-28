@@ -21,3 +21,9 @@ PR #35 (merge 31fb933) deployed POST assignment with legacy PATCH compatibility.
 Local validation: 53 isolated backend tests, frontend response tests and lint, both Docker builds, local SARVA/DS Lab HTTP 200 and passkeys enabled. No database migration or DS Lab deployment was required. Password/passkey authentication code and configuration were unchanged; a new explicit browser recheck of both login methods after this specific release has not yet been supplied.
 
 Cleanup is pending. Retain both frontend slots, current backend/frontend images, rollback/reconstructed recovery images, all file/config/database backups and volumes. Only dangling-image cleanup is proposed; no broad prune or Docker restart. Separate analytics POST /api/analytics/events HTTP 400 responses were observed and remain unresolved.
+
+## Assign during creation (local verification)
+
+Administrators can select an active administrator when creating a report, or leave it Unassigned. The field is not shown to ordinary users and the server rejects assignment fields from non-admin accounts, including stale admin claims. Creation, initial assignment and history are committed together. Invalid/inactive targets and audit failures do not create a partial report. An assignment-options failure permits an Unassigned submission and provides a retry button. No email notification or schema migration is added. Existing edits and POST/PATCH reassignment remain unchanged.
+
+Validation: 54 isolated backend tests passed, including initial assignment persistence/history, Unassigned creation, rejected viewer/inactive targets and rollback on audit failure. Frontend lint, backend/frontend Docker builds and privacy regression tests passed; local SARVA/DS Lab return 200 and passkey status is enabled. Production acceptance is pending.

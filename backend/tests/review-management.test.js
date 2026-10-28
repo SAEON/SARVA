@@ -162,3 +162,27 @@ test('POST assignment uses the same permissions, revisions and audit trail as PA
  const unavailable=await call(admin2,'/'+id+'/assignment','POST',{revision:issue.revision,assignedTo:admin},'/unavailable');
  assert.equal(unavailable.status,503);assert.match(unavailable.headers.get('content-type'),/application\/json/);
 });
+
+
+test('admin creates and assigns atomically; viewers and invalid targets are rejected',async()=>{
+ const draft={...content(),title:prefix+' initial assignment',assignedTo:String(admin2)};
+ assert.equal((await call(owner,'','POST',draft)).status,403);
+ assert.equal((await call(admin,'','POST',{...draft,assignedTo:owner})).status,400);
+ await pool.query('UPDATE sarva.app_user SET is_active=false WHERE id=$1',[admin2]);
+ assert.equal((await call(admin,'','POST',draft)).status,400);
+ await pool.query('UPDATE sarva.app_user SET is_active=true WHERE id=$1',[admin2]);
+ const before=(await pool.query('SELECT count(*) FROM sarva.review_issue WHERE title=$1',[draft.title])).rows[0].count;
+ assert.equal((await call(admin,'','POST',draft,'/failure')).status,500);
+ assert.equal((await pool.query('SELECT count(*) FROM sarva.review_issue WHERE title=$1',[draft.title])).rows[0].count,before);
+ for(const assignedTo of [String(admin2),null]){
+  const response=await call(admin,'','POST',{...draft,assignedTo});assert.equal(response.status,201);
+  const created=(await response.json()).data.id;
+  try{
+   const row=(await pool.query('SELECT assigned_to,revision FROM sarva.review_issue WHERE id=$1',[created])).rows[0];
+   assert.equal(row.assigned_to==null?null:String(row.assigned_to),assignedTo);assert.equal(row.revision,1);
+   const events=(await pool.query('SELECT event_type,changes FROM sarva.review_issue_event WHERE issue_id=$1 ORDER BY id',[created])).rows;
+   assert.deepEqual(events.map(e=>e.event_type),assignedTo?['created','assigned']:['created']);
+   if(assignedTo)assert.equal(String(events[1].changes.after.assigned_to),assignedTo);
+  }finally{await pool.query('DELETE FROM sarva.review_issue_event WHERE issue_id=$1',[created]);await pool.query('DELETE FROM sarva.review_issue WHERE id=$1',[created]);}
+ }
+});

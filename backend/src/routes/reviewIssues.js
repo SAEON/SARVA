@@ -75,14 +75,24 @@ export function createReviewIssuesRouter(db=pool){
   try{contact=reviewContact(b);}catch{return res.status(400).json({message:'Enter a name (up to 100 characters) and valid email, or leave the contact fields blank'});}
   try { pagePath=reviewPage(b.pagePath); } catch { return res.status(400).json({message:'Leave the affected page blank, enter a page path, or paste a SARVA page URL.'}); }
   if(!validText(b.title,3,180)||!validText(b.description,10,10000)||!kinds.includes(b.kind)||!priorities.includes(b.priority)||
-   Object.keys(b).some(k=>!['title','description','kind','priority','pagePath','contactName','contactEmail'].includes(k)))return res.status(400).json({message:'Enter a title (3–180 characters), description (10–10,000 characters), type and priority. The affected page is optional.'});
-  const client=await db.connect();
+   Object.keys(b).some(k=>!['title','description','kind','priority','pagePath','contactName','contactEmail','assignedTo'].includes(k)))return res.status(400).json({message:'Enter a title (3–180 characters), description (10–10,000 characters), type and priority. The affected page is optional.'});
+  if(Object.hasOwn(b,'assignedTo')&&!req.reviewUser.isAdmin)return res.status(403).json({message:'Only administrators can assign reports'});
+  if(b.assignedTo!==undefined&&b.assignedTo!==null&&!isId(b.assignedTo))return res.status(400).json({message:'Choose an active administrator or Unassigned'});
+  let client,rollbackFailed=false;
   try{
+   client=await db.connect();
    await client.query('BEGIN');const actor=await freshActor(client,req.reviewUser.id);
-   const issue=(await client.query(`INSERT INTO sarva.review_issue(title,description,kind,priority,page_path,created_by,contact_name,contact_email) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,[b.title.trim(),b.description.trim(),b.kind,b.priority,pagePath,actor.id,contact.contactName,contact.contactEmail])).rows[0];
+   if(Object.hasOwn(b,'assignedTo')&&!actor.isAdmin)throw fail(403,'Only administrators can assign reports');
+   let target=null;
+   if(b.assignedTo!=null){
+    target=(await client.query(`SELECT u.id,u.display_name FROM sarva.app_user u WHERE u.id=$1 AND u.is_active AND EXISTS(SELECT 1 FROM sarva.app_user_role ur JOIN sarva.auth_role r ON r.id=ur.role_id WHERE ur.user_id=u.id AND r.name='admin') FOR SHARE`,[b.assignedTo])).rows[0];
+    if(!target)throw fail(400,'The selected account is not an active administrator');
+   }
+   const issue=(await client.query(`INSERT INTO sarva.review_issue(title,description,kind,priority,page_path,created_by,contact_name,contact_email,assigned_to) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,[b.title.trim(),b.description.trim(),b.kind,b.priority,pagePath,actor.id,contact.contactName,contact.contactEmail,target?.id || null])).rows[0];
    await client.query(`INSERT INTO sarva.review_issue_event(issue_id,actor_user_id,event_type,note) VALUES($1,$2,'created','Issue reported')`,[issue.id,actor.id]);
+   if(target)await client.query(`INSERT INTO sarva.review_issue_event(issue_id,actor_user_id,event_type,note,changes) VALUES($1,$2,'assigned','Assigned when report created',$3)`,[issue.id,actor.id,JSON.stringify({before:{assigned_to:null},after:{assigned_to:target.id,assignee_name:target.display_name}})]);
    await client.query('COMMIT');res.status(201).json({data:issue,message:'Issue reported'});
-  }catch(error){await client.query('ROLLBACK');res.status(error.status||500).json({message:error.status?error.message:'Unable to report issue'});}finally{client.release();}
+  }catch(error){if(client){try{await client.query('ROLLBACK');}catch{rollbackFailed=true;}}res.status(error.status||500).json({message:error.status?error.message:'Unable to report issue'});}finally{if(client)client.release(rollbackFailed?new Error('Report rollback failed'):undefined);}
  });
  router.post('/review/issues/:id/comments',limit,async(req,res)=>{
   if(!isId(req.params.id)||!validText(req.body?.note,1,10000)||Object.keys(req.body).some(k=>k!=='note'))return res.status(400).json({message:'Enter a comment (up to 10,000 characters)'});
