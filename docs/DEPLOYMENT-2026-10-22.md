@@ -346,3 +346,12 @@ PR #47 merged as ee3e7234530cb092e54a795970c942ced2709758. The homepage About ca
 The operator prepared on 8090 while live stayed on 8091 and confirmed completion after switch/browser-test instructions. Backup: /var/backups/sarva-frontend-bluegreen/20261028-135643; rollback: sarva-frontend:rollback-bluegreen-20261028-135643; candidate: dde53db2142611189bee6197e7074313dea9050b4e5138f0a5167f45109f946f. No separate final per-check terminal/browser output was supplied. Frontend-only change; backend, database, authentication configuration and DS Lab were not redeployed.
 
 Cleanup completed, confirmed by the operator after the supplied procedure. Verified and retained sarva-frontend:rollback-bluegreen-20261028-135643 against the previous frontend slot (image prefix 44f93b6ce9f8). Removed duplicate/older tags rollback-bluegreen-20261028-135617 and rollback-bluegreen-20261028-134707. The procedure included Nginx and SARVA/DS Lab HTTP checks; no separate final terminal output was supplied. Both frontend slots, backend rollback images, backup files, DS Lab images and database volumes were preserved; build cache was not pruned.
+
+
+## Homepage bottom columns removed, 28 October 2026
+
+PR #48 merged as 195c87422533d277f9660cdfeee62bbd81798804. Removed the final Updates & Monitoring, Get Involved and About SARVA columns, along with their unused highlight helpers/state. Reports/Data Spotlight now flow into the footer. Risk watch, Community/About destinations, footer disclaimer and partner logos remain.
+
+The operator prepared on 8091 while live stayed on 8090 and confirmed completion after switch/browser-test instructions. Backup: /var/backups/sarva-frontend-bluegreen/20261028-141953; rollback: sarva-frontend:rollback-bluegreen-20261028-141953; candidate: a5a45dcae97b69ad077ecaebdecf169314cf20c860e8d5c306f2531a642fdb9d. No separate per-check final output was supplied. Frontend-only change; backend, database and DS Lab were not redeployed.
+
+Cleanup is pending latest rollback verification/execution. Preserve both frontend slots, newest frontend rollback, backend rollback images, backup files, DS Lab images and database volumes.
