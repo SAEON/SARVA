@@ -1,7 +1,7 @@
 import { SUBMIT_DATA_URL } from "../config/contributeData";
 import ForecastNotice from "../components/ForecastNotice";
 import SiteDisclaimer from "../components/SiteDisclaimer.jsx";
-import { lazy, Suspense, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import LibraryEditModal from "../components/LibraryEditModal";
 import dstiLogo from "../assets/logos/DSTI.png";
@@ -16,20 +16,20 @@ import "../styles/home.css";
 import "../styles/resources.css";
 
 const SouthAfricaMap = lazy(() => import("../components/SouthAfricaMap"));
-const DATA_SCIENCE_LAB_PATH = import.meta.env.VITE_DSLAB_URL || "/ds-lab/";
+const DATA_SCIENCE_LAB_PATH = import.meta.env.VITE_DSLAB_URL || "https://ds-lab.saeon.ac.za/";
 const EXPLORE_PATH = "/explore";
 
 const portalCategories = [
     {
         icon: "◇",
         title: "Explore risk",
-        detail: "Map current and forecast hazards against municipal exposure and vulnerability context.",
-        to: "/overview",
+        detail: "Explore experimental weather model outputs, monitoring observations and municipal source data.",
+        to: "/#risk-map",
         featured: true,
-        layers: ["SAEON live observations", "Forecast rain", "Drought", "Flood", "Fire", "Heat"],
+        layers: [["Weather models", "/#risk-map"], ["Observations", "/?map=observations#risk-map"], ["Municipal data", "/municipal-risk-profiler"]],
         links: [
-            ["Open risk map", "/overview"],
-            ["Browse risk layers", "/overview#risk-map"],
+            ["Open weather map", "/#risk-map"],
+            ["Browse atlases and tools", "/explore#atlas-tools"],
             ["Municipality profiles", "/municipal-risk-profiler"],
         ],
     },
@@ -39,24 +39,23 @@ const portalCategories = [
         detail: "Search SARVA-ready catalogue records and connect to live SAEON observation services.",
         to: "/search",
         theme: "data",
-        layers: ["Catalogue", "Observations", "Metadata", "Live feeds"],
+        layers: [["Catalogue", "/search"], ["Observations", "https://observations.saeon.ac.za/"], ["Metadata", "/search"], ["Live feeds", "/?map=observations#risk-map"]],
         links: [
             ["Search catalogue", "/search"],
-            ["Live observations", "/overview#risk-map"],
-            ["Data services", "/resources?search=data%20service"],
+            ["Live observations", "/?map=observations#risk-map"],
+            ["SAEON observations database", "https://observations.saeon.ac.za/"],
         ],
     },
     {
         icon: "◎",
         title: "Use tools",
         detail: "Open dashboards, indicators and partner tools that turn data into decision views.",
-        to: "/overview",
+        to: "/explore#atlas-tools",
         theme: "tools",
-        layers: ["Dashboards", "Indicators", "Reports", "Exports"],
+        layers: [["Atlases", "/explore#atlas-tools"], ["Partner tools", "/explore#atlas-tools"], ["Municipal data", "/municipal-risk-profiler"]],
         links: [
-            ["Open dashboards", "/overview"],
-            ["View indicators", "/municipal-risk-profiler"],
-            ["Tool catalogue", "/resources?search=tool"],
+            ["Browse atlases and tools", "/explore#atlas-tools"],
+            ["Municipal profiles", "/municipal-risk-profiler"],
         ],
     },
     {
@@ -65,7 +64,7 @@ const portalCategories = [
         detail: "Use the evidence library: documents, glossary terms, policy and legislation.",
         to: "/resources",
         theme: "resources",
-        layers: ["Documents", "Glossary", "Policy", "Link health"],
+        layers: [["Documents", "/resources"], ["Glossary", "/glossary"], ["Policy", "/national-policy-and-legislation"]],
         links: [
             ["Documents", "/resources"],
             ["Policy", "/national-policy-and-legislation"],
@@ -74,16 +73,14 @@ const portalCategories = [
     },
     {
         icon: "♧",
-        title: "Join in",
-        detail: "Contribute knowledge, find training, and connect with SARVA communities of practice.",
-        to: "/overview",
+        title: "Learn and contribute",
+        detail: "Learn with DS Lab tutorials and contribute datasets or supporting information.",
+        to: DATA_SCIENCE_LAB_PATH,
         theme: "community",
-        layers: ["Training", "Data Science Lab", "Partners", "Contribute", "Support"],
+        layers: [["Learning", DATA_SCIENCE_LAB_PATH], ["Tutorials", DATA_SCIENCE_LAB_PATH], ["Contributions", SUBMIT_DATA_URL]],
         links: [
-            ["Training", "/resources?search=training"],
-            ["Data Science Lab", DATA_SCIENCE_LAB_PATH],
-            ["Contribute data", "https://docs.google.com/forms/d/1bxnefRblVoQ8hpJJx_KL1nzeZHQfEK-QKVCxoPIXnAU/viewform?edit_requested=true"],
-            ["Community", "/about"],
+            ["Training and Data Science Lab", DATA_SCIENCE_LAB_PATH],
+            ["Contribute data", SUBMIT_DATA_URL],
         ],
     },
 ];
@@ -801,6 +798,15 @@ export default function Home() {
     const [supportingInstitute, setSupportingInstitute] = useState("");
     const [supportingKeyword, setSupportingKeyword] = useState("");
     const mapSectionRef = useRef(null);
+    useEffect(() => {
+        if (location.hash !== '#risk-map') return;
+        const frame = requestAnimationFrame(() => {
+            setMapMode(new URLSearchParams(location.search).get('map') === 'observations' ? 'rainfall-risk' : 'forecast-risk');
+            mapSectionRef.current?.scrollIntoView({block: 'start'});
+        });
+        return () => cancelAnimationFrame(frame);
+    }, [location.hash, location.search, location.key]);
+
     const mapFocusCounterRef = useRef(0);
     const { isAdmin, token } = useCurrentUser();
     const reportsPath = useMemo(() => {
@@ -1680,15 +1686,11 @@ export default function Home() {
                                 key={category.title}
                                 className={`sarva-dash__portalCard${category.featured ? " is-featured" : ""}${category.theme ? ` is-${category.theme}` : ""}`}
                             >
-                                <Link to={category.to} className="sarva-dash__portalMain">
-                                    <span>{category.icon}</span>
-                                    <strong>{category.title}</strong>
-                                    <small>{category.detail}</small>
-                                </Link>
+                                {isExternalLink(category.to) ? <a href={category.to} target="_blank" rel="noopener noreferrer" className="sarva-dash__portalMain"><span>{category.icon}</span><strong>{category.title}</strong><small>{category.detail}</small></a> : <Link to={category.to} className="sarva-dash__portalMain"><span>{category.icon}</span><strong>{category.title}</strong><small>{category.detail}</small></Link>}
                                 {Array.isArray(category.layers) && (
                                     <div className="sarva-dash__themeChips" aria-label={`${category.title} themes`}>
-                                        {category.layers.map((layer) => (
-                                            <span key={layer}>{layer}</span>
+                                        {category.layers.map(([label, to]) => (
+                                            isExternalLink(to) ? <a href={to} key={label} target="_blank" rel="noopener noreferrer">{label}</a> : <Link to={to} key={label}>{label}</Link>
                                         ))}
                                     </div>
                                 )}
