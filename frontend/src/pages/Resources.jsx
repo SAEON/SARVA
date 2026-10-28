@@ -30,8 +30,8 @@ function buildPath(filters) {
 
     params.set("page", String(filters.page));
     params.set("limit", String(filters.limit));
-    params.set("sort", "title");
-    params.set("order", "asc");
+    params.set("sort", "publication_year");
+    params.set("order", "desc");
 
     return `/api/resources?${params.toString()}`;
 }
@@ -271,7 +271,7 @@ export default function Resources() {
             <div className="sarva-resources__header">
                 <h1 className="sarva-resources__title">{context.title}</h1>
                 <p className="sarva-resources__intro">
-                    {context.intro}
+                    {context.intro} Most recent publication years appear first; entries without a known year appear last.
                 </p>
             </div>
 
