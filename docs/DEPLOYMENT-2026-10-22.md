@@ -323,3 +323,12 @@ PR #44 merged as bd036165d759a60bc5bcf24fe7cc86e7b9b74ccc. Desktop navigation ha
 The replacement frontend was prepared on 8091 while live stayed on 8090 and then switched. Backup: /var/backups/sarva-frontend-bluegreen/20261028-131514; rollback: sarva-frontend:rollback-bluegreen-20261028-131514; candidate: 1d601270611309fa7c2b4e0bebe746a05fb1fec6761b4d27e51e1a16aef4387b. The operator supplied passed switch checks and subsequently confirmed working after the Chrome/Edge browser, search and login test instructions. Backend, database and DS Lab were not redeployed.
 
 Cleanup completed, confirmed by the operator after the supplied procedure. Latest frontend rollback sarva-frontend:rollback-bluegreen-20261028-131514 was verified against the previous frontend slot (image prefix 2c91bf7a9ef3) and retained. Duplicate/older frontend tags rollback-bluegreen-20261028-131455 and rollback-bluegreen-20261028-130531 were removed. The procedure included Nginx and SARVA/DS Lab HTTP checks; no separate terminal output was supplied for this final confirmation. Both frontend slots, backend rollback images, backup files, DS Lab images and database volumes were preserved; build cache was not pruned.
+
+
+## Navigation alignment accepted, 28 October 2026
+
+PR #45 merged as f6a28b0d54c795f536c7643fd19a6497f7a551ee. Removed the dropdown wrapper bottom-padding offset and applied consistent 42px border-box sizing to top-level items. This aligns plain Home/Explore/Data Health/Analytics links with dropdown buttons. Local lint/build/privacy checks passed; visible desktop link/button positions matched and dropdown interaction was verified.
+
+The operator prepared the replacement on 8090 while live remained on 8091, then confirmed working after the supplied switch and admin browser/navigation/search/login/DS Lab checks. Backup: /var/backups/sarva-frontend-bluegreen/20261028-133457; rollback: sarva-frontend:rollback-bluegreen-20261028-133457; candidate: 806c176c6ab831aa2d91a7d24e049e087b121e616e9253d74ee01bf756f0d615. Frontend CSS only; backend, database and DS Lab were not redeployed.
+
+Cleanup is pending latest rollback verification/execution. Retain both frontend slots, newest frontend rollback, backend rollback images, all backup files, DS Lab images and volumes.
