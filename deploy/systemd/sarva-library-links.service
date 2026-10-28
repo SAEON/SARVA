@@ -1,0 +1,13 @@
+[Unit]
+Description=Check SARVA resource and policy links
+Wants=network-online.target
+Requires=docker.service
+After=docker.service network-online.target
+ConditionPathExists=/opt/sarva/docker-compose.yml
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/sarva
+ExecStart=/usr/bin/flock -n /run/lock/sarva-library-links.lock /usr/bin/docker compose --env-file /opt/sarva/.env -f /opt/sarva/docker-compose.yml exec -T backend node scripts/check-library-links.js --complete
+TimeoutStartSec=6h
+Nice=10

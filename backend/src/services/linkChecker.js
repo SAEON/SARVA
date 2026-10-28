@@ -15,45 +15,31 @@ function boundedInteger(value, fallback, min, max) {
   return Math.min(Math.max(parsed, min), max);
 }
 
-export async function checkUrl(url) {
-  if (!url) {
-    return { link_status: "missing", link_status_code: null };
-  }
-
+export async function checkUrl(url, {fetchImpl=globalThis.fetch, timeoutMs=10000} = {}) {
+  if (!url) return {link_status:'missing',link_status_code:null};
+  let parsed;
+  try { parsed=new URL(url); } catch { return {link_status:'unchecked',link_status_code:null}; }
+  if (!['http:','https:'].includes(parsed.protocol) || parsed.username || parsed.password)
+    return {link_status:'unchecked',link_status_code:null};
   async function request(method) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
-
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),timeoutMs);
     try {
-      return await fetch(url, {
-        method,
-        redirect: "follow",
-        signal: controller.signal,
-        headers: {
-          "User-Agent": "SARVA link checker/1.0",
-        },
-      });
-    } finally {
-      clearTimeout(timeout);
-    }
+      const response=await fetchImpl(url,{method,redirect:'follow',signal:controller.signal,headers:{'User-Agent':'SARVA link checker/1.0'}});
+      // Only status/headers are needed; do not download linked documents.
+      await response.body?.cancel();
+      return response;
+    } finally {clearTimeout(timer);}
   }
-
   try {
-    let response = await request("HEAD");
-    if ([403, 405].includes(response.status)) {
-      response = await request("GET");
-    }
-
-    if (response.redirected) {
-      return { link_status: "redirected", link_status_code: response.status };
-    }
-
-    return {
-      link_status: response.ok ? "active" : "broken",
-      link_status_code: response.status,
-    };
-  } catch (error) {
-    return { link_status: "broken", link_status_code: null };
+    let response=await request('HEAD');
+    if ([401,403,404,405,410,501].includes(response.status)) response=await request('GET');
+    // Redirecting to an error does not make a link healthy.
+    if(response.ok)return {link_status:response.redirected?'redirected':'active',link_status_code:response.status};
+    return {link_status:[404,410].includes(response.status)?'broken':'unchecked',link_status_code:response.status};
+  } catch {
+    // A timeout, TLS/DNS failure or automation block cannot establish absence.
+    return {link_status:'unchecked',link_status_code:null};
   }
 }
 
@@ -117,19 +103,19 @@ async function loadCandidates({ limit, staleDays, includeAll }) {
       ORDER BY link_checked_at ASC NULLS FIRST, kind, title
       LIMIT $1
     `,
-    [limit, staleDays]
+    includeAll ? [limit] : [limit, staleDays]
   );
 
   return result.rows;
 }
 
 export async function checkLibraryLinks(options = {}) {
-  const limit = boundedInteger(options.limit, 50, 1, 250);
+  const limit = options.complete ? null : boundedInteger(options.limit, 50, 1, 250);
   const staleDays = boundedInteger(options.staleDays, 30, 1, 365);
-  const includeAll = Boolean(options.includeAll);
+  const includeAll = Boolean(options.complete || options.includeAll);
   const candidates = await loadCandidates({ limit, staleDays, includeAll });
   const summary = {
-    requested: limit,
+    requested: options.complete ? candidates.length : limit,
     checked: 0,
     updated: 0,
     resources: 0,
@@ -142,6 +128,7 @@ export async function checkLibraryLinks(options = {}) {
     errors: 0,
   };
   const records = [];
+  if(options.dryRun)return {summary:{...summary,candidates:candidates.length,dryRun:true},records:[]};
 
   for (const candidate of candidates) {
     try {

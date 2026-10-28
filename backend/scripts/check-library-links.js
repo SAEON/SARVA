@@ -10,12 +10,15 @@ function argValue(name, fallback = null) {
 
 async function main() {
   const result = await checkLibraryLinks({
+    complete: process.argv.includes("--complete"),
+    dryRun: process.argv.includes("--dry-run"),
     limit: argValue("limit", process.env.LINK_CHECK_LIMIT || 100),
     staleDays: argValue("stale-days", process.env.LINK_CHECK_STALE_DAYS || 30),
     includeAll: process.argv.includes("--all"),
   });
 
   console.log(JSON.stringify(result.summary, null, 2));
+  if(result.summary.errors)process.exitCode=1;
 }
 
 main()

@@ -1,0 +1,11 @@
+[Unit]
+Description=Monthly SARVA resource and policy link check
+
+[Timer]
+OnCalendar=*-*-01 02:00:00 Africa/Johannesburg
+RandomizedDelaySec=15m
+Persistent=true
+Unit=sarva-library-links.service
+
+[Install]
+WantedBy=timers.target
