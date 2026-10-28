@@ -106,3 +106,20 @@ test('browser GPC and DNT headers skip analytics storage even for signed-in even
   assert.equal((await pool.query('SELECT count(*)::int AS count FROM sarva.analytics_event WHERE view_id=$1',[id])).rows[0].count,0);
  }
 });
+
+
+test('review and account page events and engagement are accepted without weakening path validation',async()=>{
+ for(const [path,section] of [['/testing','Issues & feedback'],['/admin/users','User administration'],['/account/passkeys','Passkey account settings']]){
+  for(const auth of [undefined,token(user)]){
+   const viewId=crypto.randomUUID(),sessionId=crypto.randomUUID();
+   try{
+    assert.equal((await event({path,viewId,sessionId,kind:'page'},auth)).status,202);
+    assert.equal((await event({path,viewId,sessionId,kind:'engagement',activeMs:15000,scrollDepth:40},auth)).status,202);
+    const row=(await pool.query('SELECT path,section,duration_ms,scroll_depth,user_id FROM sarva.analytics_event WHERE view_id=$1',[viewId])).rows[0];
+    assert.equal(row.path,path);assert.equal(row.section,section);assert.equal(row.duration_ms,15000);assert.equal(row.scroll_depth,40);
+    assert.equal(row.user_id==null?null:String(row.user_id),auth?String(user):null);
+   }finally{await pool.query('DELETE FROM sarva.analytics_event WHERE view_id=$1',[viewId]);}
+  }
+ }
+ for(const path of ['/testing?email=private','/admin/users/123','/account/passkeys/private','/not-a-page','/testing/10'])assert.equal((await event({path})).status,400);
+});

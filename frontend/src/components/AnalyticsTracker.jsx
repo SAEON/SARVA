@@ -1,3 +1,4 @@
+import { isAnalyticsPage } from "../config/analyticsPage.js";
 import { browserAnalyticsEnabled, ANALYTICS_PREF_KEY, ANALYTICS_PREF_CHANGED } from "../config/analyticsPrivacy.js";
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -21,7 +22,7 @@ export default function AnalyticsTracker() {
   const [authRevision,setAuthRevision]=useState(0);
   useEffect(()=>{const changed=event=>{if(event.type==='storage'&&event.key!==AUTH_TOKEN_KEY&&event.key!==ANALYTICS_PREF_KEY)return;currentView=null;setAuthRevision(n=>n+1);};window.addEventListener(ANALYTICS_PREF_CHANGED,changed);window.addEventListener(AUTH_CHANGED_EVENT,changed);window.addEventListener('storage',changed);return()=>{window.removeEventListener(ANALYTICS_PREF_CHANGED,changed);window.removeEventListener(AUTH_CHANGED_EVENT,changed);window.removeEventListener('storage',changed);};},[]);
   useEffect(() => {
-    if (['/analytics', '/data-health', '/privacy'].includes(pathname) || !browserAnalyticsEnabled()) return;
+    if (!isAnalyticsPage(pathname) || !browserAnalyticsEnabled()) return;
     let view;
     try {
       const now = Date.now();
