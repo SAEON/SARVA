@@ -15,7 +15,7 @@ import { apiUrl } from "../config/api";
 import { useJsonResource } from "../hooks/useJsonResource";
 import "../styles/header.css";
 
-const DATA_SCIENCE_LAB_URL = import.meta.env.VITE_DSLAB_URL || "/ds-lab/";
+const DATA_SCIENCE_LAB_URL = import.meta.env.VITE_DSLAB_URL || "https://ds-lab.saeon.ac.za/";
 
 const fallbackNav = [
     { label: "Home", to: "/" },
@@ -66,11 +66,8 @@ const fallbackNav = [
     {
         label: "Community",
         items: [
-            { label: "Help & Training", to: "/resources?search=training" },
             { label: "Data Science Lab", href: DATA_SCIENCE_LAB_URL, external: true },
-            { label: "Contribute Data", href: SUBMIT_DATA_URL, external: true },
-            { label: "Communities of Practice", to: "/about" },
-            { label: "Contact SARVA", to: "/about" },
+            { label: "Contact SARVA", to: "/contact" },
         ],
     },
     {
@@ -104,10 +101,10 @@ export default function Header() {
 
     const nav = useMemo(() => {
         if (navResponse?.status === "ok" && Array.isArray(navResponse.data)) {
-            return exploreNavigation(navResponse.data);
+            return exploreNavigation(navResponse.data, DATA_SCIENCE_LAB_URL);
         }
 
-        return exploreNavigation(fallbackNav);
+        return exploreNavigation(fallbackNav, DATA_SCIENCE_LAB_URL);
     }, [navResponse]);
     const openKey = openDropdown.pathname === location.pathname ? openDropdown.key : null;
 
