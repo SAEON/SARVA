@@ -1638,7 +1638,7 @@ export default function Home() {
                                                     )}
                                                     <em>
                                                         <a href={monitorUrl()} target="_blank" rel="noreferrer">
-                                                            Open Terrestrial Observations Monitor
+                                                            Open SAEON Observations Monitor
                                                         </a>
                                                     </em>
                                                 </>

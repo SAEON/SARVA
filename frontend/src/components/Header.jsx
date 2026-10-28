@@ -35,7 +35,8 @@ const fallbackNav = [
             { label: "Search SAEON Data", to: "/search" },
             { label: "Supporting Data", to: "/?supportingData=true" },
             { label: "Submit Data", href: SUBMIT_DATA_URL, external: true },
-            { label: "Terrestrial Observations Monitor", href: "https://observationsmonitor.saeon.ac.za", external: true },
+            { label: "SAEON Observations Monitor", href: "https://observationsmonitor.saeon.ac.za/home", external: true },
+            { label: "SAEON Observations Database", href: "https://observations.saeon.ac.za/", external: true },
         ],
     },
     {
