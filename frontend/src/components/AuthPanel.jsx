@@ -227,7 +227,7 @@ export default function AuthPanel() {
                             <div className="sarva-accountFooter"><button className="sarva-accountSignOut" type="button" onClick={signOut}><AccountIcon kind="exit"/>Sign out</button></div>
                         </div>
                     ) : (
-                        <form onSubmit={submit}>
+                        <form aria-busy={loading} onSubmit={submit}>
                             <div className="sarva-auth__tabs" role="tablist" aria-label="Account access">
                                 <button
                                     type="button"
