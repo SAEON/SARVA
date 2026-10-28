@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -7,8 +8,15 @@ export default defineConfig(({ mode }) => {
   const apiTarget = env.DEV_API_TARGET || 'http://127.0.0.1:5060'
   const tileTarget = env.DEV_TILE_TARGET || 'http://127.0.0.1:3010'
 
+  const buildId = randomUUID()
   return {
-    plugins: [react()],
+    define: { __SARVA_BUILD_ID__: JSON.stringify(buildId) },
+    plugins: [react(), {
+      name: 'sarva-build-version',
+      generateBundle() {
+        this.emitFile({ type: 'asset', fileName: 'version.json', source: JSON.stringify({version:buildId}) })
+      },
+    }],
     resolve: {
       // Mounted/symlinked source must share the preview root's React instance.
       dedupe: ['react', 'react-dom', 'react-router', 'react-router-dom'],

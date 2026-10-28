@@ -1,3 +1,4 @@
+import AutomaticUpdate from "./AutomaticUpdate";
 import { SUBMIT_DATA_URL } from "../config/contributeData";
 import DeploymentRibbon from "./DeploymentRibbon";
 import { exploreNavigation } from "../config/exploreNavigation";
@@ -229,7 +230,7 @@ export default function Header() {
     return (
         <header className="sarva-header" ref={rootRef}>
             <AnalyticsTracker />
-            <DeploymentRibbon />
+            <AutomaticUpdate/><DeploymentRibbon />
             <DevelopmentNotice />
             <PreviewAccess />
             <div className="sarva-header__inner">
