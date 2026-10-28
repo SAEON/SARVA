@@ -740,23 +740,6 @@ function buildUpdateItems(alertsResponse = null) {
     }));
 }
 
-function isMajorNewsUpdate(item = {}) {
-    return item.sourceTier === "major_news" || /major public news rss/i.test(item.validation || "");
-}
-
-function buildHighlightItems(items = [], limit = 5) {
-    const updates = items.filter((item) => item.kind === "update");
-    const majorNews = updates.filter(isMajorNewsUpdate).slice(0, 2);
-    const selected = [...majorNews];
-
-    for (const item of items) {
-        if (selected.length >= limit) break;
-        if (!selected.some((selectedItem) => selectedItem.id === item.id)) selected.push(item);
-    }
-
-    return selected.slice(0, limit);
-}
-
 export default function Home() {
     const location = useLocation();
     const [mapMode, setMapMode] = useState("forecast-risk");
@@ -798,7 +781,6 @@ export default function Home() {
     const [supportingInstitute, setSupportingInstitute] = useState("");
     const [supportingKeyword, setSupportingKeyword] = useState("");
     const mapSectionRef = useRef(null);
-    const [showAllMonitoring, setShowAllMonitoring] = useState(false);
     useEffect(() => {
         if (location.hash !== '#risk-map') return;
         const frame = requestAnimationFrame(() => {
@@ -873,8 +855,6 @@ export default function Home() {
     const portalStats = siteStatsResponse?.status === "ok" ? siteStatsResponse.data?.portalStats || {} : {};
     const updateItems = buildUpdateItems(alertsResponse);
     const monitoringItems = buildMonitoringItems();
-    const alertItems = [...updateItems, ...monitoringItems];
-    const highlightItems = buildHighlightItems(alertItems);
     const recentUpdates = updateItems.filter((item) => isRecentUpdate(item, 5));
     const updatePanelItems = recentUpdates.length > 0 ? recentUpdates : monitoringItems;
     const reportFilters = reportsResponse?.filters || { resourceTypes: [], authors: [], keywords: [] };
@@ -1934,57 +1914,6 @@ export default function Home() {
                             ))}
                         </div>
                         {dataSpotlights.length>spotlightLimit&&<button className="sarva-libraryMore" onClick={()=>setSpotlightLimit(n=>n+6)}>Show more datasets and tools ({dataSpotlights.length-spotlightLimit} remaining)</button>}
-                    </article>
-                </section>
-
-                <section className="sarva-dash__lower">
-                    <article className="sarva-panel">
-                        <div className="sarva-panel__head">
-                            <h2>Updates & Monitoring</h2>
-                            <button type="button" aria-expanded={showAllMonitoring} aria-controls="monitoring-updates" onClick={() => setShowAllMonitoring(value => !value)}>{showAllMonitoring ? "Show highlights" : "Show all updates"}</button>
-                        </div>
-                        <ul id="monitoring-updates" className="sarva-alerts">
-                            {(showAllMonitoring ? updatePanelItems : highlightItems).map((alert) => (
-                                <li key={alert.id}>
-                                    <span className={alertSeverityClass(alert.severity)}>{alert.label.slice(0, 1)}</span>
-                                    <strong>{externalAlertUrl(alert.href) ? <a href={externalAlertUrl(alert.href)} target="_blank" rel="noopener noreferrer">{alert.title}</a> : alert.title}</strong>
-                                    <small>
-                                        {alert.kind === "update"
-                                            ? `${alert.category || "Update"} | ${formatAlertDate(alert.date)} | ${alert.source}`
-                                            : `Official source | ${alert.source}`}
-                                    </small>
-                                    <p>{alert.detail}</p>
-                                </li>
-                            ))}
-                        </ul>
-                    </article>
-
-                    <article className="sarva-panel">
-                        <div className="sarva-panel__head">
-                            <h2>Get Involved</h2>
-                        </div>
-                        <div className="sarva-involved">
-                            <a href={SUBMIT_DATA_URL} target="_blank" rel="noopener noreferrer"><span>▤</span><strong>Contribute Data</strong><small>Share your data and knowledge</small></a>
-                            <a href={DATA_SCIENCE_LAB_PATH} target="_blank" rel="noopener noreferrer"><span>◇</span><strong>Training & Capacity Building</strong><small>Grow skills and access resources</small></a>
-                        </div>
-                    </article>
-
-                    <article className="sarva-panel sarva-about" id="about">
-                        <div className="sarva-panel__head">
-                            <h2>About SARVA</h2>
-                        </div>
-                        <p>
-                            {hero?.description ||
-                                "SARVA is a collaborative platform that integrates environmental data and tools to support decisions for a sustainable South Africa."}
-                        </p>
-                        <Link to="/about">Learn more about SARVA</Link>
-                        {heroImage && <img
-                            className="sarva-about__image"
-                            src={heroImage}
-                            alt=""
-                            loading="lazy"
-                            decoding="async"
-                        />}
                     </article>
                 </section>
 
