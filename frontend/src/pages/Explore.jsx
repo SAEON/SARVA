@@ -122,7 +122,6 @@ const questionPaths = [
     { question: "Where can I compare recorded crime?", action: "View recorded murder counts", to: "/municipal-risk-profiler?metric=indicator:crime_murder", state: "live" },
     { question: "How does access to basic services compare?", action: "View piped-water access", to: "/municipal-risk-profiler?metric=indicator:pct_piped_water_dwelling", state: "live" },
     { question: "What is the population and household context?", action: "View population data", to: "/municipal-risk-profiler?metric=indicator:population_total", state: "live" },
-    { question: "Where can I explore weather model outputs?", action: "Open the experimental weather map", to: "/overview#risk-map", state: "live" },
     { question: "What datasets and services are available?", action: "Search the catalogue", to: "/search", state: "live" },
     { question: "Where can I find observation data?", action: "Find observation datasets", to: "/search?singleSitesOnly=true", state: "live" },
     { question: "Where can I find essential climate variables?", action: "Search climate variables", to: "/search?ev=ecv", state: "live" },
