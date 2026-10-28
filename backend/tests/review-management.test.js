@@ -204,3 +204,34 @@ test('POST review resolves with notes and preserves permissions, conflict checks
  const reopened=await detail(admin2);assert.equal(reopened.issue.status,'open');assert.ok(reopened.events.some(e=>e.event_type==='review'&&e.changes.after.status==='resolved'));
  assert.equal((await call(admin2,'/'+id,'POST',{...review,revision:reopened.issue.revision})).status,200);
 });
+
+
+test('admin assignee and submitter filters combine with search/status/type and paginate safely',async()=>{
+ const marker=prefix+'-people';let created=[];
+ try{
+  created=(await pool.query("INSERT INTO sarva.review_issue(title,description,kind,priority,created_by,assigned_to) SELECT $1||n::text,'Synthetic people filter pagination','feedback','normal',$2,$3 FROM generate_series(1,26)n RETURNING id",[marker,owner,admin2])).rows.map(row=>row.id);
+  const otherId=(await pool.query("INSERT INTO sarva.review_issue(title,description,kind,priority,created_by,assigned_to) VALUES($1,'Another synthetic report','bug','normal',$2,$3) RETURNING id",[marker+'other',other,admin])).rows[0].id;created.push(otherId);
+  const query='?search='+marker+'&status=open&kind=feedback&assigned=user:'+admin2+'&submittedBy=user:'+owner;
+  const first=await(await call(admin,query)).json();assert.equal(first.data.total,26);assert.equal(first.data.issues.length,25);
+  assert.ok(first.data.issues.every(row=>String(row.assigned_to)===String(admin2)&&row.kind==='feedback'&&row.status==='open'));
+  const second=await(await call(admin,query+'&page=2')).json();assert.equal(second.data.total,26);assert.equal(second.data.issues.length,1);
+  assert.ok(!first.data.issues.some(row=>row.id===second.data.issues[0].id));
+  assert.ok(first.data.filters.assignees.some(row=>String(row.id)===String(admin2)));
+  assert.ok(first.data.filters.submitters.some(row=>String(row.id)===String(owner)));
+  assert.ok(!JSON.stringify(first.data.filters).includes('@example.invalid'));
+  const mine=await(await call(admin2,'?search='+marker+'&assigned=mine')).json();assert.equal(mine.data.total,26);
+  const none=await(await call(admin,'?search='+marker+'&assigned=user:'+admin2+'&submittedBy=user:'+other)).json();assert.equal(none.data.total,0);
+  const unassigned=await(await call(admin,'?search='+marker+'&assigned=unassigned')).json();assert.equal(unassigned.data.total,0);
+  for(const extra of ['assigned=user:'+admin2,'submittedBy=user:'+other])assert.equal((await call(owner,'?'+extra)).status,403);
+  const viewer=await(await call(owner,'?search='+marker)).json();assert.equal(viewer.data.total,26);assert.ok(!Object.hasOwn(viewer.data,'filters'));assert.ok(viewer.data.issues.every(row=>!Object.hasOwn(row,'assignee_name')));
+  for(const extra of ['assigned=user:0','assigned=1%20OR%20true','submittedBy=-1','submittedBy=999999999999999999999999999999'])assert.equal((await call(admin,'?'+extra)).status,400);
+  await pool.query('UPDATE sarva.app_user SET is_active=false WHERE id=$1',[admin2]);
+  const inactive=await(await call(admin,query)).json();assert.equal(inactive.data.total,26);assert.equal(inactive.data.filters.assignees.find(row=>String(row.id)===String(admin2)).is_active,false);
+  await pool.query('UPDATE sarva.review_issue SET deleted_at=now() WHERE id=$1',[created[0]]);
+  assert.equal((await(await call(admin,query+'&archived=true')).json()).data.total,1);
+  assert.equal((await(await call(admin,query)).json()).data.total,25);
+ }finally{
+  await pool.query('UPDATE sarva.app_user SET is_active=true WHERE id=$1',[admin2]);
+  await pool.query('DELETE FROM sarva.review_issue WHERE id=ANY($1::bigint[])',[created]);
+ }
+});
