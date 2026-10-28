@@ -276,4 +276,4 @@ PR #37 merged as 7b8fb22d49dcbd2292c8c9eb395c93b0692e9ec8. Contribute Data now u
 
 The production replacement was prepared on 8090 while 8091 remained active. Backup: /var/backups/sarva-frontend-bluegreen/20261028-104232; rollback tag: sarva-frontend:rollback-bluegreen-20261028-104232; candidate: 5971577c81d58cc9389e0b28702fb47fda15e06429d69ef394b89882d1d25ae4. The operator subsequently confirmed the live links work after the switch instructions. Backend, database and DS Lab containers were not redeployed.
 
-Cleanup is pending operator execution. Proposed cleanup is dangling images only; retain both frontend slots, all tagged rollback/recovery images, backups and volumes. No broad image or volume pruning, Docker restart, or assertion of new password/passkey browser testing is included in this acceptance.
+The operator confirmed completion of the supplied dangling-image cleanup and site-check procedure. Both frontend slots, tagged rollback/recovery images, backups and volumes were retained. No broad image or volume pruning or Docker restart was requested. Password/passkey browser testing was not separately reconfirmed for this frontend-only release.
