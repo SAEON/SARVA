@@ -17,7 +17,7 @@ function token(id,roles=['viewer']){const value=Buffer.from(JSON.stringify({sub:
 const app=express();app.use(express.json());app.use('/api',createUserAdminRouter());app.use('/api',authRouter);app.use('/api',resourcesRouter);
 const failingDb={query:pool.query.bind(pool),connect:async()=>{const client=await pool.connect();return {release:()=>client.release(),query:(sql,args)=>String(sql).startsWith('INSERT INTO sarva.user_access_audit')?Promise.reject(new Error('Synthetic audit failure')):client.query(sql,args)};}};app.use('/failure',createUserAdminRouter(failingDb));app.post('/content-edit',requireCurrentAdmin,(_req,res)=>res.json({ok:true}));
 const server=app.listen(0,'127.0.0.1');await once(server,'listening');const base='http://127.0.0.1:'+server.address().port;
-async function call(path,auth,body,method){return fetch(base+path,{method:method || (body?'PATCH':'GET'),headers:{'Content-Type':'application/json',...(auth?{Authorization:'Bearer '+auth}:{})},...(body?{body:JSON.stringify(body)}:{})});}
+async function call(path,auth,body,method){return fetch(base+path,{method:method || (body?'POST':'GET'),headers:{'Content-Type':'application/json',...(auth?{Authorization:'Bearer '+auth}:{})},...(body?{body:JSON.stringify(body)}:{})});}
 async function access(id){return (await pool.query(`SELECT u.is_active,u.access_revision,ARRAY(SELECT r.name FROM sarva.app_user_role ur JOIN sarva.auth_role r ON r.id=ur.role_id WHERE ur.user_id=u.id ORDER BY r.name) AS roles FROM sarva.app_user u WHERE id=$1`,[id])).rows[0];}
 async function change(id,roles,isActive=true,extra={}){const current=await access(id);return {roles,isActive,revision:current.access_revision,reason:'Synthetic access review',currentPassword:password,...extra};}
 before(async()=>{

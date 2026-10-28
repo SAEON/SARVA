@@ -173,7 +173,7 @@ export default function Resources() {
     async function saveRecord(payload) {
         const isCreate = !editing.id;
         const response = await fetch(apiUrl(isCreate ? "/api/resources" : `/api/resources/${editing.id}`), {
-            method: isCreate ? "POST" : "PATCH",
+            method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,

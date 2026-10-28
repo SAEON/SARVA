@@ -37,7 +37,7 @@ export function createUserAdminRouter(db=pool){
   }catch{res.status(500).json({message:'Unable to load access history'});}
  });
  const attempts=new Map();
- router.patch('/admin/users/:id',async(req,res)=>{
+ router.post('/admin/users/:id',async(req,res)=>{
   const body=req.body || {};
   const roles=body.roles;
   if(!/^[1-9][0-9]*$/.test(req.params.id) || !Array.isArray(roles) || roles.length<1 || roles.length>20 ||

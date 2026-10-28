@@ -71,7 +71,7 @@ glossaryRouter.post("/glossary", requireAdmin, async (req, res) => {
   }
 });
 
-glossaryRouter.patch("/glossary/:id", requireAdmin, async (req, res) => {
+glossaryRouter.post("/glossary/:id", requireAdmin, async (req, res) => {
   const id = boundedInteger(req.params.id, 0, 1, 2147483647);
 
   try {

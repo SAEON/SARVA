@@ -191,7 +191,7 @@ export default function Glossary() {
     async function saveTerm(payload) {
         const isCreate = !editing.id;
         const response = await fetch(apiUrl(isCreate ? "/api/glossary" : `/api/glossary/${editing.id}`), {
-            method: isCreate ? "POST" : "PATCH",
+            method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,

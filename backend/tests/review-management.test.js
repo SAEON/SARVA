@@ -32,21 +32,21 @@ after(async()=>{
 });
 test('only the owner or current admin can edit, delete or restore reports',async()=>{
  const draft={...content(),revision:1};
- assert.equal((await call(null,'/'+id+'/content','PATCH',draft)).status,401);
- assert.equal((await call(other,'/'+id+'/content','PATCH',draft)).status,404);
+ assert.equal((await call(null,'/'+id+'/content','POST',draft)).status,401);
+ assert.equal((await call(other,'/'+id+'/content','POST',draft)).status,404);
  assert.equal((await call(other,'/'+id,'DELETE',{revision:1,note:'An unauthorized delete attempt'})).status,404);
  assert.equal((await call(other,'/'+id+'/restore','POST',{revision:1,note:'An unauthorized restore attempt'})).status,404);
- assert.equal((await call(owner,'/'+id+'/content','PATCH',draft)).status,200);
+ assert.equal((await call(owner,'/'+id+'/content','POST',draft)).status,200);
  const data=await detail();assert.equal(data.issue.page_path,'/overview');assert.equal(data.issue.revision,2);assert.equal(data.issue.status,'open');assert.ok(data.events.some(e=>e.event_type==='edited'));
- assert.equal((await call(owner,'/'+id+'/content','PATCH',draft)).status,409);
+ assert.equal((await call(owner,'/'+id+'/content','POST',draft)).status,409);
 });
 test('administrator resolves with fix notes; ordinary users cannot resolve',async()=>{
  const review={status:'resolved',kind:'bug',priority:'normal',revision:2,note:'Fixed the link and checked that the target opens.'};
- assert.equal((await call(owner,'/'+id,'PATCH',review)).status,403);
- assert.equal((await call(admin,'/'+id,'PATCH',{...review,note:''})).status,400);
- assert.equal((await call(admin,'/'+id,'PATCH',review)).status,200);
+ assert.equal((await call(owner,'/'+id,'POST',review)).status,403);
+ assert.equal((await call(admin,'/'+id,'POST',{...review,note:''})).status,400);
+ assert.equal((await call(admin,'/'+id,'POST',review)).status,200);
  const d=await detail();assert.equal(d.issue.status,'resolved');assert.ok(d.issue.resolved_at);assert.equal(d.issue.resolution,review.note);
- assert.equal((await call(admin,'/'+id,'PATCH',review)).status,409);
+ assert.equal((await call(admin,'/'+id,'POST',review)).status,409);
 });
 test('delete hides the report, retains history and prevents mutations until restored',async()=>{
  assert.equal((await call(owner,'/'+id,'DELETE',{revision:3,note:'Duplicate report, retained for reference.'})).status,200);
@@ -55,16 +55,16 @@ test('delete hides the report, retains history and prevents mutations until rest
  const outsider=await(await call(other,'?search='+prefix+'&archived=true')).json();assert.equal(outsider.data.total,0);
  const d=await detail();assert.equal(d.issue.status,'resolved');assert.ok(d.events.some(e=>e.event_type==='deleted'));
  assert.equal((await call(owner,'/'+id+'/comments','POST',{note:'Not allowed while deleted'})).status,404);
- assert.equal((await call(owner,'/'+id+'/content','PATCH',{...content(),revision:4})).status,404);
- assert.equal((await call(admin,'/'+id,'PATCH',{status:'open',kind:'bug',priority:'normal',revision:4,note:'Not allowed while deleted'})).status,404);
+ assert.equal((await call(owner,'/'+id+'/content','POST',{...content(),revision:4})).status,404);
+ assert.equal((await call(admin,'/'+id,'POST',{status:'open',kind:'bug',priority:'normal',revision:4,note:'Not allowed while deleted'})).status,404);
  assert.equal((await call(owner,'/'+id+'/restore','POST',{revision:3,note:'An old stale restore request'})).status,409);
  assert.equal((await call(owner,'/'+id+'/restore','POST',{revision:4,note:'Restore the original report for verification.'})).status,200);
  const restored=await detail();assert.equal(restored.issue.deleted_at,null);assert.equal(restored.issue.status,'resolved');assert.equal(restored.issue.revision,5);assert.ok(restored.events.some(e=>e.event_type==='restored'));
- assert.equal((await call(admin,'/'+id+'/content','PATCH',{...content(),revision:5})).status,200);
+ assert.equal((await call(admin,'/'+id+'/content','POST',{...content(),revision:5})).status,200);
 });
 test('audit failures roll back content edits and deletion',async()=>{
  const before=(await detail()).issue;
- assert.equal((await call(owner,'/'+id+'/content','PATCH',{...content(),title:'Must not be saved',revision:before.revision},'/failure')).status,500);
+ assert.equal((await call(owner,'/'+id+'/content','POST',{...content(),title:'Must not be saved',revision:before.revision},'/failure')).status,500);
  assert.deepEqual((await detail()).issue,before);
  assert.equal((await call(admin,'/'+id,'DELETE',{revision:before.revision,note:'Must not delete without audit history'},'/failure')).status,500);
  assert.deepEqual((await detail()).issue,before);
@@ -72,7 +72,7 @@ test('audit failures roll back content edits and deletion',async()=>{
 test('revoked admin cannot manage another account report using a stale admin token',async()=>{
  await pool.query("DELETE FROM sarva.app_user_role WHERE user_id=$1 AND role_id=(SELECT id FROM sarva.auth_role WHERE name='admin')",[admin]);
  const revision=(await detail()).issue.revision;
- assert.equal((await call(admin,'/'+id+'/content','PATCH',{...content(),revision})).status,404);
+ assert.equal((await call(admin,'/'+id+'/content','POST',{...content(),revision})).status,404);
  assert.equal((await call(admin,'/'+id,'DELETE',{revision,note:'A revoked admin cannot delete'})).status,404);
 });
 
@@ -81,33 +81,33 @@ test('admins assign active admins, filter their work, and protect names from rep
  assert.equal((await call(owner,'/assignment-options')).status,403);
  const options=await(await call(admin,'/assignment-options')).json();assert.ok(options.data.admins.some(u=>String(u.id)===String(admin2)));
  let revision=(await detail()).issue.revision;
- assert.equal((await call(owner,'/'+id+'/assignment','PATCH',{revision,assignedTo:admin2})).status,403);
- assert.equal((await call(admin,'/'+id+'/assignment','PATCH',{revision,assignedTo:owner})).status,400);
- assert.equal((await call(admin,'/'+id+'/assignment','PATCH',{revision,assignedTo:admin2})).status,200);
- assert.equal((await call(admin,'/'+id+'/assignment','PATCH',{revision,assignedTo:null})).status,409);
+ assert.equal((await call(owner,'/'+id+'/assignment','POST',{revision,assignedTo:admin2})).status,403);
+ assert.equal((await call(admin,'/'+id+'/assignment','POST',{revision,assignedTo:owner})).status,400);
+ assert.equal((await call(admin,'/'+id+'/assignment','POST',{revision,assignedTo:admin2})).status,200);
+ assert.equal((await call(admin,'/'+id+'/assignment','POST',{revision,assignedTo:null})).status,409);
  const owned=await detail();assert.equal(owned.issue.assignment_status,'Assigned to admin');assert.ok(!Object.hasOwn(owned.issue,'assigned_to'));assert.ok(!Object.hasOwn(owned.issue,'assignee_name'));
  const event=owned.events.find(e=>e.event_type==='assigned');assert.equal(event.actor_name,'Admin');assert.deepEqual(event.changes,{});assert.ok(!JSON.stringify(owned).includes('Synthetic admin2'));
  const adminView=await detail(admin);assert.equal(String(adminView.issue.assigned_to),String(admin2));assert.equal(adminView.issue.assignee_name,'Synthetic admin2');
  const mine=await(await call(admin2,'?assigned=mine&search='+prefix)).json();assert.equal(mine.data.total,1);
  assert.equal((await call(owner,'?assigned=mine')).status,403);
  revision=adminView.issue.revision;
- assert.equal((await call(admin,'/'+id+'/assignment','PATCH',{revision,assignedTo:null})).status,200);
+ assert.equal((await call(admin,'/'+id+'/assignment','POST',{revision,assignedTo:null})).status,200);
  assert.equal((await detail()).issue.assignment_status,'Unassigned');
  const unassigned=await(await call(admin,'?assigned=unassigned&search='+prefix)).json();assert.equal(unassigned.data.total,1);
 });
 test('assignment rejects inactive admins and rolls back on history failure',async()=>{
  const revision=(await detail()).issue.revision;
  await pool.query('UPDATE sarva.app_user SET is_active=false WHERE id=$1',[admin2]);
- assert.equal((await call(admin,'/'+id+'/assignment','PATCH',{revision,assignedTo:admin2})).status,400);
+ assert.equal((await call(admin,'/'+id+'/assignment','POST',{revision,assignedTo:admin2})).status,400);
  await pool.query('UPDATE sarva.app_user SET is_active=true WHERE id=$1',[admin2]);
  const before=(await detail(admin)).issue;
- assert.equal((await call(admin,'/'+id+'/assignment','PATCH',{revision,assignedTo:admin2},'/failure')).status,500);
+ assert.equal((await call(admin,'/'+id+'/assignment','POST',{revision,assignedTo:admin2},'/failure')).status,500);
  assert.deepEqual((await detail(admin)).issue,before);
 });
 
 test('assignment connection failures return JSON and leave the report unchanged',async()=>{
  const before=(await detail(admin)).issue;
- const response=await call(admin,'/'+id+'/assignment','PATCH',{revision:before.revision,assignedTo:admin2},'/unavailable');
+ const response=await call(admin,'/'+id+'/assignment','POST',{revision:before.revision,assignedTo:admin2},'/unavailable');
  assert.equal(response.status,503);assert.match(response.headers.get('content-type'),/application\/json/);
  assert.match((await response.json()).message,/Refresh the issue/);
  assert.deepEqual((await detail(admin)).issue,before);
@@ -118,16 +118,16 @@ test('second administrator assigns, reloads, reassigns and unassigns another use
  const options=await(await call(admin2,'/assignment-options')).json();
  assert.ok(options.data.admins.some(u=>String(u.id)===String(admin)));
  let issue=(await detail(admin2)).issue;
- let response=await call(admin2,'/'+id+'/assignment','PATCH',{revision:issue.revision,assignedTo:String(admin)});
+ let response=await call(admin2,'/'+id+'/assignment','POST',{revision:issue.revision,assignedTo:String(admin)});
  assert.equal(response.status,200);assert.match(response.headers.get('content-type'),/application\/json/);
  assert.ok(await response.json());
  issue=(await detail(admin2)).issue;
  assert.equal(String(issue.assigned_to),String(admin));
  assert.equal(String((await detail(admin)).issue.assigned_to),String(admin));
- response=await call(admin2,'/'+id+'/assignment','PATCH',{revision:issue.revision,assignedTo:String(admin2)});
+ response=await call(admin2,'/'+id+'/assignment','POST',{revision:issue.revision,assignedTo:String(admin2)});
  assert.equal(response.status,200);await response.json();
  issue=(await detail(admin2)).issue;assert.equal(String(issue.assigned_to),String(admin2));
- response=await call(admin2,'/'+id+'/assignment','PATCH',{revision:issue.revision,assignedTo:null});
+ response=await call(admin2,'/'+id+'/assignment','POST',{revision:issue.revision,assignedTo:null});
  assert.equal(response.status,200);await response.json();
  assert.equal((await detail(admin2)).issue.assignment_status,'Unassigned');
 });
@@ -135,14 +135,14 @@ test('second administrator assigns, reloads, reassigns and unassigns another use
 
 test('assignment rollback failures still return JSON and discard the broken connection',async()=>{
  const before=(await detail(admin)).issue;
- const response=await call(admin,'/'+id+'/assignment','PATCH',{revision:before.revision,assignedTo:admin2},'/broken-rollback');
+ const response=await call(admin,'/'+id+'/assignment','POST',{revision:before.revision,assignedTo:admin2},'/broken-rollback');
  assert.equal(response.status,500);assert.match(response.headers.get('content-type'),/application\/json/);
  assert.match((await response.json()).message,/Refresh the issue/);
  assert.deepEqual((await detail(admin)).issue,before);
 });
 
 
-test('POST assignment uses the same permissions, revisions and audit trail as PATCH',async()=>{
+test('POST assignment uses the permissions, revisions and audit history consistently',async()=>{
  let issue=(await detail(admin2)).issue;
  const body={revision:issue.revision,assignedTo:String(admin)};
  assert.equal((await call(null,'/'+id+'/assignment','POST',body)).status,401);
@@ -156,7 +156,7 @@ test('POST assignment uses the same permissions, revisions and audit trail as PA
  const before=(await detail(admin2)).issue;
  assert.equal((await call(admin2,'/'+id+'/assignment','POST',{revision:before.revision,assignedTo:null},'/failure')).status,500);
  assert.deepEqual((await detail(admin2)).issue,before);
- assert.equal((await call(admin2,'/'+id+'/assignment','PATCH',{revision:before.revision,assignedTo:null})).status,200);
+ assert.equal((await call(admin2,'/'+id+'/assignment','POST',{revision:before.revision,assignedTo:null})).status,200);
  assert.equal((await detail(admin2)).issue.assignment_status,'Unassigned');
  issue=(await detail(admin2)).issue;
  const unavailable=await call(admin2,'/'+id+'/assignment','POST',{revision:issue.revision,assignedTo:admin},'/unavailable');
@@ -185,4 +185,22 @@ test('admin creates and assigns atomically; viewers and invalid targets are reje
    if(assignedTo)assert.equal(String(events[1].changes.after.assigned_to),assignedTo);
   }finally{await pool.query('DELETE FROM sarva.review_issue_event WHERE issue_id=$1',[created]);await pool.query('DELETE FROM sarva.review_issue WHERE id=$1',[created]);}
  }
+});
+
+
+test('POST review resolves with notes and preserves permissions, conflict checks and rollback',async()=>{
+ let before=(await detail(admin2)).issue;
+ const review={status:'resolved',kind:'bug',priority:'normal',revision:before.revision,note:'Corrected the link and verified it opens successfully.'};
+ assert.equal((await call(null,'/'+id+'/review','POST',review)).status,401);
+ assert.equal((await call(owner,'/'+id+'/review','POST',review)).status,403);
+ assert.equal((await call(admin2,'/'+id+'/review','POST',{...review,note:''})).status,400);
+ assert.equal((await call(admin2,'/'+id+'/review','POST',review,'/failure')).status,500);
+ assert.deepEqual((await detail(admin2)).issue,before);
+ assert.equal((await call(admin2,'/'+id+'/review','POST',review)).status,200);
+ const resolved=(await detail(admin2));assert.equal(resolved.issue.status,'resolved');assert.equal(resolved.issue.resolution,review.note);assert.ok(resolved.issue.resolved_at);
+ assert.ok(resolved.events.some(e=>e.event_type==='review'&&e.changes.after.status==='resolved'&&e.note===review.note));
+ assert.equal((await call(admin2,'/'+id+'/review','POST',review)).status,409);
+ assert.equal((await call(admin2,'/'+id+'/review','POST',{...review,status:'open',revision:resolved.issue.revision,note:'Reopen to verify follow-up through the new endpoint.'})).status,200);
+ const reopened=await detail(admin2);assert.equal(reopened.issue.status,'open');assert.ok(reopened.events.some(e=>e.event_type==='review'&&e.changes.after.status==='resolved'));
+ assert.equal((await call(admin2,'/'+id,'POST',{...review,revision:reopened.issue.revision})).status,200);
 });

@@ -106,7 +106,7 @@ export function createReviewIssuesRouter(db=pool){
   }catch(error){await client.query('ROLLBACK');res.status(error.status||500).json({message:error.status?error.message:'Unable to add comment'});}finally{client.release();}
  });
  // Owner/admin content changes preserve the review decision and append history.
- router.route('/review/issues/:id/assignment').post(limit,assignIssue).patch(limit,assignIssue);
+ router.route('/review/issues/:id/assignment').post(limit,assignIssue);
  async function assignIssue(req,res){
   if(!req.reviewUser.isAdmin)return res.status(403).json({message:'Only administrators can assign reports'});
   const b=req.body||{};
@@ -133,7 +133,7 @@ export function createReviewIssuesRouter(db=pool){
    res.status(error.status || (stage==='connect'?503:500)).json({message:error.status?error.message:'Unable to save assignment. Refresh the issue before trying again.'});
   }finally{if(client)client.release(rollbackFailed?new Error('Assignment rollback failed'):undefined);}
  }
- router.patch('/review/issues/:id/content',limit,async(req,res)=>{
+ router.post('/review/issues/:id/content',limit,async(req,res)=>{
   const b=req.body||{};let pagePath,contact;
   try{contact=reviewContact(b);}catch{return res.status(400).json({message:'Enter valid optional contact details'});}
   try{pagePath=reviewPage(b.pagePath);}catch{return res.status(400).json({message:'Enter a SARVA page path or leave it blank'});}
@@ -166,13 +166,16 @@ export function createReviewIssuesRouter(db=pool){
  }
  router.delete('/review/issues/:id',limit,(req,res)=>archive(req,res,false));
  router.post('/review/issues/:id/restore',limit,(req,res)=>archive(req,res,true));
- router.patch('/review/issues/:id',limit,async(req,res)=>{
+ router.post('/review/issues/:id/review',limit,saveReview);
+ router.post('/review/issues/:id',limit,saveReview);
+ async function saveReview(req,res){
   if(!req.reviewUser.isAdmin)return res.status(403).json({message:'Only administrators can change review status'});
   const b=req.body||{};
   if(!isId(req.params.id)||!statuses.includes(b.status)||!kinds.includes(b.kind)||!priorities.includes(b.priority)||!Number.isSafeInteger(b.revision)||b.revision<1||!validText(b.note,5,5000)||
    Object.keys(b).some(k=>!['status','kind','priority','revision','note'].includes(k)))return res.status(400).json({message:'Choose a valid status, type and priority, and add review or fix notes (5–5,000 characters)'});
-  const client=await db.connect();
+  let client,rollbackFailed=false;
   try{
+   client=await db.connect();
    await client.query('BEGIN');const actor=await freshActor(client,req.reviewUser.id);if(!actor.isAdmin)throw fail(403,'Administrator access required');
    const issue=(await client.query('SELECT * FROM sarva.review_issue WHERE id=$1 FOR UPDATE',[req.params.id])).rows[0];if(!issue || issue.deleted_at)throw fail(404,'Issue not found');
    if(issue.revision!==b.revision)throw fail(409,'Another reviewer updated this issue. Refresh before saving.');
@@ -182,8 +185,8 @@ export function createReviewIssuesRouter(db=pool){
     resolution=CASE WHEN $2='resolved' THEN $5 ELSE '' END,resolved_at=CASE WHEN $2='resolved' THEN now() ELSE NULL END WHERE id=$1`,[issue.id,b.status,b.kind,b.priority,b.note.trim()]);
    await client.query(`INSERT INTO sarva.review_issue_event(issue_id,actor_user_id,event_type,note,changes) VALUES($1,$2,'review',$3,$4)`,[issue.id,actor.id,b.note.trim(),JSON.stringify({before,after})]);
    await client.query('COMMIT');res.json({message:'Review saved'});
-  }catch(error){await client.query('ROLLBACK');res.status(error.status||500).json({message:error.status?error.message:'Unable to save review'});}finally{client.release();}
- });
+  }catch(error){if(client){try{await client.query('ROLLBACK');}catch{rollbackFailed=true;}}res.status(error.status||500).json({message:error.status?error.message:'Unable to save review. Refresh the issue before trying again.'});}finally{if(client)client.release(rollbackFailed?new Error('Review rollback failed'):undefined);}
+ }
  return router;
 }
 export const reviewIssuesRouter=createReviewIssuesRouter();

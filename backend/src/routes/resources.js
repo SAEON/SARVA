@@ -303,7 +303,7 @@ resourcesRouter.post("/resources", requireAdmin, async (req, res) => {
   }
 });
 
-resourcesRouter.patch("/resources/:id", requireAdmin, async (req, res) => {
+resourcesRouter.post("/resources/:id", requireAdmin, async (req, res) => {
   const id = boundedInteger(req.params.id, 0, 1, 2147483647);
   const url = cleanText(req.body.url);
   const linkStatus = cleanLinkStatus(req.body.link_status, url);
