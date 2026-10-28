@@ -314,3 +314,12 @@ PR #43 merged as 1bc09cdddfac1eaaed764b21ba772d75b29d21bb. Updates & Monitoring 
 The operator prepared on 8090 while live stayed on 8091, then confirmed all working after switch and browser checks, including monitoring expansion/source links, Overview browser redirect, removed Explore question and login/DS Lab checks. Backup: /var/backups/sarva-frontend-bluegreen/20261028-130531; rollback: sarva-frontend:rollback-bluegreen-20261028-130531; candidate: 7ee8f63ad0db6f9d394b7e6ef9a19d895380cbd6dfd08eb2867f15d7a1f786d3. Frontend-only rollout; backend, database and DS Lab were not redeployed.
 
 Cleanup completed, confirmed by operator output. Removed duplicate/older frontend tags rollback-bluegreen-20261028-130506 and rollback-bluegreen-20261028-123730; retained sarva-frontend:rollback-bluegreen-20261028-130531 after verifying it against the previous frontend slot. The supplied cleanup procedure completed its site checks; DS Lab HTTP 200 and retained rollback were explicitly shown in the final excerpt. Backend rollback images, both frontend containers, backup files, database volumes and DS Lab images were untouched. Docker reports 28 images (19 active), image storage 5.718 GB, five volumes all active; build cache 14.62 GB remained unpruned.
+
+
+## Header search sizing accepted, 28 October 2026
+
+PR #44 merged as bd036165d759a60bc5bcf24fe7cc86e7b9b74ccc. Desktop navigation has its own row so it cannot squeeze the search field; the input fills available space with a fixed-size search button. Mobile search remains full width. Local lint/build and privacy tests passed, and viewport checks at 1536/1024/390 pixels retained typed text.
+
+The replacement frontend was prepared on 8091 while live stayed on 8090 and then switched. Backup: /var/backups/sarva-frontend-bluegreen/20261028-131514; rollback: sarva-frontend:rollback-bluegreen-20261028-131514; candidate: 1d601270611309fa7c2b4e0bebe746a05fb1fec6761b4d27e51e1a16aef4387b. The operator supplied passed switch checks and subsequently confirmed working after the Chrome/Edge browser, search and login test instructions. Backend, database and DS Lab were not redeployed.
+
+Cleanup is pending rollback verification/execution. Retain both frontend slots, the latest frontend rollback, backend rollback images, backup files, DS Lab images and database volumes.
