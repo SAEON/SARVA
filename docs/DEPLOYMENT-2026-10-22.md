@@ -1,5 +1,13 @@
 # SARVA production deployment, 22 October 2026
 
+## Compact forecast cards production acceptance 28 October 2026
+
+PR #26 (merge `f5b54b598dcd7272d16e841d1ce28e5c9fbd0915`) is deployed and operator-accepted. Selected location weather outlook is separated from Highest modelled values; places and dates are prominent and the independent locations/dates are explained. Compact layout retains a shared experimental warning and official SAWS link. Visible ECMWF Open Data (IFS 0.25°) source link, copyright and CC BY 4.0 credit remain; individual cards include short ECMWF/SARVA credits, distinguishing the SARVA-derived fire-weather index.
+
+The operator confirmed all deployment checks passed, compact cards and attribution look good, password and passkey browser login both work, and DS Lab still works. Only the SARVA frontend was rebuilt/recreated; backend, forecast calculations, authentication/session settings and DS Lab were unchanged. No migration was needed.
+
+A before-compact-forecasts frontend rollback was saved; exact timestamp remains to be verified for cleanup. Cleanup is **pending operator execution and verification**. Retain the latest verified frontend rollback, running images and latest backend rollback (combined-weather-20261027-210825). Preserve all database volumes, backups, build cache and DS Lab images/services. This is operator-reported production acceptance, not an independent server audit.
+
 ## Simplified privacy notice production acceptance 28 October 2026
 
 PR #25 (merge `ca1fdad6f963c3838cb57c01feb71b61ea78758f`) is deployed and operator-accepted. The notice uses short sections with expandable details, retains accurate account/passkey and account-linked analytics disclosures, and adds the SAEON Catalogue general enquiry contact. How we use analytics precedes the collapsed Manage your analytics preference control. Tracking defaults, opt-out behavior and the review-in-progress status are unchanged.
