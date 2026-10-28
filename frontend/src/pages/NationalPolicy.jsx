@@ -45,7 +45,7 @@ function statusLabel(status) {
         redirected: "Redirected",
         broken: "Broken",
         missing: "Missing URL",
-        unchecked: "Not checked",
+        unchecked: "Not verified",
     }[status] || "Not checked";
 }
 
