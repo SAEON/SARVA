@@ -1,3 +1,4 @@
+import { exploreNavigation } from "../config/exploreNavigation";
 import {trackInteraction} from '../config/analyticsInteraction';
 import DevelopmentNotice from "./DevelopmentNotice.jsx";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
@@ -39,7 +40,7 @@ const fallbackNav = [
         items: [
             { label: "Municipal Risk Profiler", to: "/municipal-risk-profiler" },
             { label: "Rainfall Risk Layers", to: "/#risk-map" },
-            { label: "SARVA Atlas Gallery", href: "https://sarva.saeon.ac.za/atlas/", external: true },
+            { label: "Atlases, tools and links", to: "/explore#atlas-tools" },
             { label: "2017 Agriculture Census", href: "https://sarvamaps.saeon.ac.za/agri-census/", external: true },
             { label: "Climate Risk Tool", href: "https://sarvamaps.saeon.ac.za/climate-tool/", external: true },
             { label: "Environmental Vulnerability", href: "https://sarvamaps.saeon.ac.za/sanbi/", external: true },
@@ -47,8 +48,7 @@ const fallbackNav = [
             { label: "BioEnergy Technology Decision Support Tool", href: "https://nrf-saeon.maps.arcgis.com/apps/dashboards/55aab230007f4712b62100988d182d2c", external: true },
             { label: "Global Disasters Risk Dashboard", href: "https://sarvamaps.saeon.ac.za/global-disasters/map", external: true },
             { label: "HST District Health Barometer", href: "https://dhb.hst.org.za/reproductive-maternal-child-health", external: true },
-            { label: "National Climate Change Information System", href: "https://gisportal.saeon.ac.za/portal/apps/webappviewer/index.html?id=2d572dcf9c5f47c484540f8c934e03f4", external: true },
-            { label: "Ocean Data Explorer Tool", href: "https://dash.saeon.ac.za/apps/ocean/PELTER", external: true },
+            { label: "National Climate Change Information System", href: "https://nccis.saeon.ac.za/", external: true },
         ],
     },
     {
@@ -101,10 +101,10 @@ export default function Header() {
 
     const nav = useMemo(() => {
         if (navResponse?.status === "ok" && Array.isArray(navResponse.data)) {
-            return navResponse.data.map(group => ({...group, items: (group.items || []).filter(item => !String(item.to || item.href || "").split(/[?#]/)[0].endsWith("/municipal-planning-workspace"))}));
+            return exploreNavigation(navResponse.data);
         }
 
-        return fallbackNav;
+        return exploreNavigation(fallbackNav);
     }, [navResponse]);
     const openKey = openDropdown.pathname === location.pathname ? openDropdown.key : null;
 

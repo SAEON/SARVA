@@ -2,19 +2,14 @@ import { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "../styles/explore.css";
 
+const DATA_SCIENCE_LAB_URL = import.meta.env.VITE_DSLAB_URL || "https://ds-lab.saeon.ac.za/";
+
 const primaryPaths = [
     {
         label: "Explore by place",
         title: "Municipal profiles",
         detail: "Search or click a municipality to view risk scores, drivers, finance and governance indicators, source values and gaps.",
         to: "/municipal-risk-profiler",
-        status: "Live",
-    },
-    {
-        label: "Explore by map",
-        title: "Atlas overview",
-        detail: "Open the national map workspace for live highlights, forecast context and SARVA spatial layers.",
-        to: "/#risk-map",
         status: "Live",
     },
     {
@@ -28,17 +23,23 @@ const primaryPaths = [
         label: "Explore by learning",
         title: "Data Science Lab",
         detail: "Tutorials, prototype apps, learning pathways and practical SARVA data-science workflows.",
-        to: "/resources?search=data%20science%20lab",
-        status: "Starting point",
+        href: DATA_SCIENCE_LAB_URL,
+        status: "Live",
     },
 ];
 
 const atlasTools = [
     {
-        group: "Atlas gallery",
-        title: "All SARVA atlas apps",
-        detail: "Open the SARVA GIS applications gallery and choose from the available themed atlas tools.",
-        href: "https://sarva.saeon.ac.za/atlas/",
+        group: "Climate data",
+        title: "National Climate Change Information System",
+        detail: "National climate change information and reporting portal.",
+        href: "https://nccis.saeon.ac.za/",
+    },
+    {
+        group: "Climate data",
+        title: "Free State Climate Information System",
+        detail: "Climate information portal for the Free State.",
+        href: "https://fsccis.saeon.ac.za/",
     },
     {
         group: "Agriculture",
@@ -71,6 +72,12 @@ const atlasTools = [
         href: "https://nrf-saeon.maps.arcgis.com/apps/dashboards/55aab230007f4712b62100988d182d2c",
     },
     {
+        group: "Bioenergy",
+        title: "BioEnergy Atlas",
+        detail: "Explore South African bioenergy information and spatial resources.",
+        href: "https://bea.saeon.ac.za/",
+    },
+    {
         group: "Disasters",
         title: "Global Disasters Risk Dashboard",
         detail: "Disaster risk dashboard from the SARVA atlas collection.",
@@ -83,80 +90,47 @@ const atlasTools = [
         href: "https://dhb.hst.org.za/reproductive-maternal-child-health",
     },
     {
-        group: "Climate data",
-        title: "National Climate Change Information System",
-        detail: "National climate change information and reporting portal.",
-        href: "https://gisportal.saeon.ac.za/portal/apps/webappviewer/index.html?id=2d572dcf9c5f47c484540f8c934e03f4",
+        group: "Observations",
+        title: "SAEON Observations Monitor",
+        detail: "Explore SAEON observation sites and monitoring information.",
+        href: "https://observationsmonitor.saeon.ac.za/home",
     },
     {
-        group: "Ocean",
-        title: "Ocean Data Explorer Tool",
-        detail: "Ocean and coastal data explorer from the SAEON dashboard environment.",
-        href: "https://dash.saeon.ac.za/apps/ocean/PELTER",
+        group: "Observations",
+        title: "SAEON Observations Database",
+        detail: "Access the SAEON observations database.",
+        href: "https://observations.saeon.ac.za/",
+    },
+    {
+        group: "SAEON services",
+        title: "SAEON uLwazi",
+        detail: "Visit the SAEON uLwazi website for information about its work and services.",
+        href: "https://ulwazi.saeon.ac.za/",
+    },
+    {
+        group: "About SAEON",
+        title: "SAEON website",
+        detail: "Learn about SAEON, its observation network, research and activities.",
+        href: "https://www.saeon.ac.za/",
     },
 ];
 
 const questionPaths = [
-    {
-        question: "What risks are highest in a municipality?",
-        action: "Open municipal risk profiles",
-        to: "/municipal-risk-profiler",
-        state: "live",
-    },
-    {
-        question: "What datasets and services are available?",
-        action: "Search the catalogue",
-        to: "/search?theme=risk",
-        state: "live",
-    },
-    {
-        question: "What reports and tools support this work?",
-        action: "Browse resources",
-        to: "/resources",
-        state: "live",
-    },
-    {
-        question: "What policies and legislation are relevant?",
-        action: "Open policy library",
-        to: "/national-policy-and-legislation",
-        state: "live",
-    },
-    {
-        question: "What does this term mean?",
-        action: "Search glossary",
-        to: "/glossary",
-        state: "live",
-    },
-    {
-        question: "Where are data gaps affecting the score?",
-        action: "Gap dashboard coming soon",
-        state: "planned",
-    },
-    {
-        question: "How do scenarios change the risk picture?",
-        action: "Scenario comparison coming soon",
-        state: "planned",
-    },
-    {
-        question: "How was an index built?",
-        action: "Lab walkthroughs coming soon",
-        to: "/resources?search=data%20science%20lab",
-        state: "planned-link",
-    },
-];
-
-const themeLinks = [
-    ["Governance and finance", "/municipal-risk-profiler?metric=governance&tab=indicators&theme=Governance"],
-    ["Audit and compliance", "/municipal-risk-profiler?metric=governance_audit&tab=indicators&theme=Governance%20-%20audit%20and%20compliance"],
-    ["Safety and crime", "/municipal-risk-profiler?metric=safety&tab=indicators&theme=Safety"],
-    ["Basic services", "/municipal-risk-profiler?metric=services&tab=indicators&theme=Basic%20services"],
-    ["Exposure and vulnerability", "/municipal-risk-profiler?metric=people&tab=indicators&theme=Social%20vulnerability"],
-    ["Climate and hazards", "/#risk-map"],
-    ["Observation data", "/search?singleSitesOnly=true"],
-    ["Essential climate variables", "/search?ev=ecv"],
-    ["Essential biodiversity variables", "/search?ev=ebv"],
-    ["Reports and evidence", "/resources?resource_group=reports_stories"],
-    ["Training and methods", "/resources?search=training"],
+    { question: "What source data are available for a municipality?", action: "Browse municipal profiles", to: "/municipal-risk-profiler?metric=indicator:population_total", state: "live" },
+    { question: "How do municipal finances compare?", action: "Compare operating margins", to: "/municipal-risk-profiler?metric=indicator:finance_operating_margin_pressure", state: "live" },
+    { question: "Where can I compare audit-related expenditure?", action: "View UIFW expenditure to revenue", to: "/municipal-risk-profiler?metric=indicator:governance_uifw_to_revenue", state: "live" },
+    { question: "Where can I compare recorded crime?", action: "View recorded murder counts", to: "/municipal-risk-profiler?metric=indicator:crime_murder", state: "live" },
+    { question: "How does access to basic services compare?", action: "View piped-water access", to: "/municipal-risk-profiler?metric=indicator:pct_piped_water_dwelling", state: "live" },
+    { question: "What is the population and household context?", action: "View population data", to: "/municipal-risk-profiler?metric=indicator:population_total", state: "live" },
+    { question: "Where can I explore weather model outputs?", action: "Open the experimental weather map", to: "/overview#risk-map", state: "live" },
+    { question: "What datasets and services are available?", action: "Search the catalogue", to: "/search", state: "live" },
+    { question: "Where can I find observation data?", action: "Find observation datasets", to: "/search?singleSitesOnly=true", state: "live" },
+    { question: "Where can I find essential climate variables?", action: "Search climate variables", to: "/search?ev=ecv", state: "live" },
+    { question: "Where can I find essential biodiversity variables?", action: "Search biodiversity variables", to: "/search?ev=ebv", state: "live" },
+    { question: "What reports and tools support this work?", action: "Browse resources and evidence", to: "/resources", state: "live" },
+    { question: "Where can I find tutorials and practical methods?", action: "Open Data Science Lab", href: DATA_SCIENCE_LAB_URL, state: "live" },
+    { question: "What policies and legislation are relevant?", action: "Open policy library", to: "/national-policy-and-legislation", state: "live" },
+    { question: "What does this term mean?", action: "Search glossary", to: "/glossary", state: "live" },
 ];
 
 function ActionLink({ item, className = "" }) {
@@ -167,6 +141,7 @@ function ActionLink({ item, className = "" }) {
             </span>
         );
     }
+    if (item.href) return <a className={className} href={item.href} target="_blank" rel="noopener noreferrer">{item.action} ↗</a>;
     return (
         <Link className={className} to={item.to}>
             {item.action || item.title}
@@ -212,7 +187,7 @@ export default function Explore() {
                         <p>{path.detail}</p>
                         <div>
                             <span>{path.status}</span>
-                            <Link to={path.to}>Open</Link>
+                            {path.href ? <a href={path.href} target="_blank" rel="noopener noreferrer" aria-label={`Open ${path.title} (new tab)`}>Open ↗</a> : <Link to={path.to}>Open</Link>}
                         </div>
                     </article>
                 ))}
@@ -220,8 +195,8 @@ export default function Explore() {
 
             <section className="sarva-explore__section" id="atlas-tools">
                 <div className="sarva-explore__sectionHead">
-                    <h2>Interactive Atlas Tools</h2>
-                    <span>direct map apps</span>
+                    <h2>Interactive atlases, tools and links</h2>
+                    <span>Maps, applications and information portals</span>
                 </div>
                 <div className="sarva-explore__atlasGrid">
                     {atlasTools.map((tool) => (
@@ -237,7 +212,7 @@ export default function Explore() {
             <section className="sarva-explore__section" id="themes">
                 <div className="sarva-explore__sectionHead">
                     <h2>Explore By Question</h2>
-                    <span>live links and planned tools</span>
+                    <span>Choose a question to open the relevant data or tool</span>
                 </div>
                 <div className="sarva-explore__questionGrid">
                     {questionPaths.map((item) => (
@@ -249,30 +224,7 @@ export default function Explore() {
                 </div>
             </section>
 
-            <section className="sarva-explore__section">
-                <div className="sarva-explore__sectionHead">
-                    <h2>Explore By Theme</h2>
-                    <span>starting points</span>
-                </div>
-                <div className="sarva-explore__themeGrid">
-                    {themeLinks.map(([label, to]) => (
-                        <Link key={label} to={to}>
-                            {label}
-                        </Link>
-                    ))}
-                </div>
-            </section>
 
-            <section className="sarva-explore__labBand">
-                <div>
-                    <small>Learning hub</small>
-                    <h2>Environmental Data Science Lab</h2>
-                    <p>
-                        SARVA tutorials, prototype apps, reproducible workflows and short notes will live here as the lab grows.
-                    </p>
-                </div>
-                <Link to="/resources?search=data%20science%20lab">Open lab resources</Link>
-            </section>
         </div>
     );
 }

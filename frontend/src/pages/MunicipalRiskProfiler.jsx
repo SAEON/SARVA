@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { profilerMetricFromSearch } from "../config/profilerMetricLink";
 import { trackInteraction } from "../config/analyticsInteraction";
 import { municipalMapScale } from "../config/municipalMapScale";
 import { hasRawEvidence } from "../config/rawIndicatorTotals";
@@ -246,6 +248,11 @@ function buildPdf(actions) {
 }
 
 export default function MunicipalRiskProfiler() {
+    const location = useLocation();
+    return <MunicipalProfilerView key={location.search} initialMetric={profilerMetricFromSearch(location.search)} />;
+}
+
+function MunicipalProfilerView({initialMetric}) {
     const mapContainerRef = useRef(null), mapRef = useRef(null), popupRef = useRef(null);
     const metricRecordsRef = useRef(new Map()), metricLabelRef = useRef("Selected layer");
     const municipalitiesRef = useRef([]), mapViewModeRef = useRef("country");
@@ -255,7 +262,7 @@ export default function MunicipalRiskProfiler() {
     const [query, setQuery] = useState(""), [selected, setSelected] = useState(null);
     const [profile, setProfile] = useState(null), [profileError, setProfileError] = useState("");
     const [loadedGid, setLoadedGid] = useState(null), [mapReady, setMapReady] = useState(false);
-    const [selectedMetric, setSelectedMetric] = useState("indicator:crime_murder");
+    const [selectedMetric, setSelectedMetric] = useState(initialMetric);
     const [selectedPeriod, setSelectedPeriod] = useState("");
     const [metricData, setMetricData] = useState(null), [metricError, setMetricError] = useState("");
     const [infoOpen, setInfoOpen] = useState(false);
