@@ -30,6 +30,6 @@ test('feedback needs no contact details and invalid emails are rejected',async()
  assert.equal((await call(owner,'',{...draft(),contactName:'x'.repeat(101)})).status,400);
  const response=await call(owner,'',{...draft(),kind:'feedback',contactName:'',contactEmail:''});assert.equal(response.status,201);
  const fid=(await response.json()).data.id;const d=(await(await call(owner,'/'+fid)).json()).data;assert.equal(d.issue.kind,'feedback');assert.equal(d.issue.contact_email,'');
- const edited=await call(owner,'/'+id+'/content',{...draft(),contactName:'Updated tester',contactEmail:'followup@example.invalid',revision:1},'PATCH');assert.equal(edited.status,200);
+ const edited=await call(owner,'/'+id+'/content',{...draft(),contactName:'Updated tester',contactEmail:'followup@example.invalid',revision:1},'POST');assert.equal(edited.status,200);
  const changed=(await(await call(owner,'/'+id)).json()).data;assert.equal(changed.issue.contact_email,'followup@example.invalid');assert.ok(changed.events.some(e=>e.event_type==='edited'));
 });

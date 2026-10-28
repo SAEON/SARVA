@@ -71,17 +71,17 @@ test('a demoted administrator loses other threads and sees generic names on thei
 });
 test('only current administrators can review, even when a user token claims admin',async()=>{
  const draft=await review();
- assert.equal((await call('/api/review/issues/'+issue,token(reporter,['admin']),draft,'PATCH')).status,403);
+ assert.equal((await call('/api/review/issues/'+issue,token(reporter,['admin']),draft,'POST')).status,403);
  await pool.query("DELETE FROM sarva.app_user_role WHERE user_id=$1 AND role_id=(SELECT id FROM sarva.auth_role WHERE name='admin')",[admin]);
- assert.equal((await call('/api/review/issues/'+issue,token(admin,['admin']),draft,'PATCH')).status,403);
+ assert.equal((await call('/api/review/issues/'+issue,token(admin,['admin']),draft,'POST')).status,403);
  await pool.query("INSERT INTO sarva.app_user_role(user_id,role_id) SELECT $1,id FROM sarva.auth_role WHERE name='admin'",[admin]);
 });
 test('review, resolution and reopening preserve earlier fixes and comments',async()=>{
- assert.equal((await call('/api/review/issues/'+issue,token(admin),await review(),'PATCH')).status,200);
+ assert.equal((await call('/api/review/issues/'+issue,token(admin),await review(),'POST')).status,200);
  let data=await detail();assert.equal(data.issue.status,'in-review');
- assert.equal((await call('/api/review/issues/'+issue,token(admin),await review('resolved',{note:'Fixed the layer path and verified map loading.'}),'PATCH')).status,200);
+ assert.equal((await call('/api/review/issues/'+issue,token(admin),await review('resolved',{note:'Fixed the layer path and verified map loading.'}),'POST')).status,200);
  data=await detail();assert.equal(data.issue.status,'resolved');assert.ok(data.issue.resolved_at);assert.equal(data.issue.resolution,'Fixed the layer path and verified map loading.');
- assert.equal((await call('/api/review/issues/'+issue,token(admin),await review('open',{kind:'update',note:'Reopened after a follow-up test found another affected page.'}),'PATCH')).status,200);
+ assert.equal((await call('/api/review/issues/'+issue,token(admin),await review('open',{kind:'update',note:'Reopened after a follow-up test found another affected page.'}),'POST')).status,200);
  data=await detail();assert.equal(data.issue.status,'open');assert.equal(data.issue.resolution,'');assert.equal(data.issue.resolved_at,null);
  assert.ok(data.events.some(e=>e.note==='Fixed the layer path and verified map loading.'));assert.equal(data.events.filter(e=>['comment','reply'].includes(e.event_type)).length,2);
 });
@@ -89,17 +89,17 @@ test('invalid input and private query-string page paths are rejected',async()=>{
  for(const change of [{title:'x'},{description:'short'},{kind:'admin'},{priority:'urgent'},{pagePath:'https://example.invalid/'},{pagePath:'//example.invalid'}])assert.equal((await call('/api/review/issues',token(reporter),{...report(),...change})).status,400);
  assert.equal((await call('/api/review/issues?page=-1',token(admin))).status,400);
  assert.equal((await call('/api/review/issues?status=deleted',token(admin))).status,400);
- assert.equal((await call('/api/review/issues/'+issue,token(admin),await review('resolved',{note:''}),'PATCH')).status,400);
+ assert.equal((await call('/api/review/issues/'+issue,token(admin),await review('resolved',{note:''}),'POST')).status,400);
 });
 test('stale reviewer draft cannot overwrite a newer decision',async()=>{
- const draft=await review();assert.equal((await call('/api/review/issues/'+issue,token(admin),draft,'PATCH')).status,200);
- assert.equal((await call('/api/review/issues/'+issue,token(admin),draft,'PATCH')).status,409);
+ const draft=await review();assert.equal((await call('/api/review/issues/'+issue,token(admin),draft,'POST')).status,200);
+ assert.equal((await call('/api/review/issues/'+issue,token(admin),draft,'POST')).status,409);
 });
 test('an audit failure rolls back both issue creation and a review change',async()=>{
  const old=(await pool.query('SELECT count(*) FROM sarva.review_issue WHERE created_by=$1',[reporter])).rows[0].count;
  assert.equal((await call('/failure/review/issues',token(reporter),report())).status,500);
  assert.equal((await pool.query('SELECT count(*) FROM sarva.review_issue WHERE created_by=$1',[reporter])).rows[0].count,old);
- const before=(await detail()).issue;assert.equal((await call('/failure/review/issues/'+issue,token(admin),await review('resolved'),'PATCH')).status,500);assert.deepEqual((await detail()).issue,before);
+ const before=(await detail()).issue;assert.equal((await call('/failure/review/issues/'+issue,token(admin),await review('resolved'),'POST')).status,500);assert.deepEqual((await detail()).issue,before);
 });
 
 test('optional affected page accepts blanks and normalizes SARVA URLs and paths',async()=>{

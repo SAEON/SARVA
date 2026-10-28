@@ -116,7 +116,7 @@ export default function NationalPolicy() {
     async function saveRecord(payload) {
         const isCreate = !editing.id;
         const response = await fetch(apiUrl(isCreate ? "/api/national-policy-legislation" : `/api/national-policy-legislation/${editing.id}`), {
-            method: isCreate ? "POST" : "PATCH",
+            method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,

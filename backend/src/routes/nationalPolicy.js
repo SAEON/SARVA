@@ -265,7 +265,7 @@ nationalPolicyRouter.post("/national-policy-legislation", requireAdmin, async (r
   }
 });
 
-nationalPolicyRouter.patch("/national-policy-legislation/:id", requireAdmin, async (req, res) => {
+nationalPolicyRouter.post("/national-policy-legislation/:id", requireAdmin, async (req, res) => {
   const id = boundedInteger(req.params.id, 0, 1, 2147483647);
   const url = cleanText(req.body.url);
   const linkStatus = cleanLinkStatus(req.body.link_status, url);

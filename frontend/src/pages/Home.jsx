@@ -1018,7 +1018,7 @@ export default function Home() {
             resource_type: payload.resource_type || "Report",
         };
         const response = await fetch(apiUrl(isCreate ? "/api/resources" : `/api/resources/${editingReport.id}`), {
-            method: isCreate ? "POST" : "PATCH",
+            method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
@@ -1083,7 +1083,7 @@ export default function Home() {
             resource_type: payload.resource_type || "Database",
         };
         const response = await fetch(apiUrl(isCreate ? "/api/resources" : `/api/resources/${editingSpotlight.id}`), {
-            method: isCreate ? "POST" : "PATCH",
+            method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
@@ -1148,7 +1148,7 @@ export default function Home() {
             resource_type: payload.resource_type || "Supporting Data",
         };
         const response = await fetch(apiUrl(isCreate ? "/api/resources" : `/api/resources/${editingSupporting.id}`), {
-            method: isCreate ? "POST" : "PATCH",
+            method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,

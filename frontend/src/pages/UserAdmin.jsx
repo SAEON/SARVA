@@ -42,7 +42,7 @@ function Accounts({token,currentId}){
  function open(account){setHistory([]);setSelected(account);setDraft({roles:[...account.roles],isActive:account.is_active,revision:account.access_revision,reason:'',currentPassword:''});setError('');setNotice('');}
  async function save(e){
   e.preventDefault();setSaving(true);setError('');
-  try{await request('/'+selected.id,{method:'PATCH',body:JSON.stringify(draft)});setNotice('Access updated for '+selected.display_name+'.');setSelected(null);setDraft(null);setReload(n=>n+1);}
+  try{await request('/'+selected.id,{method:'POST',body:JSON.stringify(draft)});setNotice('Access updated for '+selected.display_name+'.');setSelected(null);setDraft(null);setReload(n=>n+1);}
   catch(e){setError(e.message);setDraft(d=>({...d,currentPassword:''}));}finally{setSaving(false);}
  }
  const self=selected && String(selected.id)===String(currentId);
