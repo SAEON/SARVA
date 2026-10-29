@@ -1,3 +1,4 @@
+import { resourceActionLabel } from "../config/resourceAction";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import LibraryEditModal from "../components/LibraryEditModal";
@@ -432,7 +433,7 @@ export default function Resources() {
                                             )}
                                             {resource.url && (
                                                 <a href={resource.url} target="_blank" rel="noopener noreferrer">
-                                                    Open
+                                                    {resourceActionLabel(resource)}
                                                 </a>
                                             )}
                                         </div>

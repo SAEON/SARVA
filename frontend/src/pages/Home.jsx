@@ -1,3 +1,4 @@
+import { resourceActionLabel } from "../config/resourceAction";
 import { SUBMIT_DATA_URL } from "../config/contributeData";
 import ForecastNotice from "../components/ForecastNotice";
 import SiteDisclaimer from "../components/SiteDisclaimer.jsx";
@@ -448,7 +449,7 @@ function ResourceCard({
                 <div className="sarva-reportCard__actions">
                     {item.url && (
                         <a href={item.url} target="_blank" rel="noopener noreferrer">
-                            Open source <ExternalLinkIcon />
+                            {resourceActionLabel(item)} <ExternalLinkIcon />
                         </a>
                     )}
                     {isAdmin && (

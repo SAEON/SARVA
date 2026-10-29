@@ -1,3 +1,4 @@
+import { resourceActionLabel } from "../config/resourceAction";
 import { useEffect, useMemo, useState } from "react";
 import LibraryEditModal from "../components/LibraryEditModal";
 import { apiUrl } from "../config/api";
@@ -376,7 +377,7 @@ export default function NationalPolicy() {
                                             )}
                                             {record.url && (
                                                 <a href={record.url} target="_blank" rel="noopener noreferrer">
-                                                    Open
+                                                    {resourceActionLabel(record)}
                                                 </a>
                                             )}
                                         </div>
