@@ -81,6 +81,7 @@ services:
 
     volumes:
       - ./data:/data:ro
+      - cgc_uploads:/app/uploads/cgc
 
     depends_on:
       db:
@@ -187,4 +188,5 @@ services:
         condition: service_started
 
 volumes:
+  cgc_uploads:
   sarva_db_data:

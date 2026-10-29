@@ -1,3 +1,4 @@
+import {cgcWorkRouter} from "./routes/cgcWork.js";
 import {disasterEventsRouter} from "./routes/disasterEvents.js";
 import {fireDetectionsRouter} from "./routes/fireDetections.js";
 import "dotenv/config";
@@ -56,6 +57,7 @@ app.use("/api", catalogueRouter);
 app.use("/api", authRouter);
 app.use("/api", userAdminRouter);
 app.use("/api", reviewIssuesRouter);
+app.use("/api", cgcWorkRouter);
 app.use("/api", externalServicesRouter);
 app.use("/api", alertsRouter);
 app.use("/api", fireDetectionsRouter);

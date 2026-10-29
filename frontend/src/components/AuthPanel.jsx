@@ -217,6 +217,7 @@ export default function AuthPanel() {
                                 {passkeysEnabled&&<AccountLink to="/account/passkeys" kind="key" title="Passkey sign-in" description="Enable a passkey on this device" onClick={()=>setOpen(false)}/>}
                                 <p className="sarva-accountGroup">Workspace</p>
                                 <AccountLink to="/testing" kind="testing" title="Issues & feedback" description="Ask a question, report a problem or follow a reply" onClick={() => setOpen(false)}/>
+                                {user.roles?.some(role => ['admin','cgc-admin','cgc-user'].includes(role.name)) && <AccountLink to="/partners/centres-for-global-change" kind="testing" title="CGC work" description="Submit work, upload files and follow reviews" onClick={() => setOpen(false)}/>}
                                 {user.roles?.some(role => role.name === 'admin') && <>
                                     <p className="sarva-accountGroup">Administration</p>
                                     <AccountLink to="/admin/users" kind="users" title="Users & roles" description="Manage accounts and permissions" onClick={() => setOpen(false)}/>

@@ -1,3 +1,4 @@
+import CgcShowcase from "../components/CgcShowcase";
 import { Link } from "react-router-dom";
 import "../styles/partners.css";
 import spuLogo from "../assets/cgc/spu.png";
@@ -20,6 +21,7 @@ export default function CentresGlobalChange() {
         <header className="sarva-partners__heading"><span>SARVA / RESEARCH NETWORK</span><h1>Centres for Global Change</h1></header>
 
         <section className="sarva-cgc__intro"><h2>Research with local relevance</h2><p>The Centres for Global Change are supported through the DSTI–NRF Global Change programme. They bring together research, postgraduate training and knowledge sharing to help communities respond to environmental change.</p></section>
+        <CgcShowcase />
         <section className="sarva-cgc__grid" aria-label="The five Centres for Global Change">{centres.map(centre => <article className="sarva-partners__card sarva-cgc__centre" key={centre.name}>
             <div className="sarva-cgc__logo"><img src={centre.logo} alt={centre.name + " logo"} /></div><span className="sarva-partners__tag">{centre.location}</span><h2>{centre.name}</h2><p>{centre.text}</p>{centre.note && <p className="sarva-cgc__note">{centre.note}</p>}<a className="sarva-partners__action" href={centre.href} target="_blank" rel="noopener noreferrer">{centre.action} <span aria-hidden="true">↗</span></a>
         </article>)}</section>
