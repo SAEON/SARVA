@@ -64,22 +64,9 @@ const fallbackNav = [
             { label: "Reports & Stories", to: "/resources?resource_group=reports_stories" },
         ],
     },
-    {
-        label: "Community",
-        items: [
-            { label: "Data Science Lab", href: DATA_SCIENCE_LAB_URL, external: true },
-            { label: "Contact SARVA", to: "/contact" },
-        ],
-    },
-    {
-        label: "About",
-        items: [
-            { label: "About SARVA", to: "/about" },
-            { label: "Partners", to: "/about" },
-            { label: "Governance", to: "/about" },
-            { label: "API & Developers", href: "https://github.com/SAEON", external: true },
-        ],
-    },
+    { label: "Partners & Collaboration", to: "/partners" },
+    { label: "About", to: "/about" },
+    { label: "Contact", to: "/contact" },
 ];
 
 export default function Header() {
