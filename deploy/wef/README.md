@@ -1,6 +1,10 @@
 # WEF Nexus alongside SARVA
 
-Source: https://github.com/MfopaC/WEF_Website (independent repository).
+Development source: https://github.com/SAEON/WEF-Nexus (private, independent repository).
+Original source: https://github.com/MfopaC/WEF_Website (preserved as upstream).
+Caroline (MfopaC) has verified write access to the SAEON repository.
+Production initially cloned the original source; its origin switch to SAEON is still pending.
+Use SAEON/WEF-Nexus for future branches, pull requests and releases.
 Clone to /opt/WEF_Website. Record the selected commit before deploying.
 Run from /opt/sarva:
 
