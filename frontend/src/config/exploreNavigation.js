@@ -1,9 +1,8 @@
-export function exploreNavigation(groups, dsLabUrl = "https://ds-lab.saeon.ac.za/") {
-    return groups.map(group => /^community$/i.test(String(group.label || "").trim())
-        ? {...group, to:null, href:null, items:[
-            {label:"Data Science Lab", href:dsLabUrl, external:true},
-            {label:"Contact SARVA", to:"/contact"},
-        ]}
+export function exploreNavigation(groups) {
+    return groups.map(group => /^(community|partners & collaboration)$/i.test(String(group.label || "").trim())
+        ? {...group, label:"Partners & Collaboration", to:"/partners", href:null, items:[]}
+        : /^about$/i.test(String(group.label || "").trim())
+        ? {...group, to:"/about", href:null, items:[]}
         : /^explore$/i.test(String(group.label || "").trim())
         ? {...group, to:"/explore", items:[]}
         : ({...group, items: (group.items || []).filter(item => {
@@ -12,6 +11,8 @@ export function exploreNavigation(groups, dsLabUrl = "https://ds-lab.saeon.ac.za
             && !/ocean data explorer/i.test(item.label || "")
             && !path.includes("/apps/ocean/PELTER");
     }).map(item => {
+        if (/^Partners$/i.test(item.label || ""))
+            return {...item, label:"Partners & Collaborators", to:"/partners", href:null, external:false};
         if (/^(SARVA Atlas Gallery|Atlases, tools and links)$/i.test(item.label || ""))
             return {...item, label:"Atlases, tools and links", to:"/explore#atlas-tools", href:null, external:false};
         if (/^Terrestrial Observations? Monitor$/i.test(item.label || "") || /^SAEON Observations Monitor$/i.test(item.label || ""))
@@ -25,5 +26,8 @@ export function exploreNavigation(groups, dsLabUrl = "https://ds-lab.saeon.ac.za
         const monitorIndex = items.findIndex(item => item.label === "SAEON Observations Monitor");
         items.splice(monitorIndex < 0 ? items.length : monitorIndex + 1, 0, {label:"SAEON Observations Database", href:"https://observations.saeon.ac.za/", external:true});
         return {...group, items};
-    });
+    }).filter(group => !/^contact(?: sarva)?$/i.test(String(group.label || "").trim()))
+        .flatMap(group => /^about$/i.test(String(group.label || "").trim())
+            ? [group, {label:"Contact", to:"/contact", items:[]}]
+            : [group]);
 }

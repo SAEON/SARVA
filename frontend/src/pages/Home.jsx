@@ -5,6 +5,7 @@ import SiteDisclaimer from "../components/SiteDisclaimer.jsx";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import LibraryEditModal from "../components/LibraryEditModal";
+import nwoLogo from "../assets/logos/NWO.svg";
 import dstiLogo from "../assets/logos/DSTI.png";
 import dataScienceLabLogo from "../assets/logos/lab_logo.png";
 import saeonLogo from "../assets/logos/SAEON-NRF-LOGO-alpha.png";
@@ -1935,6 +1936,7 @@ export default function Home() {
                             <a href="https://www.saeon.ac.za/" target="_blank" rel="noreferrer" aria-label="SAEON website">
                                 <img src={saeonLogo} alt="NRF SAEON" />
                             </a>
+                            <a href="https://www.nwo.nl/en" target="_blank" rel="noreferrer" aria-label="NWO website"><img src={nwoLogo} alt="NWO" /></a>
                             <a href="https://www.dsti.gov.za/" target="_blank" rel="noreferrer" aria-label="DSTI website">
                                 <img src={dstiLogo} alt="Department of Science, Technology and Innovation" />
                             </a>

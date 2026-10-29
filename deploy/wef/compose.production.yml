@@ -1,0 +1,8 @@
+services:
+  website:
+    image: wef-nexus-production:latest
+    build:
+      context: /opt/WEF_Website
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8188:80"
