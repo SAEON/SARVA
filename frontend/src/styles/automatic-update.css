@@ -1,0 +1,5 @@
+.sarva-update{display:flex;justify-content:center;align-items:center;gap:.75rem;flex-wrap:wrap;margin-top:.6rem}
+.sarva-update button{font:600 14px/1.4 system-ui,sans-serif;color:#fff;background:#204e40;border:2px solid #204e40;border-radius:.4rem;padding:.5rem .9rem;min-height:40px;cursor:pointer}
+.sarva-update button:hover{background:#12392d;border-color:#12392d}
+.sarva-update button:focus-visible{outline:3px solid #ad5f15;outline-offset:3px}
+@media print{.sarva-update{display:none}}

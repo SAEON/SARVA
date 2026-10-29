@@ -3,7 +3,7 @@ export function shouldReload({current,latest,hidden,dirty,busy,idleMs,attempted}
         && latest !== current && !hidden && !dirty && !busy && idleMs >= 15000 && latest !== attempted;
 }
 
-export function watchAutomaticUpdate({win,doc,current,fetchVersion,now=Date.now}) {
+export function watchAutomaticUpdate({win,doc,current,fetchVersion,now=Date.now,onAvailable=()=>{}}) {
     let stopped=false,latest=null,lastActivity=now(),controller;
     const original=new WeakMap(),changed=new Set();
     const editable=node=>node?.matches?.('input:not([type=hidden]):not([type=submit]):not([type=button]),textarea,select,[contenteditable="true"]');
@@ -29,7 +29,7 @@ export function watchAutomaticUpdate({win,doc,current,fetchVersion,now=Date.now}
         if(stopped||doc.hidden)return;
         controller?.abort();controller=new AbortController();
         try{const response=await fetchVersion('/version.json',{cache:'no-store',credentials:'omit',signal:controller.signal});
-            if(response.ok){const body=await response.json();if(!stopped)latest=body?.version;}
+            if(response.ok){const body=await response.json();if(!stopped){latest=body?.version;if(typeof latest==='string'&&/^[a-f0-9-]{36}$/.test(latest)&&latest!==current)onAvailable(latest);}}
         }catch{/* A failed check leaves the current page alone. */}
         check();
     }
