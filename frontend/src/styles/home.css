@@ -4035,3 +4035,9 @@ body {
 .sarva-dash__themeChips a { text-decoration: none; }
 .sarva-dash__themeChips a:hover { text-decoration: underline; }
 .sarva-dash__themeChips a:focus-visible { outline: 2px solid var(--primary-strong); outline-offset: 3px; }
+
+.sarva-dash__footerLogos a.is-nwo{height:76px;width:60px;box-sizing:border-box;padding:6px;background:#fff}.sarva-dash__footerLogos{align-items:center}.sarva-dash__footerLogos a{box-sizing:border-box}
+
+.sarva-dash__footerBase{grid-template-columns:minmax(0,1fr)}.sarva-dash__footerLogos{width:100%;min-width:0;justify-content:center;gap:12px}.sarva-dash__footerLogos a{flex:0 0 132px}.sarva-dash__footerLogos a.is-nwo{flex-basis:60px}
+
+.sarva-dash .sarva-dash__footerLogos a img{width:100%;height:32px;max-height:32px;object-fit:contain}.sarva-dash .sarva-dash__footerLogos a.is-nwo img{height:62px;max-height:62px}

@@ -5,6 +5,11 @@ import SiteDisclaimer from "../components/SiteDisclaimer.jsx";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import LibraryEditModal from "../components/LibraryEditModal";
+import spuLogo from "../assets/cgc/spu.png";
+import ufsLogo from "../assets/cgc/ufs.svg";
+import ufhLogo from "../assets/cgc/ufh.svg";
+import ulLogo from "../assets/cgc/ul.png";
+import wsuLogo from "../assets/cgc/wsu.png";
 import nwoLogo from "../assets/logos/NWO.svg";
 import dstiLogo from "../assets/logos/DSTI.png";
 import dataScienceLabLogo from "../assets/logos/lab_logo.png";
@@ -1936,7 +1941,12 @@ export default function Home() {
                             <a href="https://www.saeon.ac.za/" target="_blank" rel="noreferrer" aria-label="SAEON website">
                                 <img src={saeonLogo} alt="NRF SAEON" />
                             </a>
-                            <a href="https://www.nwo.nl/en" target="_blank" rel="noreferrer" aria-label="NWO website"><img src={nwoLogo} alt="NWO" /></a>
+                            <a href="https://www.spu.ac.za/" target="_blank" rel="noreferrer" aria-label="Sol Plaatje University website"><img src={spuLogo} alt="Sol Plaatje University" /></a>
+                            <a href="https://www.ufs.ac.za/" target="_blank" rel="noreferrer" aria-label="University of the Free State website"><img src={ufsLogo} alt="University of the Free State" /></a>
+                            <a href="https://www.ufh.ac.za/" target="_blank" rel="noreferrer" aria-label="University of Fort Hare website"><img src={ufhLogo} alt="University of Fort Hare" /></a>
+                            <a href="https://www.ul.ac.za/" target="_blank" rel="noreferrer" aria-label="University of Limpopo website"><img src={ulLogo} alt="University of Limpopo" /></a>
+                            <a href="https://wsu.ac.za/" target="_blank" rel="noreferrer" aria-label="Walter Sisulu University website"><img src={wsuLogo} alt="Walter Sisulu University" /></a>
+                            <a className="is-nwo" href="https://www.nwo.nl/en" target="_blank" rel="noreferrer" aria-label="NWO website"><img src={nwoLogo} alt="NWO" /></a>
                             <a href="https://www.dsti.gov.za/" target="_blank" rel="noreferrer" aria-label="DSTI website">
                                 <img src={dstiLogo} alt="Department of Science, Technology and Innovation" />
                             </a>
