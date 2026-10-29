@@ -18,6 +18,7 @@ const Glossary = lazy(() => import("./pages/Glossary.jsx"));
 const Resources = lazy(() => import("./pages/Resources.jsx"));
 const NationalPolicy = lazy(() => import("./pages/NationalPolicy.jsx"));
 const SearchRoute = lazy(() => import("./routes/SearchRoute.jsx"));
+const CentresGlobalChange = lazy(() => import("./pages/CentresGlobalChange.jsx"));
 const Partners = lazy(() => import("./pages/Partners.jsx"));
 const Contact = lazy(() => import("./pages/Contact.jsx"));
 const About = lazy(() => import("./pages/About.jsx"));
@@ -49,6 +50,7 @@ const router = createBrowserRouter([
         element: <AppLayout />,
         errorElement: <RouteError />,
         children: [
+            { path: "/partners/centres-for-global-change", element: <Suspense fallback={<PageLoading />}><CentresGlobalChange /></Suspense> },
             { path: "/partners", element: <Suspense fallback={<PageLoading />}><Partners /></Suspense> },
             { path: "/contact", element: <Suspense fallback={<PageLoading />}><Contact /></Suspense> },
             { path: "/privacy", element: <Suspense fallback={<PageLoading />}><Privacy /></Suspense> },
