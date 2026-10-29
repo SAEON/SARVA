@@ -14,3 +14,5 @@ The frontend Nginx limit is 10 MiB and backend accepts up to 8 MiB. The existing
 Local review accounts use example.invalid addresses only; credentials are stored outside Git in .local/cgc-demo.json. Tests run only with CGC_TEST=synthetic-only against the existing isolated test database. User/audit mutations are transactional. File writes are removed if metadata/audit commit fails. File replacements remove the previous stored file after successful commit; a process crash can leave an unreferenced file requiring later reconciliation. Archived work retains its file and audit history.
 
 Migration 068 adds CGC roles; 069 simplifies curated work descriptions without changing verified centre associations. The collection starts collapsed with its published count and an explicit expand/collapse button.
+
+Production deployment and cleanup were operator-confirmed on 29 October 2026 following PR #55. Persistent upload storage and eight public works were verified. Latest retained rollback pair: sarva-frontend:rollback-bluegreen-20261029-125355 and sarva-backend:rollback-cgc-showcase-20261029-145037. See DEPLOYMENT-2026-10-22.md for acceptance evidence and backup paths.
