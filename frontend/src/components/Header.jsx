@@ -43,7 +43,6 @@ const fallbackNav = [
         label: "Maps & Tools",
         items: [
             { label: "Municipal Risk Profiler", to: "/municipal-risk-profiler" },
-            { label: "Rainfall Risk Layers", to: "/#risk-map" },
             { label: "Atlases, tools and links", to: "/explore#atlas-tools" },
             { label: "2017 Agriculture Census", href: "https://sarvamaps.saeon.ac.za/agri-census/", external: true },
             { label: "Climate Risk Tool", href: "https://sarvamaps.saeon.ac.za/climate-tool/", external: true },
@@ -52,7 +51,7 @@ const fallbackNav = [
             { label: "BioEnergy Technology Decision Support Tool", href: "https://nrf-saeon.maps.arcgis.com/apps/dashboards/55aab230007f4712b62100988d182d2c", external: true },
             { label: "Global Disasters Risk Dashboard", href: "https://sarvamaps.saeon.ac.za/global-disasters/map", external: true },
             { label: "HST District Health Barometer", href: "https://dhb.hst.org.za/reproductive-maternal-child-health", external: true },
-            { label: "National Climate Change Information System", href: "https://nccis.saeon.ac.za/", external: true },
+            { label: "Field Data System", href: "https://fds.saeon.ac.za/fds/", external: true },
         ],
     },
     {

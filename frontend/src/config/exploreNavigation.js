@@ -21,6 +21,12 @@ export function exploreNavigation(groups) {
             return {...item, to:null, href:"https://nccis.saeon.ac.za/", external:true};
         return item;
     })})).map(group => {
+        if (/^maps & tools$/i.test(String(group.label || "").trim())) {
+            const items = (group.items || []).filter(item =>
+                !/^(Rainfall Risk Layers|National Climate Change Information System|Field Data System)$/i.test(String(item.label || "").trim())
+                && !/^https:\/\/(?:nccis|fds)\.saeon\.ac\.za(?:\/|$)/i.test(item.href || ""));
+            return {...group, items:[...items, {label:"Field Data System", href:"https://fds.saeon.ac.za/fds/", external:true}]};
+        }
         if (!/^data$/i.test(String(group.label || "").trim())) return group;
         const items = (group.items || []).filter(item => !/^SAEON Observations Database$/i.test(item.label || "") && !/^https:\/\/observations\.saeon\.ac\.za(?:\/|$)/i.test(item.href || ""));
         const monitorIndex = items.findIndex(item => item.label === "SAEON Observations Monitor");
