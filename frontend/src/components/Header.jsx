@@ -7,7 +7,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import AnalyticsTracker from "./AnalyticsTracker.jsx";
 import PreviewAccess from "./PreviewAccess.jsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import logo from "../assets/SARVA_final-logo-01a.png";
+import logo from "../assets/sarva-logo-high-resolution.png";
 import AuthPanel from "./AuthPanel";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import { apiUrl } from "../config/api";

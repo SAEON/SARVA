@@ -50,21 +50,22 @@
 }
 
 .sarva-logoCircle {
-    width: 46px;
-    height: 46px;
-    border-radius: 999px;
+    width: 68px;
+    height: 54px;
+    flex: 0 0 auto;
+    border-radius: 8px;
 
-    background: rgba(255, 253, 247, 0.82);
-    border: 1px solid rgba(56, 90, 72, 0.14);
+    background: transparent;
+    border: 0;
 
     display: grid;
     place-items: center;
-    box-shadow: 0 8px 18px rgba(50, 43, 34, 0.08);
+    box-shadow: none;
 }
 
 .sarva-logoImg {
-    width: 78%;
-    height: 78%;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
     display: block;
 }
@@ -521,8 +522,8 @@
     }
 
     .sarva-logoCircle {
-        width: 40px;
-        height: 40px;
+        width: 56px;
+        height: 44px;
     }
 
     .sarva-nav {
