@@ -1,12 +1,12 @@
 import geoip from 'geoip-lite';
 import { isIP } from 'node:net';
 
-export const pagePattern = /^\/(?:|explore|overview|about|glossary|resources|search|national-policy-and-legislation|municipal-risk-profiler|municipal-planning-workspace|accessibility-workspace|essential-variables|mdb-2026-boundaries|testing|admin\/users|account\/passkeys|themes\/[a-z0-9-]+)$/;
+export const pagePattern = /^\/(?:|partners(?:\/centres-for-global-change)?|contact|explore|overview|about|glossary|resources|search|national-policy-and-legislation|municipal-risk-profiler|municipal-planning-workspace|accessibility-workspace|essential-variables|mdb-2026-boundaries|testing|admin\/users|account\/passkeys|themes\/[a-z0-9-]+)$/;
 export function sectionFor(path) {
   if (path === '/') return 'Home';
   if (path.startsWith('/themes/')) return 'Environmental themes';
   return ({ '/explore':'Explore', '/overview':'Overview', '/about':'About', '/glossary':'Glossary', '/resources':'Resources', '/search':'Catalogue search',
-    '/testing':'Issues & feedback', '/admin/users':'User administration', '/account/passkeys':'Passkey account settings',
+    '/partners':'Partners & Collaboration', '/partners/centres-for-global-change':'Centres for Global Change', '/contact':'Contact', '/testing':'Issues & feedback', '/admin/users':'User administration', '/account/passkeys':'Passkey account settings',
     '/national-policy-and-legislation':'Policy & legislation', '/municipal-risk-profiler':'Municipal risk profiler',
     '/municipal-planning-workspace':'Municipal planning workspace', '/mdb-2026-boundaries':'Municipal boundaries' })[path] || 'Other';
 }

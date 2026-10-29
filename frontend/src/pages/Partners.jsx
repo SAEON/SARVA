@@ -36,7 +36,7 @@ export default function Partners() {
             </article>
             <article className="sarva-partners__card sarva-partners__card--cgc">
                 <div className="sarva-cgc__cardLogos" aria-label="CGC host universities"><img src={spuLogo} alt="Sol Plaatje University" /><img src={ufsLogo} alt="University of the Free State" /><img src={ufhLogo} alt="University of Fort Hare" /><img src={ulLogo} alt="University of Limpopo" /><img src={wsuLogo} alt="Walter Sisulu University" /></div>
-                <span className="sarva-partners__tag">UNIVERSITY RESEARCH NETWORK</span><h2>Centres for Global Change</h2><p>Sol Plaatje · Free State · Fort Hare · Limpopo · Walter Sisulu</p><Link className="sarva-partners__action" to="/partners/centres-for-global-change">Explore the five centres →</Link>
+                <span className="sarva-partners__tag">UNIVERSITY RESEARCH NETWORK</span><h2>Centres for Global Change</h2><p>Sol Plaatje · Free State · Fort Hare · Limpopo · Walter Sisulu</p><Link className="sarva-partners__action" to="/partners/centres-for-global-change">Explore centres →</Link>
             </article>
         </section>
         <div className="sarva-partners__supporters" aria-label="Partner logos"><img src={saeonLogo} alt="NRF SAEON" /><img src={nwoLogo} alt="NWO" /><img src={labLogo} alt="Environmental Data Science Lab" /><img src={spuLogo} alt="Sol Plaatje University" /><img src={ufsLogo} alt="University of the Free State" /><img src={ufhLogo} alt="University of Fort Hare" /><img src={ulLogo} alt="University of Limpopo" /><img src={wsuLogo} alt="Walter Sisulu University" /></div>
