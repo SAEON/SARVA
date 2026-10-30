@@ -763,8 +763,6 @@ export default function Home() {
     const [checkingReportId, setCheckingReportId] = useState(null);
     const [reportSearch,setReportSearch]=useState("");
     const [spotlightSearch,setSpotlightSearch]=useState("");
-    const [reportLimit,setReportLimit]=useState(6);
-    const [spotlightLimit,setSpotlightLimit]=useState(6);
     const [reportCategory, setReportCategory] = useState("");
     const [reportInstitute, setReportInstitute] = useState("");
     const [reportKeyword, setReportKeyword] = useState("");
@@ -1739,7 +1737,6 @@ export default function Home() {
                                 </div>
                             </div>
                             <div className="sarva-reports__headActions">
-                                <Link to="/resources?resource_group=reports_stories">View all</Link>
                                 {isAdmin && (
                                     <button type="button" onClick={() => setEditingReport({ resource_type: "Report" })}>
                                         Add report or story
@@ -1749,7 +1746,7 @@ export default function Home() {
                         </div>
 
                         <div className="sarva-reports__filters" aria-label="Filter reports and stories">
-                            <label className="sarva-librarySearch"><span>Search reports</span><input type="search" placeholder="Title, topic or organisation" value={reportSearch} onChange={e=>{setReportSearch(e.target.value);setReportLimit(6);}} /></label>
+                            <label className="sarva-librarySearch"><span>Search reports</span><input type="search" placeholder="Title, topic or organisation" value={reportSearch} onChange={e=>{setReportSearch(e.target.value);}} /></label>
                             <label>
                                 <span>Category</span>
                                 <select value={reportCategory} onChange={(event) => setReportCategory(event.target.value)}>
@@ -1811,7 +1808,7 @@ export default function Home() {
                         )}
 
                         <div className="sarva-reports__grid">
-                            {reportsAndStories.slice(0,reportLimit).map((report) => (
+                            {reportsAndStories.toSorted((a,b)=>Number(b.publication_year||0)-Number(a.publication_year||0)||Number(b.id)-Number(a.id)).slice(0,2).map((report) => (
                                 <ResourceCard
                                     key={report.id}
                                     item={report}
@@ -1823,7 +1820,7 @@ export default function Home() {
                                 />
                             ))}
                         </div>
-                        {reportsAndStories.length>reportLimit&&<button className="sarva-libraryMore" onClick={()=>setReportLimit(n=>n+6)}>Show more reports ({reportsAndStories.length-reportLimit} remaining)</button>}
+                        <Link className="sarva-libraryMore sarva-libraryCollection" to="/resources?resource_group=reports_stories">View all reports &amp; stories →</Link>
                     </article>
 
                     <article className="sarva-panel sarva-panel--reports">
@@ -1836,7 +1833,6 @@ export default function Home() {
                                 </div>
                             </div>
                             <div className="sarva-reports__headActions">
-                                <Link to="/resources?resource_group=data_spotlight">View all</Link>
                                 {isAdmin && (
                                     <button type="button" onClick={() => setEditingSpotlight({ resource_type: "Database" })}>
                                         Add spotlight
@@ -1846,7 +1842,7 @@ export default function Home() {
                         </div>
 
                         <div className="sarva-reports__filters" aria-label="Filter data spotlight items">
-                            <label className="sarva-librarySearch"><span>Search datasets and tools</span><input type="search" placeholder="Title, topic or organisation" value={spotlightSearch} onChange={e=>{setSpotlightSearch(e.target.value);setSpotlightLimit(6);}} /></label>
+                            <label className="sarva-librarySearch"><span>Search datasets and tools</span><input type="search" placeholder="Title, topic or organisation" value={spotlightSearch} onChange={e=>{setSpotlightSearch(e.target.value);}} /></label>
                             <label>
                                 <span>Category</span>
                                 <select value={spotlightCategory} onChange={(event) => setSpotlightCategory(event.target.value)}>
@@ -1908,7 +1904,7 @@ export default function Home() {
                         )}
 
                         <div className="sarva-reports__grid">
-                            {dataSpotlights.slice(0,spotlightLimit).map((item) => (
+                            {dataSpotlights.toSorted((a,b)=>Number(b.publication_year||0)-Number(a.publication_year||0)||Number(b.id)-Number(a.id)).slice(0,2).map((item) => (
                                 <ResourceCard
                                     key={item.id}
                                     item={item}
@@ -1920,7 +1916,7 @@ export default function Home() {
                                 />
                             ))}
                         </div>
-                        {dataSpotlights.length>spotlightLimit&&<button className="sarva-libraryMore" onClick={()=>setSpotlightLimit(n=>n+6)}>Show more datasets and tools ({dataSpotlights.length-spotlightLimit} remaining)</button>}
+                        <Link className="sarva-libraryMore sarva-libraryCollection" to="/resources?resource_group=data_spotlight">View the full Data Spotlight collection →</Link>
                     </article>
                 </section>
 
