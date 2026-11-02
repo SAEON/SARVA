@@ -1,6 +1,18 @@
+import { useResourceCollection } from "../hooks/useResourceCollection";
+import riskPortalIcon from '../assets/icons/portal/risk.svg';
+import dataPortalIcon from '../assets/icons/portal/data.svg';
+import toolsPortalIcon from '../assets/icons/portal/tools.svg';
+import resourcesPortalIcon from '../assets/icons/portal/resources.svg';
+import learnPortalIcon from '../assets/icons/portal/learn.svg';
 import { resourceActionLabel } from "../config/resourceAction";
 import { SUBMIT_DATA_URL } from "../config/contributeData";
 import ForecastNotice from "../components/ForecastNotice";
+import loudspeakerIcon from "../assets/icons/loudspeaker.svg";
+import institutionsIcon from "../assets/icons/statistics/institutions.svg";
+import providersIcon from "../assets/icons/statistics/providers.svg";
+import collectionsIcon from "../assets/icons/statistics/collections.svg";
+import recordsIcon from "../assets/icons/statistics/records.svg";
+import sitesIcon from "../assets/icons/statistics/sites.svg";
 import SiteDisclaimer from "../components/SiteDisclaimer.jsx";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -28,7 +40,7 @@ const EXPLORE_PATH = "/explore";
 
 const portalCategories = [
     {
-        icon: "◇",
+        icon: riskPortalIcon,
         title: "Explore risk",
         detail: "Explore experimental weather model outputs, monitoring observations and municipal source data.",
         to: "/#risk-map",
@@ -41,7 +53,7 @@ const portalCategories = [
         ],
     },
     {
-        icon: "▦",
+        icon: dataPortalIcon,
         title: "Find data",
         detail: "Search SARVA-ready catalogue records and connect to live SAEON observation services.",
         to: "/search",
@@ -54,7 +66,7 @@ const portalCategories = [
         ],
     },
     {
-        icon: "◎",
+        icon: toolsPortalIcon,
         title: "Use tools",
         detail: "Open dashboards, indicators and partner tools that turn data into decision views.",
         to: "/explore#atlas-tools",
@@ -66,7 +78,7 @@ const portalCategories = [
         ],
     },
     {
-        icon: "□",
+        icon: resourcesPortalIcon,
         title: "Read resources",
         detail: "Use the evidence library: documents, glossary terms, policy and legislation.",
         to: "/resources",
@@ -79,7 +91,7 @@ const portalCategories = [
         ],
     },
     {
-        icon: "♧",
+        icon: learnPortalIcon,
         title: "Learn and contribute",
         detail: "Learn with DS Lab tutorials and contribute datasets or supporting information.",
         to: DATA_SCIENCE_LAB_PATH,
@@ -841,8 +853,8 @@ export default function Home() {
     const { data: heroResponse } = useJsonResource("/api/site/hero", { cache: true });
     const { data: siteStatsResponse } = useJsonResource("/api/site/stats?schema=focus-v1");
     const { data: alertsResponse } = useJsonResource("/api/alerts/recent?days=5");
-    const { data: reportsResponse, loading: reportsLoading, error: reportsError } = useJsonResource(reportsPath);
-    const { data: spotlightResponse, loading: spotlightLoading, error: spotlightError } = useJsonResource(spotlightPath);
+    const { data: reportsResponse, loading: reportsLoading, error: reportsError } = useResourceCollection(reportsPath);
+    const { data: spotlightResponse, loading: spotlightLoading, error: spotlightError } = useResourceCollection(spotlightPath);
     const { data: supportingResponse, loading: supportingLoading, error: supportingError } = useJsonResource(
         showSupportingData ? supportingPath : null
     );
@@ -918,6 +930,7 @@ export default function Home() {
     const heroStats = [
         {
             label: "Institutions",
+            icon: institutionsIcon,
             value: portalStats.catalogueInstitutions,
             detail: "Catalogue institutions represented in the SAEON mirror",
             syncedAt: portalStats.catalogueSyncedAt,
@@ -928,6 +941,7 @@ export default function Home() {
         },
         {
             label: "Providers",
+            icon: providersIcon,
             value: portalStats.catalogueProviders,
             detail: "Catalogue publishers and data providers represented in the mirror",
             syncedAt: portalStats.catalogueSyncedAt,
@@ -938,6 +952,7 @@ export default function Home() {
         },
         {
             label: "Collections",
+            icon: collectionsIcon,
             value: portalStats.catalogueCollections,
             detail: "SAEON catalogue collections mirrored for SARVA search",
             syncedAt: portalStats.catalogueSyncedAt,
@@ -948,6 +963,7 @@ export default function Home() {
         },
         {
             label: "Catalogue records",
+            icon: recordsIcon,
             value: portalStats.catalogueRecords,
             detail: "Total SAEON catalogue records mirrored for SARVA search",
             syncedAt: portalStats.catalogueSyncedAt,
@@ -962,6 +978,7 @@ export default function Home() {
         },
         {
             label: "Observation sites",
+            icon: sitesIcon,
             value: portalStats.observationSites,
             detail: "Mapped SAEON live observation sites",
             syncedAt: portalStats.observationSitesSyncedAt,
@@ -1251,7 +1268,8 @@ export default function Home() {
                         </span>
                         <h1>{hero?.title || "South African Risk & Vulnerability Atlas"}</h1>
                         <p>{hero?.description || "An open access platform linking datasets, indicators, and tools."}</p>
-                        <Link to="/privacy" className="sarva-dash__privacyLink">Privacy &amp; analytics choices <span aria-hidden="true">↗</span></Link>
+
+
                         <a href={DATA_SCIENCE_LAB_PATH} className="sarva-dash__labCallout" aria-label="Open Environmental Data Science Lab">
                             <span className="sarva-dash__labLogo">
                                 <img src={dataScienceLabLogo} alt="Environmental Data Science Lab" />
@@ -1272,6 +1290,7 @@ export default function Home() {
                                 Open resources
                             </button>
                         </div>
+                        <Link to="/privacy" className="sarva-dash__privacyLink">Privacy &amp; analytics choices <span aria-hidden="true">↗</span></Link>
                     </div>
                     {heroHighlights.length > 0 && (
                         <aside className="sarva-dash__heroHighlights" aria-label="SARVA live highlights">
@@ -1301,7 +1320,7 @@ export default function Home() {
                                     </button>
                                 </div>
                             </div>
-                            <ForecastNotice compact />
+
                             {[
                                 {
                                     id: "selected-location",
@@ -1355,6 +1374,10 @@ export default function Home() {
                     )}
                 </section>
 
+
+
+                <ForecastNotice compact strip />
+
                 <section className="sarva-dash__workspace" id="risk-map" ref={mapSectionRef}>
                     <article className="sarva-panel sarva-panel--map sarva-panel--featured">
                         <div className="sarva-panel__head">
@@ -1405,10 +1428,11 @@ export default function Home() {
                             onClick={() => setSelectedStat(stat)}
                             aria-label={`Open ${stat.label} details`}
                         >
+                            <img className="sarva-statIcon" src={stat.icon} alt="" width="24" height="24" />
                             <strong>{formatStat(stat.value)}</strong>
                             <span>{stat.label}</span>
                             <small>{stat.detail}</small>
-                            <em>{formatSyncTime(stat.syncedAt)}</em>
+                            <em className="sarva-statSync">{formatSyncTime(stat.syncedAt).replace(" | refresh due", "")}{formatSyncTime(stat.syncedAt).includes(" | refresh due") && <span className="sarva-statStale">Refresh due</span>}</em>
                             <span className="sarva-statAction">View details <b aria-hidden="true">→</b></span>
                         </button>
                     ))}
@@ -1474,12 +1498,12 @@ export default function Home() {
                         );
                     })()}
                 </section>
-                <aside className="sarva-publicDataNotice" aria-label="Public data notice">
-                    <strong>Public data notice</strong>
-                    <span>
+                <details className="sarva-publicDataNotice" aria-label="Public data notice">
+                    <summary><img src={loudspeakerIcon} alt="" width="22" height="22" /><strong>Public data notice</strong><span className="sarva-publicDataNotice__hint">View details</span></summary>
+                    <p>
                         Risk-watch items are drawn from public source pages, RSS/news feeds and open data endpoints, then filtered for SARVA environmental risk, hazard, disaster, public-health, service-delivery, governance and resilience relevance. General conflict or political news is excluded unless it has a clear humanitarian, infrastructure, health, water, food-security or disaster-risk signal. Feeds may be delayed, incomplete or unavailable and do not replace official warnings or emergency instructions.
-                    </span>
-                </aside>
+                    </p>
+                </details>
                 {showMetricInfo && (
                     <div
                         className="sarva-dash__glanceOverlay"
@@ -1672,11 +1696,11 @@ export default function Home() {
                                 key={category.title}
                                 className={`sarva-dash__portalCard${category.featured ? " is-featured" : ""}${category.theme ? ` is-${category.theme}` : ""}`}
                             >
-                                {isExternalLink(category.to) ? <a href={category.to} target="_blank" rel="noopener noreferrer" className="sarva-dash__portalMain"><span>{category.icon}</span><strong>{category.title}</strong><small>{category.detail}</small></a> : <Link to={category.to} className="sarva-dash__portalMain"><span>{category.icon}</span><strong>{category.title}</strong><small>{category.detail}</small></Link>}
+                                <div className="sarva-dash__portalMain"><img className="sarva-portalIcon" src={category.icon} alt="" width="44" height="44" /><strong>{category.title}</strong><small>{category.detail}</small></div>
                                 {Array.isArray(category.layers) && (
                                     <div className="sarva-dash__themeChips" aria-label={`${category.title} themes`}>
-                                        {category.layers.map(([label, to]) => (
-                                            isExternalLink(to) ? <a href={to} key={label} target="_blank" rel="noopener noreferrer">{label}</a> : <Link to={to} key={label}>{label}</Link>
+                                        {category.layers.map(([label]) => (
+                                            <span className="sarva-portalTag" key={label}>{label}</span>
                                         ))}
                                     </div>
                                 )}
@@ -1727,25 +1751,19 @@ export default function Home() {
                 </section>
 
                 <section className="sarva-dash__libraryPair" aria-label="Featured reports and data spotlight">
-                    <article className="sarva-panel sarva-panel--reports">
-                        <div className="sarva-panel__head">
-                            <div className="sarva-panel__titleGroup">
+                    <details className="sarva-panel sarva-panel--reports sarva-libraryDisclosure"><summary className="sarva-panel__head"><div className="sarva-panel__titleGroup">
                                 <SectionIcon kind="report" />
                                 <div>
                                     <h2>Latest Reports & Stories</h2>
                                     <p>Featured SARVA evidence products, briefs and stories from the resource library.</p>
                                 </div>
-                            </div>
-                            <div className="sarva-reports__headActions">
+                            </div><span className="sarva-libraryDisclosure__arrow" aria-hidden="true">↓</span></summary><div className="sarva-libraryDisclosure__body"><div className="sarva-reports__headActions">
                                 {isAdmin && (
                                     <button type="button" onClick={() => setEditingReport({ resource_type: "Report" })}>
                                         Add report or story
                                     </button>
                                 )}
-                            </div>
-                        </div>
-
-                        <div className="sarva-reports__filters" aria-label="Filter reports and stories">
+                            </div><div className="sarva-reports__filters" aria-label="Filter reports and stories">
                             <label className="sarva-librarySearch"><span>Search reports</span><input type="search" placeholder="Title, topic or organisation" value={reportSearch} onChange={e=>{setReportSearch(e.target.value);}} /></label>
                             <label>
                                 <span>Category</span>
@@ -1808,7 +1826,7 @@ export default function Home() {
                         )}
 
                         <div className="sarva-reports__grid">
-                            {reportsAndStories.toSorted((a,b)=>Number(b.publication_year||0)-Number(a.publication_year||0)||Number(b.id)-Number(a.id)).slice(0,2).map((report) => (
+                            {reportsAndStories.toSorted((a,b)=>Number(b.publication_year||0)-Number(a.publication_year||0)||Number(b.id)-Number(a.id)).map((report) => (
                                 <ResourceCard
                                     key={report.id}
                                     item={report}
@@ -1821,27 +1839,21 @@ export default function Home() {
                             ))}
                         </div>
                         <Link className="sarva-libraryMore sarva-libraryCollection" to="/resources?resource_group=reports_stories">View all reports &amp; stories →</Link>
-                    </article>
+                    </div></details>
 
-                    <article className="sarva-panel sarva-panel--reports">
-                        <div className="sarva-panel__head">
-                            <div className="sarva-panel__titleGroup">
+                    <details className="sarva-panel sarva-panel--reports sarva-libraryDisclosure"><summary className="sarva-panel__head"><div className="sarva-panel__titleGroup">
                                 <SectionIcon kind="database" />
                                 <div>
                                     <h2>Data Spotlight</h2>
                                     <p>Featured datasets, tools and live resource links from the library.</p>
                                 </div>
-                            </div>
-                            <div className="sarva-reports__headActions">
+                            </div><span className="sarva-libraryDisclosure__arrow" aria-hidden="true">↓</span></summary><div className="sarva-libraryDisclosure__body"><div className="sarva-reports__headActions">
                                 {isAdmin && (
                                     <button type="button" onClick={() => setEditingSpotlight({ resource_type: "Database" })}>
                                         Add spotlight
                                     </button>
                                 )}
-                            </div>
-                        </div>
-
-                        <div className="sarva-reports__filters" aria-label="Filter data spotlight items">
+                            </div><div className="sarva-reports__filters" aria-label="Filter data spotlight items">
                             <label className="sarva-librarySearch"><span>Search datasets and tools</span><input type="search" placeholder="Title, topic or organisation" value={spotlightSearch} onChange={e=>{setSpotlightSearch(e.target.value);}} /></label>
                             <label>
                                 <span>Category</span>
@@ -1904,7 +1916,7 @@ export default function Home() {
                         )}
 
                         <div className="sarva-reports__grid">
-                            {dataSpotlights.toSorted((a,b)=>Number(b.publication_year||0)-Number(a.publication_year||0)||Number(b.id)-Number(a.id)).slice(0,2).map((item) => (
+                            {dataSpotlights.toSorted((a,b)=>Number(b.publication_year||0)-Number(a.publication_year||0)||Number(b.id)-Number(a.id)).map((item) => (
                                 <ResourceCard
                                     key={item.id}
                                     item={item}
@@ -1917,7 +1929,7 @@ export default function Home() {
                             ))}
                         </div>
                         <Link className="sarva-libraryMore sarva-libraryCollection" to="/resources?resource_group=data_spotlight">View the full Data Spotlight collection →</Link>
-                    </article>
+                    </div></details>
                 </section>
 
                 <footer className="sarva-dash__footer">

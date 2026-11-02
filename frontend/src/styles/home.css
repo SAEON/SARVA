@@ -4115,3 +4115,296 @@ body {
 .sarva-dash .sarva-dash__footerLogos a:hover { box-sizing: border-box; flex: 0 0 96px; width: 96px; height: 96px; aspect-ratio: 1; padding: 4px; border: 1px solid #e0e6df; border-radius: 0; background: #eeeeee; display: grid; place-items: center; }
 .sarva-dash .sarva-dash__footerLogos a img,
 .sarva-dash .sarva-dash__footerLogos a.is-nwo img { display: block; width: 86px; height: 86px; max-width: 100%; max-height: 86px; object-fit: contain; image-rendering: auto; filter: contrast(1.12); opacity: 1; }
+
+/* Reference typography and colours; original hero layout retained. */
+.sarva-dash .sarva-dash__hero--lead h1 { font-family: Georgia, 'Times New Roman', serif; font-weight: 700; letter-spacing: -.02em; color: #fffdf7; text-shadow: none; }
+.sarva-dash .sarva-dash__hero--lead p { color: #fffdf7; font-family: var(--font-sans); }
+.sarva-dash .sarva-dash__hero--lead .sarva-dash__heroKicker { color: #f4ad43; font-weight: 800; letter-spacing: .16em; }
+.sarva-dash .sarva-dash__hero--lead .sarva-dash__versionBadge { color: #fffdf7; border-color: #18a0c7; background: #005b604d; border-radius: 0; }
+.sarva-dash .sarva-dash__hero--lead .sarva-dash__heroActions :is(a, button) { border-radius: 0; border-color: #a8c7ba; background: transparent; color: #fffdf7; }
+.sarva-dash .sarva-dash__hero--lead .sarva-dash__heroActions a:first-child { border-color: #f56c39; background: #f56c39; }
+
+/* Match the reference action boxes and understated privacy link. */
+.sarva-dash .sarva-dash__hero--lead .sarva-dash__heroActions { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; margin-top: 20px; }
+.sarva-dash .sarva-dash__hero--lead .sarva-dash__heroActions :is(a, button) { box-sizing: border-box; flex: 0 0 auto; min-height: 38px; height: 38px; padding: 0 12px; border-width: 1px; border-style: solid; border-radius: 0; font: 700 12px/1.2 var(--font-sans); white-space: nowrap; }
+.sarva-dash .sarva-dash__hero--lead .sarva-dash__heroActions a:first-child { width: 104px; background: #ff6633; border-color: #ff6633; }
+.sarva-dash .sarva-dash__hero--lead .sarva-dash__heroActions a:nth-child(2) { width: 158px; }
+.sarva-dash .sarva-dash__hero--lead .sarva-dash__heroActions button { width: 124px; }
+.sarva-dash .sarva-dash__hero--lead .sarva-dash__privacyLink { display: inline-block; margin: 14px 0 0; padding: 0; color: #c5ded7; font: 400 11px/1.5 var(--font-sans); text-decoration: underline; text-underline-offset: 2px; }
+.sarva-dash .sarva-dash__hero--lead .sarva-dash__privacyLink:hover { color: #fff; }
+
+/* Compact, left-aligned hero introduction matching the supplied reference. */
+.sarva-dash .sarva-dash__hero--lead > div:first-child { text-align: left; min-width: 0; }
+.sarva-dash .sarva-dash__hero--lead .sarva-dash__versionBadge { min-height: 0; margin: 0 0 10px; padding: 3px 7px; font: 700 9px/1.3 var(--font-sans); letter-spacing: .04em; }
+.sarva-dash .sarva-dash__hero--lead .sarva-dash__heroKicker { display: block; margin: 0 0 7px; padding: 0; font: 800 10px/1.4 var(--font-sans); letter-spacing: .13em; }
+.sarva-dash .sarva-dash__hero--lead h1 { max-width: 560px; margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(32px, 3.1vw, 46px); line-height: 1.04; letter-spacing: -.02em; text-align: left; text-wrap: balance; }
+.sarva-dash .sarva-dash__hero--lead > div:first-child > p { max-width: 400px; margin: 10px 0 0; font: 400 13px/1.5 var(--font-sans); text-align: left; }
+@media (max-width: 600px) {
+    .sarva-dash .sarva-dash__hero--lead h1 { font-size: 34px; }
+    .sarva-dash .sarva-dash__hero--lead > div:first-child > p { font-size: 12px; }
+}
+
+/* Let the home hero fill the viewport width beneath the fixed header. */
+.sarva-dash .sarva-dash__main { padding-top: 0; }
+.sarva-dash .sarva-dash__main > .sarva-dash__hero--lead { box-sizing: border-box; margin-left: calc(-1 * clamp(18px, 4vw, 56px)); margin-right: calc(-1 * clamp(18px, 4vw, 56px)); border-radius: 0; }
+
+/* Larger hero typography, with responsive sizes for narrow screens. */
+.sarva-dash .sarva-dash__hero--lead .sarva-dash__versionBadge { font-size: 12px; }
+.sarva-dash .sarva-dash__hero--lead .sarva-dash__heroKicker { font-size: 14px; }
+.sarva-dash .sarva-dash__hero--lead h1 { font-size: clamp(46px, 4.8vw, 70px); line-height: 1.16; }
+.sarva-dash .sarva-dash__hero--lead > div:first-child > p { font-size: 17px; }
+@media (max-width: 600px) {
+    .sarva-dash .sarva-dash__hero--lead h1 { font-size: 46px; }
+    .sarva-dash .sarva-dash__hero--lead > div:first-child > p { font-size: 16px; }
+}
+
+/* Continue the full-width home layout through the notice and map section. */
+.sarva-dash .sarva-dash__main > .sarva-forecastNotice.is-strip,
+.sarva-dash .sarva-dash__main > .sarva-dash__workspace { box-sizing: border-box; margin-left: calc(-1 * clamp(18px, 4vw, 56px)); margin-right: calc(-1 * clamp(18px, 4vw, 56px)); }
+
+/* Full-width Risk Watch and its public-data notice. */
+.sarva-dash .sarva-dash__main > .sarva-newsTicker,
+.sarva-dash .sarva-dash__main > .sarva-publicDataNotice { box-sizing: border-box; margin-left: calc(-1 * clamp(18px, 4vw, 56px)); margin-right: calc(-1 * clamp(18px, 4vw, 56px)); }
+
+/* Full-width portal entry cards, aligned with the other home sections. */
+.sarva-dash .sarva-dash__main > .sarva-dash__portalIntro { box-sizing: border-box; margin-left: calc(-1 * clamp(18px, 4vw, 56px)); margin-right: calc(-1 * clamp(18px, 4vw, 56px)); }
+
+/* Full-width reports and data spotlight, aligned with the home sections. */
+.sarva-dash .sarva-dash__main > .sarva-dash__libraryPair { box-sizing: border-box; margin-left: calc(-1 * clamp(18px, 4vw, 56px)); margin-right: calc(-1 * clamp(18px, 4vw, 56px)); }
+
+/* Full-width essential variable framework heading and cards. */
+.sarva-dash .sarva-dash__main > .sarva-frameworkHeading,
+.sarva-dash .sarva-dash__main > .sarva-dash__referenceStrip { box-sizing: border-box; margin-left: calc(-1 * clamp(18px, 4vw, 56px)); margin-right: calc(-1 * clamp(18px, 4vw, 56px)); }
+.sarva-dash .sarva-dash__main > .sarva-frameworkHeading { padding-left: 18px; padding-right: 18px; }
+
+/* Square corners on the learning-hub card and its logo panel. */
+.sarva-dash .sarva-dash__labCallout,
+.sarva-dash .sarva-dash__labCallout .sarva-dash__labLogo,
+.sarva-dash .sarva-dash__labCallout .sarva-dash__labLogo img { border-radius: 0; }
+
+/* Learning-hub typography: distinct label, title, description and action. */
+.sarva-dash .sarva-dash__labCallout { font-family: var(--font-sans); text-decoration: none; }
+.sarva-dash .sarva-dash__labCallout > span:last-child { gap: 8px; }
+.sarva-dash .sarva-dash__labCallout em { font-size: 10px; font-weight: 700; letter-spacing: .12em; line-height: 1.4; color: #edc27b; }
+.sarva-dash .sarva-dash__labCallout strong { font-size: 17px; font-weight: 650; letter-spacing: -.01em; line-height: 1.35; color: #fffdf7; }
+.sarva-dash .sarva-dash__labCallout small { font-size: 13px; font-weight: 400; line-height: 1.6; color: #e1eae5; }
+.sarva-dash .sarva-dash__labCallout i { font-size: 12px; font-weight: 650; line-height: 1.5; color: #edc27b; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Slightly smaller learning-hub text, retaining its hierarchy and spacing. */
+.sarva-dash .sarva-dash__labCallout strong { font-size: 16px; }
+.sarva-dash .sarva-dash__labCallout small { font-size: 12px; }
+.sarva-dash .sarva-dash__labCallout i { font-size: 11px; }
+
+/* Clearer hero action labels with room for the larger type. */
+.sarva-dash .sarva-dash__hero--lead .sarva-dash__heroActions :is(a, button) { font: 650 13px/1.3 var(--font-sans); letter-spacing: .01em; color: #fffdf7; text-align: center; }
+.sarva-dash .sarva-dash__hero--lead .sarva-dash__heroActions a:first-child { width: 112px; }
+.sarva-dash .sarva-dash__hero--lead .sarva-dash__heroActions a:nth-child(2) { width: 172px; }
+.sarva-dash .sarva-dash__hero--lead .sarva-dash__heroActions button { width: 134px; }
+
+/* Weather cards: sharp edges and a consistent, readable text hierarchy. */
+.sarva-dash .sarva-forecastGroup .sarva-dash__heroHighlightGrid > button { border-radius: 0; font-family: var(--font-sans); text-align: left; }
+.sarva-dash .sarva-forecastGroup .sarva-dash__heroHighlightGrid > button > span:first-child { font-size: 11px; font-weight: 600; line-height: 1.5; letter-spacing: .02em; }
+.sarva-dash .sarva-forecastGroup .sarva-forecastPlace { font-size: 14px; font-weight: 650; line-height: 1.4; }
+.sarva-dash .sarva-forecastGroup .sarva-forecastDate { font-size: 11px; font-weight: 400; line-height: 1.5; color: #e1eae5; }
+.sarva-dash .sarva-forecastGroup .sarva-dash__heroHighlightGrid strong { font-size: 24px; font-weight: 700; line-height: 1.2; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.sarva-dash .sarva-forecastGroup .sarva-dash__heroHighlightGrid button > .sarva-forecastCardCredit,
+.sarva-dash .sarva-forecastGroup .sarva-dash__heroHighlightGrid em { font-size: 10px; font-weight: 400; line-height: 1.5; color: #e1eae5; }
+.sarva-dash .sarva-forecastGroup .sarva-dash__heroHighlightGrid .sarva-highlightAction { font-size: 11px; font-weight: 600; line-height: 1.5; }
+
+/* Full-width catalogue statistics with a small gap after the map. */
+.sarva-dash .sarva-dash__main > .sarva-dash__heroStats { box-sizing: border-box; margin-left: calc(-1 * clamp(18px, 4vw, 56px)); margin-right: calc(-1 * clamp(18px, 4vw, 56px)); margin-top: 16px; }
+
+/* Data summary cards: equal spacing, vector icons and clear live-data hierarchy. */
+.sarva-dash .sarva-dash__heroStats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; border: 0; background: transparent; }
+.sarva-dash .sarva-dash__heroStats .sarva-dash__stat { position: relative; display: flex; flex-direction: column; align-items: flex-start; min-width: 0; min-height: 230px; padding: 38px 18px 16px; border: 1px solid #deded7; border-radius: 0; background: #fffdf8; color: #07534d; font-family: var(--font-sans); text-align: left; box-shadow: none; }
+.sarva-dash .sarva-dash__heroStats .sarva-statIcon { position: absolute; top: 14px; right: 14px; width: 24px; height: 24px; }
+.sarva-dash .sarva-dash__heroStats .sarva-dash__stat strong { margin: 0 0 5px; color: #004a43; font-size: 32px; line-height: 1.15; font-weight: 750; letter-spacing: -.025em; font-variant-numeric: tabular-nums; }
+.sarva-dash .sarva-dash__heroStats .sarva-dash__stat > span:not(.sarva-statAction) { font-size: 14px; line-height: 1.4; font-weight: 700; }
+.sarva-dash .sarva-dash__heroStats .sarva-dash__stat > small { margin: 6px 0 16px; color: #657a7b; font-size: 12px; line-height: 1.5; font-weight: 400; }
+.sarva-dash .sarva-dash__heroStats .sarva-statSync { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; align-self: stretch; margin-top: auto; padding-top: 10px; border-top: 1px solid #e4e5df; color: #657a7b; font-size: 10px; line-height: 1.5; font-weight: 400; font-style: normal; }
+.sarva-dash .sarva-dash__heroStats .sarva-statSync .sarva-statStale { padding: 1px 4px; border: 1px solid #eab86c; background: #fff4df; color: #995400; font-size: 9px; line-height: 1.4; }
+.sarva-dash .sarva-dash__heroStats .sarva-statAction { justify-content: flex-start; gap: 5px; margin-top: 8px; padding-top: 0; border: 0; color: #c14e24; font-size: 11px; font-weight: 650; }
+.sarva-dash .sarva-dash__heroStats .sarva-statAction b { font-size: 14px; }
+.sarva-dash .sarva-dash__heroStats .sarva-dash__stat:hover { background: #f5f6ef; }
+@media (max-width: 1000px) { .sarva-dash .sarva-dash__heroStats { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .sarva-dash .sarva-dash__heroStats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 380px) { .sarva-dash .sarva-dash__heroStats { grid-template-columns: 1fr; } }
+
+/* Compact Risk Watch rail, separated from the data summary above. */
+.sarva-dash .sarva-dash__main > .sarva-newsTicker { margin-top: 20px; margin-bottom: 0; grid-template-columns: 180px 110px minmax(0, 1fr); background: #003d32; font-family: var(--font-sans); }
+.sarva-dash .sarva-newsTicker__label { min-width: 0; padding: 16px; background: #f56830; }
+.sarva-dash .sarva-newsTicker__label strong { font-size: 16px; letter-spacing: .025em; font-weight: 800; }
+.sarva-dash .sarva-newsTicker__label span { font-size: 9px; font-weight: 600; letter-spacing: .04em; }
+.sarva-dash .sarva-newsTicker__controls { grid-template-columns: 30px minmax(0, 1fr) 30px; border-right: 2px solid #f56830; background: #002e26; }
+.sarva-dash .sarva-newsTicker__controls button { background: transparent; border: 0; font-size: 17px; }
+.sarva-dash .sarva-newsTicker__controls span { border: 0; padding: 0; font-size: 10px; }
+.sarva-dash .sarva-newsTicker__item { margin: 0; padding: 14px 18px; border: 0; border-radius: 0; background: transparent; gap: 5px 9px; }
+.sarva-dash .sarva-newsTicker__badge { min-height: 0; padding: 3px 6px; border: 1px solid #6ca69a; border-radius: 0; background: transparent; font-size: 9px; font-weight: 700; }
+.sarva-dash .sarva-newsTicker__item strong { font-size: 14px; font-weight: 650; line-height: 1.4; }
+.sarva-dash .sarva-newsTicker__item :is(em, small) { font-family: var(--font-sans); font-size: 11px; font-weight: 400; font-style: normal; line-height: 1.5; }
+/* Native disclosure: icon and label toggle all public-data notice details. */
+.sarva-dash .sarva-dash__main > details.sarva-publicDataNotice { display: block; margin-top: 0; margin-bottom: 18px; padding: 10px 16px; border: 1px solid #deded7; border-radius: 0; background: #fffdf7; }
+.sarva-publicDataNotice summary { display: flex; align-items: center; gap: 10px; width: fit-content; min-height: 32px; cursor: pointer; list-style: none; font-family: var(--font-sans); }
+.sarva-publicDataNotice summary::-webkit-details-marker { display: none; }
+.sarva-publicDataNotice summary img { flex-shrink: 0; }
+.sarva-publicDataNotice summary strong { font-size: 10px; font-weight: 750; letter-spacing: .08em; color: #a94425; }
+.sarva-publicDataNotice summary .sarva-publicDataNotice__hint { font-size: 10px; font-weight: 400; color: #657a7b; }
+.sarva-publicDataNotice[open] summary .sarva-publicDataNotice__hint { display: none; }
+.sarva-publicDataNotice summary:focus-visible { outline: 2px solid #a94425; outline-offset: 3px; }
+.sarva-publicDataNotice > p { margin: 8px 0 4px 32px; max-width: 1100px; font: 400 12px/1.6 var(--font-sans); color: #31564e; }
+@media (max-width: 720px) {
+    .sarva-dash .sarva-dash__main > .sarva-newsTicker { grid-template-columns: minmax(0, 1fr) 110px; }
+    .sarva-dash .sarva-newsTicker__item { grid-column: 1 / -1; }
+}
+
+/* Portal shortcut links remain interactive above decorative card artwork. */
+.sarva-dash__portalCard.is-featured::after { pointer-events: none; }
+.sarva-dash .sarva-dash__portalCard > div:last-child a { position: relative; z-index: 2; display: inline-flex; align-items: center; cursor: pointer; pointer-events: auto; transition: background 140ms ease, border-color 140ms ease; }
+.sarva-dash .sarva-dash__portalCard > div:last-child a:hover { background: var(--primary-soft); border-color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+.sarva-dash .sarva-dash__portalCard > div:last-child a:focus-visible { outline: 2px solid var(--primary-strong); outline-offset: 3px; background: var(--primary-soft); }
+
+/* Portal preview: aligned cards, ochre accents and distinct shortcut buttons. */
+.sarva-dash .sarva-dash__portalIntro { display: block; padding: 28px 20px; background: #fffdf7; }
+.sarva-dash .sarva-dash__portalIntro > div:first-child { display: block; margin-bottom: 24px; }
+.sarva-dash .sarva-dash__portalIntro > div:first-child > span { color: #9c701d; font-size: 11px; letter-spacing: .13em; }
+.sarva-dash .sarva-dash__portalIntro h2 { max-width: none; margin: 10px 0 0; font: 700 clamp(24px, 2.4vw, 34px)/1.2 var(--font-sans); color: #143f36; }
+.sarva-dash .sarva-dash__portalGrid { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 14px; }
+.sarva-dash .sarva-dash__portalCard { display: flex; flex-direction: column; gap: 18px; padding: 20px 16px; border: 1px solid #e3d7bf; border-top: 5px solid #d7a84d; border-radius: 0; background: #fffbf2; box-shadow: none; overflow: visible; }
+.sarva-dash .sarva-dash__portalCard::after { content: none; }
+.sarva-dash .sarva-dash__portalMain { display: grid; grid-template-rows: 48px minmax(48px,auto) auto; align-content: start; gap: 12px; }
+.sarva-dash .sarva-portalIcon { width: 44px; height: 44px; object-fit: contain; }
+.sarva-dash .sarva-dash__portalMain strong { color: #143f36; font: 700 19px/1.3 var(--font-sans); }
+.sarva-dash .sarva-dash__portalMain small { color: #526963; font: 400 13px/1.6 var(--font-sans); }
+.sarva-dash .sarva-dash__portalCard .sarva-dash__themeChips { margin-top: auto; gap: 6px; }
+.sarva-dash .sarva-dash__portalCard .sarva-dash__themeChips a { padding: 5px 8px; border: 1px solid #ead8ae; border-radius: 0; background: #f8eacb; color: #805a17; font: 500 11px/1.4 var(--font-sans); }
+.sarva-dash .sarva-dash__portalCard > div:last-child { display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid #e3d7bf; }
+.sarva-dash .sarva-dash__portalCard > div:last-child a { display: flex; justify-content: space-between; gap: 10px; min-height: 40px; padding: 9px 10px; border: 1px solid #92733a; border-radius: 0; color: #143f36; background: transparent; font: 500 12px/1.4 var(--font-sans); }
+.sarva-dash .sarva-dash__portalCard > div:last-child a::after { content: '→'; flex-shrink: 0; }
+.sarva-dash .sarva-dash__portalCard > div:last-child a[target='_blank']::after { content: '↗'; }
+.sarva-dash .sarva-dash__portalCard a:hover { background: #f8eacb; }
+.sarva-dash .sarva-dash__portalCard a:focus-visible { outline: 2px solid #92671b; outline-offset: 3px; }
+@media(max-width:1100px){.sarva-dash .sarva-dash__portalGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:720px){.sarva-dash .sarva-dash__portalGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.sarva-dash .sarva-dash__portalGrid{grid-template-columns:1fr}}
+
+/* Keep the original side introduction and five-card layout. */
+.sarva-dash .sarva-dash__portalIntro { display: grid; grid-template-columns: minmax(220px, .32fr) minmax(0, 1fr); gap: 18px; align-items: stretch; padding: 18px; }
+.sarva-dash .sarva-dash__portalIntro > div:first-child { display: grid; align-content: center; margin-bottom: 0; }
+.sarva-dash .sarva-dash__portalIntro h2 { max-width: 360px; margin: 8px 0 0; font-size: clamp(24px, 2.2vw, 34px); line-height: 1.15; }
+.sarva-dash .sarva-dash__portalGrid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.sarva-dash .sarva-dash__portalCard { padding: 15px; }
+@media(max-width:1100px) {
+    .sarva-dash .sarva-dash__portalIntro { grid-template-columns: 1fr; }
+    .sarva-dash .sarva-dash__portalIntro > div:first-child { margin-bottom: 12px; }
+    .sarva-dash .sarva-dash__portalGrid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
+@media(max-width:720px) { .sarva-dash .sarva-dash__portalGrid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width:480px) { .sarva-dash .sarva-dash__portalGrid { grid-template-columns: 1fr; } }
+
+/* Compact portal cards in coordinated forest and sage greens. */
+.sarva-dash .sarva-dash__portalIntro { gap: 14px; padding: 14px; }
+.sarva-dash .sarva-dash__portalIntro > div:first-child > span { color: #436b50; }
+.sarva-dash .sarva-dash__portalIntro h2 { font-size: clamp(23px, 2vw, 29px); }
+.sarva-dash .sarva-dash__portalGrid { gap: 8px; }
+.sarva-dash .sarva-dash__portalCard { min-height: 0; gap: 12px; padding: 12px; border-color: #cbd8cb; border-top: 3px solid #527b58; background: #f3f7ef; }
+.sarva-dash .sarva-dash__portalCard.is-data { background: #eff6f1; border-top-color: #397461; }
+.sarva-dash .sarva-dash__portalCard.is-tools { background: #f5f7ed; border-top-color: #71834b; }
+.sarva-dash .sarva-dash__portalCard.is-resources { background: #edf4ee; border-top-color: #3d6c4b; }
+.sarva-dash .sarva-dash__portalCard.is-community { background: #f1f5ed; border-top-color: #64815c; }
+.sarva-dash .sarva-dash__portalMain { grid-template-rows: 32px minmax(38px,auto) auto; gap: 8px; }
+.sarva-dash .sarva-portalIcon { width: 30px; height: 30px; }
+.sarva-dash .sarva-dash__portalMain strong { font-size: 16px; line-height: 1.25; }
+.sarva-dash .sarva-dash__portalMain small { font-size: 12px; line-height: 1.45; color: #52695b; }
+.sarva-dash .sarva-dash__portalCard .sarva-dash__themeChips { gap: 4px; }
+.sarva-dash .sarva-dash__portalCard .sarva-dash__themeChips a { padding: 3px 6px; border-color: #ccdccc; background: #dfeadd; color: #31593b; font-size: 10px; }
+.sarva-dash .sarva-dash__portalCard > div:last-child { gap: 5px; padding-top: 10px; border-color: #cbd8cb; }
+.sarva-dash .sarva-dash__portalCard > div:last-child a { min-height: 32px; padding: 6px 7px; border-color: #91ad96; color: #234d35; font-size: 11px; line-height: 1.35; }
+.sarva-dash .sarva-dash__portalCard a:hover { background: #dce9d9; }
+.sarva-dash .sarva-dash__portalCard a:focus-visible { outline-color: #315f40; }
+
+/* Clear introduction typography with an orange section label. */
+.sarva-dash .sarva-dash__portalIntro > div:first-child > span { color: #c45128; font: 700 11px/1.5 var(--font-sans); letter-spacing: .12em; text-transform: uppercase; }
+.sarva-dash .sarva-dash__portalIntro h2 { margin-top: 10px; font-family: var(--font-sans); font-size: clamp(24px, 2vw, 29px); font-weight: 650; line-height: 1.25; letter-spacing: -.02em; color: #143f36; text-wrap: balance; }
+
+/* Map heading and controls: consistent typography and clearer contrast. */
+.sarva-dash #risk-map .sarva-panel__head h2 { margin: 0 0 6px; color: #164b3b; font: 700 clamp(24px, 2.2vw, 30px)/1.2 var(--font-sans); letter-spacing: -.02em; }
+.sarva-dash #risk-map .sarva-panel__head p { margin: 0; color: #536d60; font: 400 13px/1.5 var(--font-sans); }
+.sarva-dash #risk-map .sarva-dash__tabs button { color: #254f3c; background: #f4f7f0; border: 1px solid #c9d7c7; border-radius: 0; font: 600 12px/1.4 var(--font-sans); padding: 9px 13px; }
+.sarva-dash #risk-map .sarva-dash__tabs button.is-active { color: #fff; background: #bd4b26; border-color: #bd4b26; }
+.sarva-dash #risk-map .sarva-dash__tabs button:hover:not(.is-active) { background: #e3eddf; border-color: #709274; }
+.sarva-dash #risk-map .sarva-dash__tabs button:focus-visible { outline: 2px solid #254f3c; outline-offset: 3px; }
+
+/* Topic tags are descriptive labels; shortcut buttons remain the navigation. */
+.sarva-dash .sarva-dash__portalCard .sarva-portalTag { display: inline-block; width: auto; height: auto; padding: 3px 6px; border: 1px solid #edc8ac; border-radius: 0; background: #fbe5d2; color: #87451e; font: 500 10px/1.4 var(--font-sans); cursor: default; }
+.sarva-dash .sarva-dash__portalCard.is-data .sarva-portalTag { background: #dceff0; border-color: #b8dadd; color: #1f6068; }
+.sarva-dash .sarva-dash__portalCard.is-tools .sarva-portalTag { background: #faedce; border-color: #e9d6a6; color: #795915; }
+.sarva-dash .sarva-dash__portalCard.is-resources .sarva-portalTag { background: #e0edda; border-color: #c4d8ba; color: #3a6131; }
+.sarva-dash .sarva-dash__portalCard.is-community .sarva-portalTag { background: #ece4f1; border-color: #d6c7e2; color: #654777; }
+
+/* More breathing room between the model notice and the map section. */
+.sarva-dash .sarva-dash__main > .sarva-forecastNotice.is-strip { margin-bottom: 26px; }
+
+/* Slightly larger portal introduction. */
+.sarva-dash .sarva-dash__portalIntro > div:first-child > span { font-size: 12px; }
+.sarva-dash .sarva-dash__portalIntro h2 { font-size: clamp(26px, 2.2vw, 32px); }
+
+/* Smaller descriptive topic-tag labels. */
+.sarva-dash .sarva-dash__portalCard .sarva-portalTag { font-size: 9px; }
+
+/* Themed essential-variable cards, with breathing room above the section. */
+.sarva-dash .sarva-dash__main > .sarva-frameworkHeading { margin-top: 32px; padding-top: 8px; padding-bottom: 14px; }
+.sarva-dash .sarva-frameworkHeading h2 { margin: 0 0 8px; color: #143f36; font: 700 26px/1.25 var(--font-sans); }
+.sarva-dash .sarva-frameworkHeading p { margin: 0; color: #536d60; font: 400 13px/1.5 var(--font-sans); }
+.sarva-dash .sarva-dash__referenceStrip { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; border: 0; background: transparent; }
+.sarva-dash .sarva-dash__referenceStrip a { --framework-image: url('../assets/frameworks/climate.png'); box-sizing: border-box; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; min-width: 0; min-height: 360px; padding: 24px 20px; gap: 10px; border: 0; border-radius: 0; color: #fff; background: linear-gradient(180deg,rgba(0,24,19,.05) 0%,rgba(0,24,19,.5) 40%,rgba(0,18,14,.94) 100%), var(--framework-image) center/cover no-repeat; }
+.sarva-dash .sarva-dash__referenceStrip a:nth-child(2) { --framework-image: url('../assets/frameworks/biodiversity.png'); }
+.sarva-dash .sarva-dash__referenceStrip a:nth-child(3) { --framework-image: url('../assets/frameworks/ocean.png'); }
+.sarva-dash .sarva-dash__referenceStrip a:nth-child(4) { --framework-image: url('../assets/frameworks/ecosystem-services.png'); }
+.sarva-dash .sarva-dash__referenceStrip a > span { margin: 0 0 4px; color: #fff; font: 750 40px/1.1 var(--font-sans); text-align: left; }
+.sarva-dash .sarva-dash__referenceStrip a > span::after { content: ''; display: block; width: 44px; height: 4px; margin-top: 12px; background: #e3a43a; }
+.sarva-dash .sarva-dash__referenceStrip a > strong { color: #fff; font: 700 18px/1.3 var(--font-sans); min-height: 47px; }
+.sarva-dash .sarva-dash__referenceStrip a > small { color: #dce7d8; font: 400 12px/1.45 var(--font-sans); min-height: 35px; }
+.sarva-dash .sarva-dash__referenceStrip .sarva-frameworkAction { display: inline-block; margin-top: 8px; padding: 10px 12px; border: 1px solid #d5e3da; border-radius: 0; color: #fff; background: #001e164d; font: 600 12px/1.4 var(--font-sans); }
+.sarva-dash .sarva-dash__referenceStrip a:hover .sarva-frameworkAction { background: #fff; color: #143f36; }
+.sarva-dash .sarva-dash__referenceStrip a:focus-visible { outline: 3px solid #e3a43a; outline-offset: -3px; }
+@media(max-width:1000px) { .sarva-dash .sarva-dash__referenceStrip { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width:540px) { .sarva-dash .sarva-dash__referenceStrip { grid-template-columns: 1fr; } .sarva-dash .sarva-dash__referenceStrip a { min-height: 320px; } }
+
+/* Slightly shorter framework cards. */
+.sarva-dash .sarva-dash__referenceStrip a { min-height: 260px; padding: 16px; gap: 8px; }
+@media(max-width:540px) { .sarva-dash .sarva-dash__referenceStrip a { min-height: 240px; } }
+
+/* Independent report-library disclosures, closed until requested. */
+.sarva-dash .sarva-dash__libraryPair { align-items: start; }
+.sarva-libraryDisclosure > summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; list-style: none; }
+.sarva-libraryDisclosure > summary::-webkit-details-marker { display: none; }
+.sarva-libraryDisclosure > summary:focus-visible { outline: 2px solid #315f40; outline-offset: -3px; }
+.sarva-libraryDisclosure__arrow { color: #315f40; font: 700 28px/1 var(--font-sans); flex-shrink: 0; }
+.sarva-libraryDisclosure[open] > summary .sarva-libraryDisclosure__arrow { transform: rotate(180deg); }
+.sarva-libraryDisclosure > summary:hover { background: #edf4e9; }
+.sarva-libraryDisclosure__body { padding-bottom: 16px; }
+.sarva-libraryDisclosure__body > .sarva-reports__headActions { padding: 0 16px; }
+.sarva-libraryDisclosure__body > .sarva-reports__headActions:empty { display: none; }
+
+/* Larger library disclosure headings and a centred animated down arrow. */
+.sarva-dash .sarva-libraryDisclosure > summary.sarva-panel__head { display: flex; flex-direction: column; align-items: stretch; justify-content: center; min-height: 132px; box-sizing: border-box; padding: 22px 24px 14px; gap: 14px; }
+.sarva-dash .sarva-libraryDisclosure > summary .sarva-panel__titleGroup { align-items: center; gap: 14px; }
+.sarva-dash .sarva-libraryDisclosure > summary h2 { margin: 0 0 6px; font: 650 19px/1.3 var(--font-sans); letter-spacing: -.015em; color: #164b3b; }
+.sarva-dash .sarva-libraryDisclosure > summary p { margin: 0; font: 400 13px/1.5 var(--font-sans); color: #536d60; }
+.sarva-dash .sarva-libraryDisclosure__arrow { align-self: center; display: block; color: #315f40; font: 400 26px/1 var(--font-sans); animation: sarva-disclosure-bounce 1.5s ease-in-out infinite; }
+.sarva-dash .sarva-libraryDisclosure[open] > summary .sarva-libraryDisclosure__arrow { animation: none; transform: rotate(180deg); }
+@keyframes sarva-disclosure-bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+@media(prefers-reduced-motion:reduce) { .sarva-dash .sarva-libraryDisclosure__arrow { animation: none; } }
+
+/* White breathing room between the final home section and footer. */
+.sarva-dash .sarva-dash__footer { margin-top: 0; }
+.sarva-dash .sarva-dash__main > .sarva-dash__libraryPair { margin-bottom: 0; padding-bottom: 64px; background: #fff; }
+
+/* Expanded libraries grow to show every item, without an internal scroll box. */
+.sarva-dash .sarva-libraryDisclosure[open],
+.sarva-dash .sarva-libraryDisclosure[open] > .sarva-libraryDisclosure__body,
+.sarva-dash .sarva-libraryDisclosure[open] .sarva-reports__grid { height: auto; max-height: none; overflow: visible; }
+.sarva-dash .sarva-libraryDisclosure[open] .sarva-reports__grid { grid-template-columns: minmax(0, 1fr); scrollbar-gutter: auto; }
+
+/* Clear separation between framework cards and expandable libraries. */
+.sarva-dash .sarva-dash__main > .sarva-dash__libraryPair { margin-top: 32px; }
