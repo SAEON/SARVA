@@ -23,3 +23,29 @@ html { scroll-padding-top: calc(var(--sarva-header-height, 76px) + 12px); }
 .sarva-reportIssue a { color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 
 .sarva-development-banner a{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}.sarva-development-banner a:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+
+/* Compact release notice with a separate, readable refresh action. */
+.sarva-development-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; text-align: left; padding-top: 10px; padding-bottom: 10px; font-size: 12px; }
+.sarva-development-banner__text { max-width: 1100px; }
+.sarva-development-banner .sarva-update { flex: 0 0 auto; margin: 0; }
+.sarva-development-banner .sarva-update button { font-size: 12px; min-height: 36px; padding: 7px 12px; }
+.sarva-siteFooter .sarva-reportIssue { display: flex; flex-wrap: wrap; gap: 8px; color: #edc27b; }
+@media (max-width: 720px) {
+    .sarva-development-banner { flex-wrap: wrap; gap: 8px; font-size: 11px; line-height: 1.45; }
+}
+
+/* Reference notice: text above a centred, square-cornered action. */
+.sarva-development-banner { display: grid; justify-content: stretch; gap: 8px; background: #fff3d5; }
+.sarva-development-banner__text { max-width: none; font-size: 11px; line-height: 1.5; }
+.sarva-development-banner .sarva-update { justify-content: center; }
+.sarva-development-banner .sarva-update button { border-radius: 0; }
+
+/* Smaller footer disclaimer and supporting links. */
+.sarva-dash .sarva-dash__footer .sarva-dash__footerBase .sarva-siteDisclaimer,
+.sarva-siteFooter .sarva-siteDisclaimer { font-size: 11px; line-height: 1.6; }
+.sarva-dash .sarva-dash__footer .sarva-reportIssue,
+.sarva-siteFooter .sarva-reportIssue { font-size: 10px; line-height: 1.6; }
+
+/* Compact refresh action at the far end of the release notice. */
+.sarva-development-banner .sarva-update { justify-content: flex-end; justify-self: end; margin: 0; }
+.sarva-development-banner .sarva-update button { min-height: 28px; padding: 4px 8px; font-size: 10px; line-height: 1.4; border-width: 1px; }

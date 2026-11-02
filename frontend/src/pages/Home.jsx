@@ -1922,14 +1922,15 @@ export default function Home() {
 
                 <footer className="sarva-dash__footer">
                     <div className="sarva-dash__footerFeatures">
-                        <span><b>▤</b> API Driven <small>Open and well documented APIs</small></span>
-                        <span><b>⚙</b> Integrated <small>Seamless data and service integration</small></span>
-                        <span><b>◎</b> Collaborative <small>Many partners, one vision</small></span>
-                        <span><b>□</b> Secure & Trusted <small>Quality data, governance and privacy</small></span>
-                        <span><b>◌</b> Open by Design <small>Open data, open standards</small></span>
+                        <span><b aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5m8-10 5 5-5 5" /></svg></b> API Driven <small>Open and well documented APIs</small></span>
+                        <span><b aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h14m-4-4 4 4-4 4M20 16H6m4-4-4 4 4 4" /></svg></b> Integrated <small>Seamless data and service integration</small></span>
+                        <span><b aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3" /><path d="M3 20v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6m2 3a5 5 0 0 1 3 4v2" /></svg></b> Collaborative <small>Many partners, one vision</small></span>
+                        <span><b aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Z" /><path d="m8 12 3 3 5-6" /></svg></b> Secure &amp; Trusted <small>Quality data, governance and privacy</small></span>
+                        <span><b aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 11V7a5 5 0 0 1 10 0v4M5 11h14v10H5zM12 15v3" /></svg></b> Open by Design <small>Open data, open standards</small></span>
                     </div>
                     <div className="sarva-dash__footerBase">
                         <SiteDisclaimer />
+                        <h2 className="sarva-dash__footerPartners">Partners &amp; collaboration</h2>
                         <div className="sarva-dash__footerLogos" aria-label="SARVA partner logos">
                             <Link to="/" aria-label="SARVA home">
                                 <img src={sarvaLogo} alt="South African Risk and Vulnerability Atlas" />
@@ -1948,6 +1949,7 @@ export default function Home() {
                             </a>
                         </div>
                     </div>
+                    <p className="sarva-dash__footerVersion">SARVA Version 4 · experimental release</p>
                 </footer>
 
                 <LibraryEditModal

@@ -7,7 +7,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import AnalyticsTracker from "./AnalyticsTracker.jsx";
 import PreviewAccess from "./PreviewAccess.jsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import logo from "../assets/sarva-logo-high-resolution.png";
+import logo from "../assets/sarva-logo-green.png";
 import AuthPanel from "./AuthPanel";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import { apiUrl } from "../config/api";
@@ -220,11 +220,11 @@ export default function Header() {
                 <div className="sarva-brand">
                     <NavLink to="/" className="sarva-logoLink" aria-label="SARVA Home">
                         <div className="sarva-logoCircle">
-                            <img src={logo} alt="SARVA" className="sarva-logoImg" />
+                            <img src={logo} alt="SARVA" className="sarva-logoImg" width="1461" height="1077" />
                         </div>
                         <span className="sarva-wordmark">
                             <strong>SARVA</strong>
-                            <small>Risk & Vulnerability Atlas</small>
+                            <small>SOUTH AFRICAN RISK AND VULNERABILITY ATLAS</small>
                         </span>
                     </NavLink>
                 </div>
