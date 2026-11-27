@@ -30,7 +30,7 @@ function Tracker({token,isAdmin,currentUser}){
  const reportPage=location.state?.reportPage || '';
  const linkedIssue=new URLSearchParams(location.search).get('issue');
  const [data,setData]=useState(null),[loading,setLoading]=useState(true),[error,setError]=useState(''),[notice,setNotice]=useState('');
- const [search,setSearch]=useState(''),[query,setQuery]=useState(''),[status,setStatus]=useState(''),[kind,setKind]=useState(''),[page,setPage]=useState(1),[reload,setReload]=useState(0);
+ const [search,setSearch]=useState(''),[query,setQuery]=useState(''),[status,setStatus]=useState(Object.hasOwn(statuses,new URLSearchParams(location.search).get('status'))?new URLSearchParams(location.search).get('status'):''),[kind,setKind]=useState(''),[page,setPage]=useState(1),[reload,setReload]=useState(0);
  const [submittedBy,setSubmittedBy]=useState('');
  const [assigned,setAssigned]=useState(''),[archived,setArchived]=useState(false),[selected,setSelected]=useState(/^[1-9][0-9]*$/.test(linkedIssue||'')?linkedIssue:null),[showNew,setShowNew]=useState(Boolean(reportPage));
  const formRef=useRef(null);
@@ -58,7 +58,7 @@ function Tracker({token,isAdmin,currentUser}){
  <div className="tr-list" aria-busy={loading}>{!loading&&data?.issues.map(issue=><button className={'tr-issue '+(selected===issue.id?'selected':'')} key={issue.id} onClick={()=>{setSelected(issue.id);setShowNew(false);}}><span className="tr-issue-top"><span>#{issue.id} · {kinds[issue.kind]}</span><span className={'tr-badge '+(issue.deleted_at?'deleted':issue.status)}>{issue.deleted_at?'Deleted':statuses[issue.status]}</span></span><strong>{issue.title}</strong><span className="tr-issue-meta">{priorities[issue.priority]} priority · {issue.reporter_name} · {date(issue.updated_at)}{isAdmin&&issue.assignee_name?' · Assigned to '+issue.assignee_name:''}</span></button>)}</div>
  {!loading&&data?.issues.length===0&&<p>No issues match these filters. Use “Send a report” to ask a question or start a review.</p>}
  <div className="ua-pagination"><button disabled={page===1||loading} onClick={()=>setPage(n=>n-1)}>Previous</button><span>Page {page} of {Math.max(1,Math.ceil((data?.total || 0)/25))}</span><button disabled={loading||page*25>=(data?.total || 0)} onClick={()=>setPage(n=>n+1)}>Next</button></div></section>
- {selected&&<IssueDetail key={selected} id={selected} token={token} reporter={currentUser} onClose={()=>setSelected(null)} onChanged={()=>setReload(n=>n+1)}/>}
+ {selected&&<IssueDetail key={selected} id={selected} token={token} reporter={currentUser} onClose={()=>setSelected(null)} onChanged={()=>{setReload(n=>n+1);window.dispatchEvent(new Event('sarva-notifications-changed'));}}/>}
  </>;
 }
 function NewIssue({token,initialPage,initialTitle,initialDescription,onCancel,onCreated,issue,reporter,isAdmin=false}){
