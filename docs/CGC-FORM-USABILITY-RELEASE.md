@@ -20,4 +20,9 @@ No new migration was required. Existing authentication settings, submissions and
 
 A reply and resolution note were drafted for issue 44. Saving that reply and marking the ticket resolved have not been independently confirmed, so this handover does not claim the live ticket was closed.
 
-Conservative server cleanup is pending operator execution and output verification. Retain latest rollback images, all persistent volumes, databases, uploads and backups. Limit cleanup to old build cache; do not prune application images or volumes.
+Conservative server cleanup completed on 27 November 2026, confirmed by operator output. The old-build-cache prune reclaimed 0 B; no eligible cache remained. Running container names and IDs were unchanged. Latest frontend and pre-update backend rollback images were successfully inspected. All application images, persistent volumes, databases, uploads and backups were retained.
+### Post-cleanup verification
+
+All seven availability checks returned HTTP 200: SARVA home, SARVA API health, public CGC work, WEF Nexus, Environmental Data & Research Lab home, Lab API health and the El Niño tracker. The Lab database returned PostGIS library version 3.6.4. Existing login configuration, notification data, CGC submissions and uploads, the independent tracker database and the PostGIS recovery setup remain retained. These checks establish availability and extension presence, not a fresh end-to-end login or notification test.
+
+The merged PR #75 release branch was removed after confirming its exact tip was included in main. Unmerged branches and local work remain preserved. No live issue status was changed as part of this documentation or cleanup work.
