@@ -1,6 +1,6 @@
 # Analytics reports and account notifications
 
-Release prepared 27 November 2026. Production rollout and acceptance are pending.
+Deployed on 27 November 2026 through PR #73. The operator confirmed that the live update works.
 
 ## Behaviour
 
@@ -20,3 +20,11 @@ The synthetic test database does not contain the catalogue and forecast datasets
 Back up the database, uploaded files and configuration and retain current application images before applying migration 072. Apply the migration before starting the new backend. Prepare the frontend separately, then switch after backend health checks. Preserve existing authentication configuration and persistent volumes. No new upload-limit or host-routing change is required. Keep the additive migration if reverting application images; retained notifications can be used after reapplying the new application.
 
 This update targets SARVA only. The Lab, tracker database, WEF services and existing spatial-database recovery setup should remain outside the deployment scope. Do not prune rollback images or volumes during rollout.
+
+## Handover update - 27 November 2026
+
+The operator confirmed successful live operation of the analytics/notification release and the open-issues/unread-replies follow-up. Database migration 072 was applied for the first release; the badge follow-up required no additional migration. Existing authentication configuration was checked before application replacement, and database/upload backups and application rollback images were retained.
+
+GitHub branch housekeeping is complete: 68 deployment branches with tips confirmed as ancestors of main were removed using exact-tip checks. Six branches remain, preserving main, the collaborator branch and four branches not fully merged. Local working branches, tags and uncommitted work were retained; no unmerged branch was automatically merged or deleted.
+
+Production server cleanup is pending operator execution and verification. Keep the latest rollbacks, database and upload backups, all persistent volumes, existing notifications, CGC work, Lab login, WEF services, the independent tracker database and the existing PostGIS recovery setup. Do not treat HTTP availability as a complete functional or spatial-database test.
