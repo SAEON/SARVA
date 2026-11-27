@@ -27,4 +27,9 @@ The operator confirmed successful live operation of the analytics/notification r
 
 GitHub branch housekeeping is complete: 68 deployment branches with tips confirmed as ancestors of main were removed using exact-tip checks. Six branches remain, preserving main, the collaborator branch and four branches not fully merged. Local working branches, tags and uncommitted work were retained; no unmerged branch was automatically merged or deleted.
 
-Production server cleanup is pending operator execution and verification. Keep the latest rollbacks, database and upload backups, all persistent volumes, existing notifications, CGC work, Lab login, WEF services, the independent tracker database and the existing PostGIS recovery setup. Do not treat HTTP availability as a complete functional or spatial-database test.
+Production server cleanup was completed and verified by operator output on 27 November 2026. Only build cache older than 24 hours was pruned, reclaiming 214.3 MB. The running-container comparison was unchanged. The current frontend rollback and pre-update backend rollback images were successfully inspected. All application images, persistent volumes, databases and backups were retained.
+### Post-cleanup verification
+
+Operator output confirmed HTTP 200 for SARVA home, SARVA API health, public CGC work, WEF Nexus, Environmental Data & Research Lab home, Lab API health and the El Niño tracker. The Lab database returned PostGIS library version 3.6.4. No application image, container, database volume or backup was removed by the cleanup command.
+
+The latest recovery assets, existing login configuration, notification data, CGC work and uploads, WEF services, independent tracker database and spatial-database recovery setup remain retained. Functional acceptance was operator-confirmed before cleanup; HTTP checks and the extension-version query do not replace full login, notification or spatial-query regression testing. GitHub branch cleanup remains complete: 68 fully merged branches removed and six retained, including unmerged work.
