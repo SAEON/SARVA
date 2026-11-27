@@ -1,3 +1,4 @@
+import {workLinkError} from '../config/workLink';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {Link,useLocation} from 'react-router-dom';
 import {apiUrl} from '../config/api';
@@ -18,6 +19,8 @@ function CgcWorkspace({account}){
  const [expanded,setExpanded]=useState(false),[scope,setScope]=useState('public'),[centre,setCentre]=useState(''),[kind,setKind]=useState(''),[search,setSearch]=useState(''),[status,setStatus]=useState('pending'),[page,setPage]=useState(1),[reload,setReload]=useState(0);
  const [data,setData]=useState({items:[],total:0}),[loading,setLoading]=useState(true),[error,setError]=useState(''),[message,setMessage]=useState(''),[form,setForm]=useState(null),[file,setFile]=useState(null),[busy,setBusy]=useState(false),[progress,setProgress]=useState(null),[notes,setNotes]=useState({}),[history,setHistory]=useState(null),[homeCentre,setHomeCentre]=useState(''),[profileError,setProfileError]=useState('');
  const [deletion,setDeletion]=useState(null),[deleteMessage,setDeleteMessage]=useState(''),[confirmation,setConfirmation]=useState(''),[noticeCount,setNoticeCount]=useState(0),[cleanupJobs,setCleanupJobs]=useState([]);
+ const [linkTouched,setLinkTouched]=useState(false);
+ const linkMessage=linkTouched?workLinkError(form?.sourceUrl):'';
  const deletionPanel=useRef(null),hasDeletion=Boolean(deletion);
  const request=useRef({value:0}),editor=useRef(null);const hasForm=Boolean(form);
  const actualScope=!token?'public':scope==='review'&&!canManage?'mine':scope;
@@ -32,9 +35,9 @@ function CgcWorkspace({account}){
  async function permanentlyDelete(e){e.preventDefault();setBusy(true);setError('');try{const result=await send('/'+deletion.id+'/permanent-delete',{confirmation,message:deleteMessage,revision:deletion.revision});setDeletion(null);setForm(null);setHistory(null);setData(previous=>({...previous,items:previous.items.filter(x=>x.id!==deletion.id)}));setMessage(result.message+(result.submitterNotified?' A private notice was saved for the submitter.':' No submitter account was linked to this record.'));setReload(n=>n+1);}catch(e){setError(e.message);}finally{setBusy(false);}}
  async function retryCleanup(id){setBusy(true);setError('');try{const result=await send('/deletions/'+id+'/retry',{});setMessage(result.message);setReload(n=>n+1);}catch(e){setError(e.message);}finally{setBusy(false);}}
  function collection(value){setScope(value);setPage(1);setSearch('');setCentre('');setKind('');setReload(n=>n+1);}
- function edit(item){setForm(item?{...blank,...item,year:item.publication_year||'',sourceUrl:item.source_url||'',dataAccess:item.data_access||'not-stated'}:{...blank,centres:homeCentre?[homeCentre]:[]});setFile(null);setMessage('');setError('');setExpanded(true);}
+ function edit(item){setLinkTouched(false);setForm(item?{...blank,...item,year:item.publication_year||'',sourceUrl:item.source_url||'',dataAccess:item.data_access||'not-stated'}:{...blank,centres:homeCentre?[homeCentre]:[]});setFile(null);setMessage('');setError('');setExpanded(true);}
  async function save(e){e.preventDefault();const intent=e.nativeEvent.submitter?.value||'submit';setBusy(true);setError('');let saved;
-  try{if(file&&file.size>MAX_FILE_BYTES)throw Error('Choose a file no larger than 100 MB.');if(form.title.trim().length<3||!form.centres.length)throw Error('Add a title and select at least one centre.');if(intent==='submit'&&(form.description.trim().length<10||(!form.sourceUrl&&!file&&!form.has_file)))throw Error('Add a short description and a source link or file before submitting.');
+  try{if(workLinkError(form.sourceUrl)){setLinkTouched(true);throw Error('Check the link below. Your entries are still here.');}if(file&&file.size>MAX_FILE_BYTES)throw Error('Choose a file no larger than 100 MB.');if(form.title.trim().length<3||!form.centres.length)throw Error('Add a title and select at least one centre.');if(intent==='submit'&&(form.description.trim().length<10||(!form.sourceUrl&&!file&&!form.has_file)))throw Error('Add a short description and a source link or file before submitting.');
    saved=await send(form.id?'/'+form.id+'/content':'',{...form,intent:'draft'});setForm({...blank,...saved,year:saved.publication_year||'',sourceUrl:saved.source_url||'',dataAccess:saved.data_access});
    if(file){setProgress(0);saved=await uploadFile(saved,file,token,setProgress);setFile(null);setForm({...blank,...saved,year:saved.publication_year||'',sourceUrl:saved.source_url||'',dataAccess:saved.data_access});}
    if(intent==='submit')saved=await send('/'+saved.id+'/submit',{revision:saved.revision});
@@ -67,7 +70,7 @@ function CgcWorkspace({account}){
     <div className="cgc-showcase__fields">{field('title','Title',{required:true,minLength:3,maxLength:220})}<label>What are you sharing?<select value={form.kind} onChange={e=>setForm({...form,kind:e.target.value})}>{Object.entries(kinds).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></label></div>
     <fieldset><legend>Centre(s)</legend><div className="cgc-showcase__checks">{Object.entries(centres).map(([k,v])=><label key={k}><input type="checkbox" checked={form.centres.includes(k)} onChange={e=>setForm({...form,centres:e.target.checked?[...form.centres,k]:form.centres.filter(x=>x!==k)})}/>{v}</label>)}</div></fieldset>
     <label>Short description<textarea maxLength={6000} value={form.description} onChange={e=>setForm({...form,description:e.target.value})} placeholder="What does this work show? Include the place and dates covered, and important limitations."/></label>
-    {field('sourceUrl','DOI or repository link',{type:'url',maxLength:2000,placeholder:'https://doi.org/… or an existing publication / dataset URL'})}
+    <label>Link to your work (optional if uploading a file)<input type="text" inputMode="url" maxLength={2000} value={form.sourceUrl||''} onChange={e=>setForm({...form,sourceUrl:e.target.value})} onBlur={()=>setLinkTouched(true)} placeholder="https://doi.org/... or a publication / dataset link" aria-invalid={Boolean(linkMessage)} aria-describedby="cgc-link-help cgc-link-error"/></label><p id="cgc-link-help" className="cgc-showcase__hint">Already published elsewhere? Paste its full web link. Otherwise, leave this blank and upload your file below.</p>{linkMessage&&<p id="cgc-link-error" role="alert" className="cgc-showcase__error">{linkMessage}</p>}
     <label>Or upload a file · maximum 100 MB<input type="file" accept=".pdf,.csv,.txt,.json,.geojson,.png,.jpg,.jpeg" onChange={e=>setFile(e.target.files?.[0]||null)}/></label>
     {form.has_file&&<p className="cgc-showcase__hint">Saved file: {form.file_name}. Choose a new file only to replace it.</p>}
     <p className="cgc-showcase__hint">PDF, CSV, TXT, JSON, GeoJSON, PNG or JPEG. One file per submission. Export spreadsheet data as CSV or use a repository link. Only share material you have permission to publish; exclude confidential or personal data.</p>

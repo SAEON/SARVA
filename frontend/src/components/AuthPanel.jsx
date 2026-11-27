@@ -3,7 +3,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {startAuthentication,browserSupportsWebAuthn} from '@simplewebauthn/browser';
 import {passkeyRequest,passkeyError} from '../config/passkeys';
 import '../styles/passkeys.css';
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import { AUTH_CHANGED_EVENT, AUTH_TOKEN_KEY, notifyAuthChanged } from "../hooks/useCurrentUser";
 
@@ -42,8 +42,8 @@ function AccountIcon({kind}) {
     return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[kind]}</svg>;
 }
 
-function AccountLink({to,kind,title,description,onClick}) {
-    return <Link className="sarva-accountLink" to={to} onClick={onClick}>
+function AccountLink({to,kind,title,description,onClick,state}) {
+    return <Link className="sarva-accountLink" to={to} state={state} onClick={onClick}>
         <span className="sarva-accountLink__icon"><AccountIcon kind={kind}/></span>
         <span className="sarva-accountLink__copy"><strong>{title}</strong><small>{description}</small></span>
         <span className="sarva-accountLink__arrow" aria-hidden="true">›</span>
@@ -52,7 +52,7 @@ function AccountLink({to,kind,title,description,onClick}) {
 
 export default function AuthPanel() {
     const [open, setOpen] = useState(false);
-    const navigate=useNavigate();
+    const navigate=useNavigate(),location=useLocation();
     const [passkeysEnabled,setPasskeysEnabled]=useState(false);
     const [rememberDevice,setRememberDevice]=useState(false);
     useEffect(()=>{let active=true;passkeyRequest('/status').then(body=>{if(active)setPasskeysEnabled(Boolean(body.enabled));}).catch(()=>{});return()=>{active=false;};},[]);
@@ -224,7 +224,7 @@ export default function AuthPanel() {
                             <nav aria-label="Account shortcuts">
                                 {passkeysEnabled&&<AccountLink to="/account/passkeys" kind="key" title="Passkey sign-in" description="Enable a passkey on this device" onClick={()=>setOpen(false)}/>}
                                 <p className="sarva-accountGroup">Workspace</p>
-                                <AccountLink to="/testing" kind="testing" title="Issues & feedback" description="Ask a question, report a problem or follow a reply" onClick={() => setOpen(false)}/>
+                                <AccountLink to="/testing" state={location.pathname!=='/testing'?{reportPage:location.pathname}:undefined} kind="testing" title="Issues & feedback" description="Ask a question, report a problem or follow a reply" onClick={() => setOpen(false)}/>
                                 {user.roles?.some(role => ['admin','cgc-admin','cgc-user'].includes(role.name)) && <AccountLink to="/partners/centres-for-global-change" kind="testing" title="CGC workspace" description="Share work, save drafts and follow reviews" onClick={() => setOpen(false)}/>}
                                 {user.roles?.some(role => role.name === 'admin') && <>
                                     <p className="sarva-accountGroup">Administration</p>

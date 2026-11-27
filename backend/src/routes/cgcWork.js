@@ -18,7 +18,7 @@ export function validateWork(b,{draft=false}={}){
  if(!Array.isArray(b?.centres)||!b.centres.length||b.centres.length>5||b.centres.some(c=>!centres.includes(c)))throw fail(400,'Choose at least one centre');
  if(!kinds.includes(b.kind)||!access.includes(b.dataAccess||'not-stated'))throw fail(400,'Choose a valid type and data access option');
  let year=null;if(b.year!==''&&b.year!==null&&b.year!==undefined){year=Number(b.year);if(!Number.isInteger(year)||year<1900||year>2100)throw fail(400,'Check publication year');}
- let sourceUrl=text('sourceUrl',0,2000);if(sourceUrl){let u;try{u=new URL(sourceUrl);}catch{throw fail(400,'Enter an HTTP or HTTPS source link');}if(!['http:','https:'].includes(u.protocol)||u.username||u.password)throw fail(400,'Enter an HTTP or HTTPS source link');sourceUrl=u.href;}
+ let sourceUrl=text('sourceUrl',0,2000);if(sourceUrl){let u;try{u=new URL(sourceUrl);}catch{throw fail(400,'Enter a full HTTP or HTTPS link, or leave the link blank and upload a file. Put descriptive text in Short description.');}if(!['http:','https:'].includes(u.protocol)||u.username||u.password)throw fail(400,'Enter a full HTTP or HTTPS link, or leave the link blank and upload a file. Put descriptive text in Short description.');sourceUrl=u.href;}
  return {title:text('title',3,220),description:text('description',draft?0:10,6000),centres:[...new Set(b.centres)],kind:b.kind,year,authors:text('authors',0,1000),citation:text('citation',0,2000),licence:text('licence',0,300),sourceUrl,dataAccess:b.dataAccess||'not-stated'};
 }
 export function validateFile(bytes,name){
