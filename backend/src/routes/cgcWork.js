@@ -8,14 +8,14 @@ import path from 'node:path';
 import {createWriteStream} from 'node:fs';
 import {Transform} from 'node:stream';
 import {pipeline} from 'node:stream/promises';
-export const centres=['spu','ufs','ufh','ul','wsu'];
+export const centres=['spu','ufs','ufh','ul','wsu','nwu','univen'];
 const kinds=['paper','dataset','report','tool','case-study','collection','news'],access=['not-stated','open','on-request','restricted'],MAX=100*1024*1024;
 const types={pdf:'application/pdf',csv:'text/csv',txt:'text/plain',json:'application/json',geojson:'application/geo+json',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg'};
 const fail=(status,message)=>Object.assign(new Error(message),{status});
 const isId=v=>/^[1-9][0-9]{0,17}$/.test(String(v));
 export function validateWork(b,{draft=false}={}){
  const text=(key,min,max)=>{const v=b?.[key]??'';if(typeof v!=='string'||v.trim().length<min||v.length>max)throw fail(400,'Check '+key);return v.trim();};
- if(!Array.isArray(b?.centres)||!b.centres.length||b.centres.length>5||b.centres.some(c=>!centres.includes(c)))throw fail(400,'Choose at least one centre');
+ if(!Array.isArray(b?.centres)||!b.centres.length||b.centres.length>centres.length||b.centres.some(c=>!centres.includes(c)))throw fail(400,'Choose at least one centre');
  if(!kinds.includes(b.kind)||!access.includes(b.dataAccess||'not-stated'))throw fail(400,'Choose a valid type and data access option');
  let year=null;if(b.year!==''&&b.year!==null&&b.year!==undefined){year=Number(b.year);if(!Number.isInteger(year)||year<1900||year>2100)throw fail(400,'Check publication year');}
  let sourceUrl=text('sourceUrl',0,2000);if(sourceUrl){let u;try{u=new URL(sourceUrl);}catch{throw fail(400,'Enter a full HTTP or HTTPS link, or leave the link blank and upload a file. Put descriptive text in Short description.');}if(!['http:','https:'].includes(u.protocol)||u.username||u.password)throw fail(400,'Enter a full HTTP or HTTPS link, or leave the link blank and upload a file. Put descriptive text in Short description.');sourceUrl=u.href;}

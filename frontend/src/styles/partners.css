@@ -9,3 +9,16 @@
 .sarva-partners__card--cgc{display:flex;gap:0}.sarva-cgc__cardLogos{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:center;gap:28px;width:100%;padding:8px 0 28px}.sarva-cgc__cardLogos img{width:100%;height:92px;object-fit:contain}.sarva-partners__supporters img{max-width:160px;height:70px}@media(max-width:720px){.sarva-cgc__cardLogos{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}.sarva-cgc__cardLogos img{height:72px}}
 
 .sarva-partners__logos img.is-nwo,.sarva-partners__supporters img[alt="NWO"]{box-sizing:border-box;padding:3px;object-fit:contain;overflow:visible}
+
+.sarva-partners__card--cgc{display:grid;grid-template-columns:minmax(260px,1.2fr) minmax(0,3fr);align-items:end;column-gap:32px}
+.sarva-cgc__cardLogos{grid-column:2;grid-row:1;grid-template-columns:repeat(4,minmax(0,1fr));align-self:end;padding-bottom:0}
+.sarva-cgc__cardLogos img:nth-child(5){grid-column:2}
+.sarva-cgc__cardLogos img:nth-child(6){grid-column:3}
+.sarva-cgc__cardLogos img:nth-child(7){grid-column:4}
+.sarva-cgc__cardContent{grid-column:1;grid-row:1;align-self:end;justify-self:start;text-align:left}
+.sarva-cgc__cardContent h2{margin-top:12px}
+.sarva-cgc__cardContent .sarva-partners__action{margin-top:12px}
+@media(max-width:720px){.sarva-partners__card--cgc{display:flex;flex-direction:column;align-items:stretch;gap:0}.sarva-cgc__cardLogos{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;padding:8px 0 20px}.sarva-cgc__cardLogos img:nth-child(4){grid-column:1}.sarva-cgc__cardLogos img:nth-child(5){grid-column:2}.sarva-cgc__cardLogos img:nth-child(6){grid-column:3}.sarva-cgc__cardLogos img:nth-child(7){grid-column:2}.sarva-cgc__cardContent{align-self:auto}}
+/* Official NWU acronym artwork includes a square white artboard; frame its central mark. */
+.sarva-cgc__logo img[alt="North-West University logo"]{height:60px;object-fit:cover;object-position:center}
+.sarva-cgc__cardLogos img[alt="North-West University"],.sarva-partners__supporters img[alt="North-West University"]{object-fit:cover;object-position:center}

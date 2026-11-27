@@ -7,6 +7,8 @@ import ufsLogo from "../assets/cgc/ufs.svg";
 import ufhLogo from "../assets/cgc/ufh.svg";
 import ulLogo from "../assets/cgc/ul.png";
 import wsuLogo from "../assets/cgc/wsu.png";
+import nwuLogo from "../assets/cgc/nwu-acronym-purple.png";
+import vendaLogo from "../assets/cgc/Uni_Ven.png";
 import labLogo from "../assets/logos/environmental-data-research-lab.svg";
 const wefUrl = import.meta.env.VITE_WEF_NEXUS_URL || "/wef-nexus/";
 const dsLabUrl = import.meta.env.VITE_DSLAB_URL || "https://ds-lab.saeon.ac.za/";
@@ -35,11 +37,11 @@ export default function Partners() {
                 <a className="sarva-partners__action" href={dsLabUrl} target="_blank" rel="noopener noreferrer">Open Environmental Data &amp; Research Lab <span aria-hidden="true">↗</span></a>
             </article>
             <article className="sarva-partners__card sarva-partners__card--cgc">
-                <div className="sarva-cgc__cardLogos" aria-label="CGC host universities"><img src={spuLogo} alt="Sol Plaatje University" /><img src={ufsLogo} alt="University of the Free State" /><img src={ufhLogo} alt="University of Fort Hare" /><img src={ulLogo} alt="University of Limpopo" /><img src={wsuLogo} alt="Walter Sisulu University" /></div>
-                <span className="sarva-partners__tag">UNIVERSITY RESEARCH NETWORK</span><h2>Centres for Global Change</h2><p>Sol Plaatje · Free State · Fort Hare · Limpopo · Walter Sisulu</p><Link className="sarva-partners__action" to="/partners/centres-for-global-change">Explore centres →</Link>
+                <div className="sarva-cgc__cardLogos" aria-label="CGC host universities"><img src={spuLogo} alt="Sol Plaatje University" /><img src={ufsLogo} alt="University of the Free State" /><img src={ufhLogo} alt="University of Fort Hare" /><img src={ulLogo} alt="University of Limpopo" /><img src={wsuLogo} alt="Walter Sisulu University" /><img src={nwuLogo} alt="North-West University" /><img src={vendaLogo} alt="University of Venda" /></div>
+                <div className="sarva-cgc__cardContent"><span className="sarva-partners__tag">UNIVERSITY RESEARCH NETWORK</span><h2>Centres for Global Change</h2><p>Sol Plaatje · Free State · Fort Hare · Limpopo · Walter Sisulu · North-West · Venda</p><Link className="sarva-partners__action" to="/partners/centres-for-global-change">Explore centres →</Link></div>
             </article>
         </section>
-        <div className="sarva-partners__supporters" aria-label="Partner logos"><img src={saeonLogo} alt="NRF SAEON" /><img src={nwoLogo} alt="NWO" /><img src={labLogo} alt="Environmental Data &amp; Research Lab" /><img src={spuLogo} alt="Sol Plaatje University" /><img src={ufsLogo} alt="University of the Free State" /><img src={ufhLogo} alt="University of Fort Hare" /><img src={ulLogo} alt="University of Limpopo" /><img src={wsuLogo} alt="Walter Sisulu University" /></div>
+        <div className="sarva-partners__supporters" aria-label="Partner logos"><img src={saeonLogo} alt="NRF SAEON" /><img src={nwoLogo} alt="NWO" /><img src={labLogo} alt="Environmental Data &amp; Research Lab" /><img src={spuLogo} alt="Sol Plaatje University" /><img src={ufsLogo} alt="University of the Free State" /><img src={ufhLogo} alt="University of Fort Hare" /><img src={ulLogo} alt="University of Limpopo" /><img src={wsuLogo} alt="Walter Sisulu University" /><img src={nwuLogo} alt="North-West University" /><img src={vendaLogo} alt="University of Venda" /></div>
         <section className="sarva-partners__next"><h2>Growing our collaborations</h2><p>We are reviewing where FDS best fits within SARVA and welcome information about further collaborations.</p><Link to="/contact">Contact SARVA about a collaboration →</Link></section>
     </main>;
 }

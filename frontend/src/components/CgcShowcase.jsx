@@ -1,10 +1,11 @@
+import {cgcCentres} from '../config/cgcCentres';
 import {workLinkError} from '../config/workLink';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {Link,useLocation} from 'react-router-dom';
 import {apiUrl} from '../config/api';
 import {useCurrentUser} from '../hooks/useCurrentUser';
 import '../styles/cgc-showcase.css';
-const centres={spu:'Sol Plaatje',ufs:'Free State',ufh:'Fort Hare',ul:'Limpopo',wsu:'Walter Sisulu'};
+const centres=cgcCentres;
 const kinds={paper:'Publication',dataset:'Dataset',report:'Report',tool:'Tool','case-study':'Case study',collection:'Repository collection',news:'News / update'};
 const blank={title:'',description:'',centres:[],kind:'paper',year:'',authors:'',citation:'',licence:'',sourceUrl:'',dataAccess:'not-stated'};
 const statuses={draft:'Draft',pending:'Submitted for review',published:'Published','changes-requested':'Changes requested',archived:'Archived'};
