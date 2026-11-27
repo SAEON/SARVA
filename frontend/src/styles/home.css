@@ -4505,3 +4505,4 @@ body {
 }
 .sarva-dash .sarva-dash__hero--lead .sarva-dash__heroActions > :nth-child(n) { width:100%; }
 .sarva-dash .sarva-dash__hero--lead .sarva-dash__heroActions a:first-child, .sarva-dash .sarva-dash__hero--lead .sarva-dash__heroActions a:nth-child(2), .sarva-dash .sarva-dash__hero--lead .sarva-dash__heroActions button { width:100%; }
+.sarva-dash__footerLogos img[alt="North-West University"]{object-fit:cover;object-position:center}

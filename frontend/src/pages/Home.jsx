@@ -22,6 +22,8 @@ import ufsLogo from "../assets/cgc/ufs.svg";
 import ufhLogo from "../assets/cgc/ufh.svg";
 import ulLogo from "../assets/cgc/ul.png";
 import wsuLogo from "../assets/cgc/wsu.png";
+import nwuLogo from "../assets/cgc/nwu-acronym-purple.png";
+import vendaLogo from "../assets/cgc/Uni_Ven.png";
 import nwoLogo from "../assets/logos/NWO.svg";
 import elNinoNewsImage from "../assets/news/el-nino-pacific.png";
 import dstiLogo from "../assets/logos/DSTI.png";
@@ -1973,6 +1975,8 @@ export default function Home() {
                             <a href="https://www.ufh.ac.za/" target="_blank" rel="noreferrer" aria-label="University of Fort Hare website"><img src={ufhLogo} alt="University of Fort Hare" /></a>
                             <a href="https://www.ul.ac.za/" target="_blank" rel="noreferrer" aria-label="University of Limpopo website"><img src={ulLogo} alt="University of Limpopo" /></a>
                             <a href="https://wsu.ac.za/" target="_blank" rel="noreferrer" aria-label="Walter Sisulu University website"><img src={wsuLogo} alt="Walter Sisulu University" /></a>
+                            <a href="https://www.nwu.ac.za/" target="_blank" rel="noreferrer" aria-label="North-West University website"><img src={nwuLogo} alt="North-West University" /></a>
+                            <a href="https://www.univen.ac.za/" target="_blank" rel="noreferrer" aria-label="University of Venda website"><img src={vendaLogo} alt="University of Venda" /></a>
                             <a className="is-nwo" href="https://www.nwo.nl/en" target="_blank" rel="noreferrer" aria-label="NWO website"><img src={nwoLogo} alt="NWO" /></a>
                             <a href="https://www.dsti.gov.za/" target="_blank" rel="noreferrer" aria-label="DSTI website">
                                 <img src={dstiLogo} alt="Department of Science, Technology and Innovation" />
