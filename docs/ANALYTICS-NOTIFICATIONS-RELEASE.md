@@ -1,0 +1,22 @@
+# Analytics reports and account notifications
+
+Release prepared 27 November 2026. Production rollout and acceptance are pending.
+
+## Behaviour
+
+- Retains inclusive South African calendar-day date ranges and existing analytics reports. Adds a plain-text report with Copy and Download .txt actions, prioritising page views, browser sessions, distinct tracked signed-in accounts, registrations, countries, popular pages and map/resource interactions. Download-link clicks remain a secondary measure, not completed downloads.
+- Adds red unread badges for new issues and account registrations for active platform administrators. Private reply/review notifications go to the original issue reporter. Existing Issues & feedback permissions remain in force.
+- Read state is persisted per recipient and notification. Opening one notice acknowledges that notice only. Links open the relevant account, issue or highlighted reply, including replies on older history pages.
+- Notifications start with newly recorded activity; historical activity is not backfilled. Existing registration and reply writes deliver notifications within the same database transaction. No email or OS push is sent.
+
+## Validation
+
+53 checks passed: 38 integration tests covering notifications, SAST boundaries, permissions and existing issue/CGC workflows; 13 existing analytics/privacy checks; and two text-report/export tests. Frontend build and targeted lint passed. Browser checks confirmed applied dates, Copy success feedback, the downloaded text report, separate unread categories, account/issue links and original-reporter reply links. One existing analytics test now checks explicit user filtering without assuming it is the only user in the synthetic database.
+
+The synthetic test database does not contain the catalogue and forecast datasets; their existing panels correctly show unavailable. Production-data validation and normal password/passkey browser checks remain part of rollout acceptance. Counts reflect available tracking and must not be interpreted as total unique people.
+
+## Rollout and recovery
+
+Back up the database, uploaded files and configuration and retain current application images before applying migration 072. Apply the migration before starting the new backend. Prepare the frontend separately, then switch after backend health checks. Preserve existing authentication configuration and persistent volumes. No new upload-limit or host-routing change is required. Keep the additive migration if reverting application images; retained notifications can be used after reapplying the new application.
+
+This update targets SARVA only. The Lab, tracker database, WEF services and existing spatial-database recovery setup should remain outside the deployment scope. Do not prune rollback images or volumes during rollout.

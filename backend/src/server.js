@@ -1,3 +1,4 @@
+import {notificationsRouter} from './routes/notifications.js';
 import {pool as cgcCleanupPool} from './db/pool.js';
 import {startCgcDeletionWorker} from './services/cgcDeletion.js';
 import {cgcWorkRouter} from "./routes/cgcWork.js";
@@ -43,6 +44,7 @@ app.use(cors({ origin: true }));
 app.use(express.json());
 app.use(trackApi);
 app.use("/api", analyticsRouter);
+app.use("/api", notificationsRouter);
 
 
 

@@ -1,3 +1,4 @@
+import {Link,useLocation} from 'react-router-dom';
 import {useEffect,useRef,useState} from 'react';
 import {useCurrentUser} from '../hooks/useCurrentUser';
 import {apiUrl} from '../config/api';
@@ -13,6 +14,8 @@ export default function UserAdmin(){
  {isAdmin?<Accounts token={token} currentId={user.id}/>:<section className="ua-panel"><h2>Administrator sign-in required</h2><p>Use the SARVA Login button to sign in with an active administrator account.</p></section>}</div>;
 }
 function Accounts({token,currentId}){
+ const location=useLocation();
+ const linkedUser=new URLSearchParams(location.search).get('user');
  const [data,setData]=useState(null),[search,setSearch]=useState(''),[query,setQuery]=useState(''),[page,setPage]=useState(1),[reload,setReload]=useState(0);
  const editorRef=useRef(null);
  const [selected,setSelected]=useState(null),[draft,setDraft]=useState(null),[history,setHistory]=useState([]);
@@ -25,11 +28,11 @@ function Accounts({token,currentId}){
   let alive=true;
   async function load(){
    setLoading(true);setError('');
-   try{const response=await fetch(apiUrl('/api/admin/users?search='+encodeURIComponent(query)+'&page='+page),{headers:{Authorization:'Bearer '+token}});const body=await response.json();if(!response.ok)throw new Error(body.message || 'Could not load accounts');if(alive)setData(body.data);}
+   try{const response=await fetch(apiUrl('/api/admin/users?search='+encodeURIComponent(query)+'&page='+page+(linkedUser?'&userId='+encodeURIComponent(linkedUser):'')),{headers:{Authorization:'Bearer '+token}});const body=await response.json();if(!response.ok)throw new Error(body.message || 'Could not load accounts');if(alive)setData(body.data);}
    catch(e){if(alive){setError(e.message);setData(null);}}finally{if(alive)setLoading(false);}
   }
   load();return()=>{alive=false;};
- },[token,query,page,reload]);
+ },[token,query,page,reload,linkedUser]);
  useEffect(()=>{
   let alive=true;
   if(!selected)return;
@@ -48,6 +51,7 @@ function Accounts({token,currentId}){
  const self=selected && String(selected.id)===String(currentId);
  const changed=draft && (draft.isActive!==selected.is_active || [...draft.roles].sort().join(',')!==[...selected.roles].sort().join(','));
  return <>
+ {linkedUser&&<p className="ua-note">Showing the notified account. <Link to="/admin/users">Show all accounts</Link></p>}
  <div className="ua-guidance"><strong>Account access, with a record of every change.</strong><p>Role and status changes require your current SARVA password and a reason. You cannot remove your own administrator access. Existing accounts are retained when deactivated.</p></div>
  {notice&&<div role="status" className="ua-success">{notice}</div>}
  {error&&<div role="alert" className="ua-error">{error}</div>}
