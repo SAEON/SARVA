@@ -71,7 +71,8 @@ export function createReviewIssuesRouter(db=pool){
   if(!isId(req.params.id))return res.status(400).json({message:'Invalid issue'});
   try{
    const issue=(await db.query(`SELECT ${issueFields},i.created_by FROM sarva.review_issue i JOIN sarva.app_user u ON u.id=i.created_by WHERE i.id=$1`,[req.params.id])).rows[0];visible(issue,req.reviewUser,true);
-   const page=Number(req.query.page || 1);if(!Number.isSafeInteger(page)||page<1||page>100000)throw fail(400,'Invalid history page');
+   let page=Number(req.query.page || 1);if(!Number.isSafeInteger(page)||page<1||page>100000)throw fail(400,'Invalid history page');
+   if(req.query.reply){if(!isId(req.query.reply))throw fail(400,'Invalid reply');const target=await db.query('SELECT id FROM sarva.review_issue_event WHERE id=$1 AND issue_id=$2',[req.query.reply,issue.id]);if(!target.rowCount)throw fail(404,'Reply not found');const newer=(await db.query('SELECT count(*)::integer AS count FROM sarva.review_issue_event WHERE issue_id=$1 AND id>$2',[issue.id,req.query.reply])).rows[0].count;page=Math.floor(newer/50)+1;}
    const events=await db.query(`SELECT e.id,e.event_type,e.note,e.changes,e.created_at,CASE WHEN $3 THEN u.display_name WHEN e.event_type IN ('reply','review','assigned') THEN 'Admin' WHEN e.actor_user_id=$4 THEN u.display_name ELSE 'Admin' END AS actor_name FROM sarva.review_issue_event e
     JOIN sarva.app_user u ON u.id=e.actor_user_id WHERE e.issue_id=$1 ORDER BY e.id DESC LIMIT 50 OFFSET $2`,[issue.id,(page-1)*50,req.reviewUser.isAdmin,req.reviewUser.id]);
    const total=(await db.query('SELECT count(*)::integer AS total FROM sarva.review_issue_event WHERE issue_id=$1',[issue.id])).rows[0].total;

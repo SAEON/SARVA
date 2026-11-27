@@ -66,7 +66,10 @@ test('records typed interactions, filters devices and returns admin-only user ac
  assert.equal((await event({},token(admin,['admin']))).status,202);
  const response=await insights(token(admin,['admin']),'&audience=signed-in');assert.equal(response.status,200);
  const report=await response.json();assert.ok(report.data.actions.some(row=>row.action==='map_layer'));
- assert.ok(report.data.activity.every(row=>String(row.user_id)===String(user)));
+ assert.ok(report.data.activity.some(row=>String(row.user_id)===String(user)));
+ assert.ok(report.data.activity.every(row=>row.audience_type==='signed-in'));
+ const individual=await(await insights(token(admin,['admin']),'&audience=signed-in&userId='+user)).json();
+ assert.ok(individual.data.activity.length>0);assert.ok(individual.data.activity.every(row=>String(row.user_id)===String(user)));
  assert.ok(report.data.locations.every(row=>row.audience_type==='signed-in'));
  assert.ok(!JSON.stringify(report).includes('password_hash'));assert.ok(!JSON.stringify(report).includes('8.8.8.8'));
  const zero=await(await insights(token(admin,['admin']),'&device=Tablet&section=no-matching-section')).json();assert.equal(zero.data.totals[0].views,0);

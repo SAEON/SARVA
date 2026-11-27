@@ -19,10 +19,12 @@ export function createUserAdminRouter(db=pool){
    const search=String(req.query.search || '').trim();
    const page=Number(req.query.page || 1);
    if(search.length>150 || !Number.isSafeInteger(page) || page<1 || page>100000) throw fail(400,'Invalid search or page');
-   const args=[search];
-   const where=`WHERE $1='' OR position(lower($1) in lower(u.display_name))>0 OR position(lower($1) in lower(u.email))>0`;
+   const userId=String(req.query.userId||'');
+   if(userId&&!/^[1-9][0-9]{0,18}$/.test(userId))throw fail(400,'Invalid account');
+   const args=[search,userId];
+   const where=`WHERE ($1='' OR position(lower($1) in lower(u.display_name))>0 OR position(lower($1) in lower(u.email))>0) AND ($2='' OR u.id::text=$2)`;
    const count=await db.query(`SELECT count(*)::integer AS total FROM sarva.app_user u ${where}`,args);
-   const users=await db.query(`SELECT ${fields} FROM sarva.app_user u ${where} ORDER BY lower(u.email),u.id LIMIT 25 OFFSET $2`,[search,(page-1)*25]);
+   const users=await db.query(`SELECT ${fields} FROM sarva.app_user u ${where} ORDER BY lower(u.email),u.id LIMIT 25 OFFSET $3`,[...args,(page-1)*25]);
    const roles=await db.query('SELECT name,label,description FROM sarva.auth_role ORDER BY name');
    res.json({data:{users:users.rows,roles:roles.rows,total:count.rows[0].total,page,pageSize:25}});
   }catch(error){res.status(error.status || 500).json({message:error.status?error.message:'Unable to load accounts'});}

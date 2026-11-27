@@ -99,6 +99,7 @@ analyticsRouter.get('/analytics/summary', (req, res, next) => {
     const queries = {
       usage: [`SELECT count(*) FILTER (WHERE kind='page')::int AS views,
         count(DISTINCT session_id) FILTER (WHERE kind='page')::int AS sessions,
+        count(DISTINCT user_id) FILTER (WHERE kind IN ('page','click','interaction'))::int AS active_accounts,
         count(DISTINCT visitor_ip_hash) FILTER (WHERE kind='page')::int AS unique_ips,
         count(*) FILTER (WHERE kind='page' AND visitor_ip_hash IS NULL)::int AS ip_unavailable_views,
         min(created_at) FILTER (WHERE kind='page' AND visitor_ip_hash IS NOT NULL) AS ip_tracking_since,
@@ -110,6 +111,9 @@ analyticsRouter.get('/analytics/summary', (req, res, next) => {
         round(sum(duration_ms) FILTER (WHERE kind='page')/1000.0) AS active_seconds,
         round(avg(duration_ms) FILTER (WHERE kind='api')) AS latency,
         min(created_at) AS first_event FROM sarva.analytics_event WHERE created_at >= $1::timestamptz AND created_at < $2::timestamptz`, range],
+      registrations: [`SELECT count(*)::int AS count FROM sarva.app_user WHERE created_at >= $1::timestamptz AND created_at < $2::timestamptz`, range],
+      countries: [`SELECT country AS label,count(*)::int AS views,count(DISTINCT user_id)::int AS accounts FROM sarva.analytics_event WHERE kind='page' AND created_at >= $1::timestamptz AND created_at < $2::timestamptz GROUP BY country ORDER BY views DESC,country`, range],
+      mapResources: [`SELECT coalesce(subject,path) AS label,action,count(*)::int AS events,count(DISTINCT user_id)::int AS accounts FROM sarva.analytics_event WHERE kind='interaction' AND created_at >= $1::timestamptz AND created_at < $2::timestamptz GROUP BY coalesce(subject,path),action ORDER BY events DESC,label,action LIMIT 20`, range],
       daily: [`SELECT to_char(day,'YYYY-MM-DD') AS label, count(e.id)::int AS count
         FROM generate_series(($1::timestamptz AT TIME ZONE 'Africa/Johannesburg')::date,
           ($2::timestamptz AT TIME ZONE 'Africa/Johannesburg')::date-1,interval '1 day') day

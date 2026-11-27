@@ -1,3 +1,4 @@
+import AccountNotifications from './AccountNotifications';
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {startAuthentication,browserSupportsWebAuthn} from '@simplewebauthn/browser';
 import {passkeyRequest,passkeyError} from '../config/passkeys';
@@ -186,6 +187,7 @@ export default function AuthPanel() {
 
     return (
         <div className="sarva-auth" ref={accountRef}>
+            {user&&<AccountNotifications/>}
             {user ? (
                 <button
                     className="sarva-auth__avatar"

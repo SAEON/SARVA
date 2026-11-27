@@ -1,3 +1,4 @@
+import {reportText,downloadText} from '../config/analyticsText';
 import AnalyticsAudience from '../components/AnalyticsAudience';
 import { useEffect, useState } from 'react';
 import { useCurrentUser } from '../hooks/useCurrentUser';
@@ -17,6 +18,7 @@ function Table({ title, rows, columns }) {
 }
 
 function Dashboard({ token }) {
+  const [copyStatus,setCopyStatus]=useState('');
   const [days, setDays] = useState(30);
   const [query, setQuery] = useState('days=30');
   const [range, setRange] = useState({ from: '', to: '' });
@@ -47,10 +49,11 @@ function Dashboard({ token }) {
     {loading && <p role="status">Loading local analytics…</p>}
     {error && <p role="alert" className="analytics-notice">{error}. Check your login and local backend, then refresh.</p>}
     {data && <>
+      <section className="analytics-panel"><h2>Plain-text activity report</h2><p>Visits, tracked active accounts, registrations and most-used pages and interactions for the applied dates.</p><textarea aria-label="Plain-text activity report" readOnly rows={12} style={{width:'100%'}} value={reportText(result)}/><div className="analytics-report-actions"><button onClick={async()=>{try{await navigator.clipboard.writeText(reportText(result));setCopyStatus('Report copied.');}catch{setCopyStatus('Copy unavailable. Select the report text or download it.');}}}>Copy report</button><button onClick={()=>downloadText(reportText(result),`sarva-activity-${result.from}-${result.to}.txt`)}>Download .txt</button><span role="status">{copyStatus}</span></div></section>
       <div className="analytics-report-actions"><button type="button" onClick={() => downloadCsv(reportCsv(result), `sarva-analytics-${result.from}-${result.to}.csv`)}>Export report CSV</button><button type="button" onClick={() => window.print()}>Print / save PDF</button></div>
       <p className="analytics-meta">Reporting period: {result.from} to {result.to}, inclusive ({result.days} days, SAST). Generated {date(result.generatedAt)}. Coverage shows the current database snapshot.</p>
       {result.unavailable.length > 0 && <p role="status" className="analytics-notice">Some datasets are unavailable: {result.unavailable.join(', ')}. Missing data is not counted as zero.</p>}
-      <div className="analytics-cards">{[['Page views', usage?.views], ['Unique IP addresses', usage?.unique_ips], ['Browser sessions', usage?.sessions], ['Catalogue searches', searches?.total], ['Zero-result searches', searches?.empty], ['API requests', usage?.requests], ['Server errors (5xx)', usage?.errors]].map(([label, value]) => <section key={label}><span>{label}</span><strong>{number(value)}</strong></section>)}</div>
+      <div className="analytics-cards">{[['Page views (events)', usage?.views], ['Active signed-in accounts',usage?.active_accounts], ['New registrations',data.registrations?.[0]?.count], ['Unique IP addresses', usage?.unique_ips], ['Browser sessions', usage?.sessions], ['Catalogue searches', searches?.total], ['Zero-result searches', searches?.empty], ['API requests', usage?.requests], ['Server errors (5xx)', usage?.errors]].map(([label, value]) => <section key={label}><span>{label}</span><strong>{number(value)}</strong></section>)}</div>
       <div className="analytics-cards">{[['Link clicks', usage?.clicks], ['Outbound clicks', usage?.outbound], ['Download link clicks', usage?.downloads], ['Active viewing seconds', usage?.active_seconds]].map(([label,value]) => <section key={label}><span>{label}</span><strong>{number(value)}</strong></section>)}</div>
       <p className="analytics-meta">Unique IP addresses count distinct hashed network addresses with page views in the selected period, not people. Shared networks/VPNs can merge visitors, and changing addresses can count a person more than once. Counting starts with this update; older visits cannot be recovered. Earliest counted visit in this period: {date(usage?.ip_tracking_since)}. Page views without an IP identifier: {number(usage?.ip_unavailable_views)}. Rotating the authentication secret starts new identifiers.</p>
       <section className="analytics-panel"><h2>Daily page views</h2><p>South African calendar days. Sessions identify a browser tab, not unique people. Recording starts when this feature is enabled.</p>{data.daily == null ? <p>Data unavailable.</p> : <div className="analytics-chart" role="img" aria-label={`Daily page views: ${data.daily.map(r => `${r.label}: ${r.count}`).join('; ')}`}>{data.daily.map(row => <div className="analytics-bar" key={row.label} title={`${row.label}: ${row.count} views`}><span style={{ height: `${row.count / max * 100}%` }} /></div>)}</div>}<div className="analytics-chart-labels"><span>{data.daily?.[0]?.label}</span><span>{data.daily?.at(-1)?.label}</span></div></section>
