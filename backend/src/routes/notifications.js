@@ -10,7 +10,8 @@ export function createNotificationsRouter(db=pool){
   const items=(await db.query(`SELECT n.id,n.kind,n.created_at,n.issue_id,n.user_id,n.event_id,i.title,e.note AS reply,u.display_name AS registered_name
    FROM sarva.account_notification n LEFT JOIN sarva.review_issue i ON i.id=n.issue_id LEFT JOIN sarva.review_issue_event e ON e.id=n.event_id
    LEFT JOIN sarva.app_user u ON u.id=n.user_id WHERE ${visible} AND n.read_at IS NULL ORDER BY n.id DESC LIMIT 50`,args)).rows;
-  res.json({data:{counts,items:items.map(n=>({...n,href:n.kind==='registration'?'/admin/users?user='+n.user_id:'/testing?issue='+n.issue_id+(n.event_id?'&reply='+n.event_id:'' )}))}});
+  const openIssues=req.reviewUser.isAdmin?(await db.query("SELECT count(*)::int AS count FROM sarva.review_issue WHERE deleted_at IS NULL AND status='open'")).rows[0].count:null;
+  res.json({data:{counts,openIssues,items:items.map(n=>({...n,href:n.kind==='registration'?'/admin/users?user='+n.user_id:'/testing?issue='+n.issue_id+(n.event_id?'&reply='+n.event_id:'' )}))}});
  }catch{res.status(503).json({message:'Notifications unavailable'});}});
  router.post('/notifications/:id/read',async(req,res)=>{try{
   if(!/^[1-9][0-9]{0,18}$/.test(req.params.id))return res.sendStatus(400);
